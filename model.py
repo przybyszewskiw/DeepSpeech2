@@ -49,8 +49,8 @@ class Recurrent(nn.Module):
         frequencies = number of frequencies per one time stamp
 
     Input: Tensor of shape NxFxT where N is batch size, F is the number of
-           different frequencies and T is lenght of time-series.
-    Output: Tensor of the shape NxTxF where B, T and F as in input
+           different frequencies and T is length of time-series.
+    Output: Tensor of the shape NxTxF where N, T and F as in input
     """
     def __init__(self, rec_number=3, frequencies=700):
         super(Recurrent, self).__init__()
@@ -77,7 +77,7 @@ class FullyConnected(nn.Module):
     Third part of DeepSpeech. Consists of one or more fully connected layers.
 
     Constructor parameters:
-        ful_number = number of fully connected layers
+        full_number = number of fully connected layers
         frequencies = number of frequencies per one time stamp
 
     Input: Tensor of shape NxTxF where N is batch size, F is the number of
@@ -129,24 +129,93 @@ class Probabilities(nn.Module):
     def forward(self, x):
         return self.layer(x)
 
-#class DeepSpeech(nn.Module):
+class DeepSpeech(nn.Module):
+    """
+        Composition of the components: Convolutions, Recurrent, FullyConnected, Probabilities
+        into one DeepSpeech net.
+
+        Constructor parameters:
+            frequencies = number of frequencies per one time stamp
+            convolutions = number of convolutional layers
+            context = number of neighbouring time stamps we should care about
+            (implies kernel size)
+            rec_number = number of recurrent layers
+            full_number = number of fully connected layers
+            characters = number of characters which we are predicting
+
+        Input: Tensor of shape NxFxT where N is batch size, F is the number of
+           different frequencies and T is length of time-series.
+        Output: Tensor of shape NxTxC where N and T are the same as in the input and
+            C is the number of character which we make predictions about.
+
+    """
+    def __init__(self, frequencies=700, conv_number=2, context=5,
+                 rec_number=3, full_number=2, characters=29):
+        super(DeepSpeech, self).__init__()
+        self.characters = characters
+        #TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
+        self.full_number = full_number
+        self.rec_number = rec_number
+        self.context = context
+        self.conv_number = conv_number
+        self.frequencies = frequencies
+        self.layer = nn.Sequential(
+            Convolutions(conv_number=self.conv_number, frequencies=self.frequencies,
+                         context=self.context),
+            Recurrent(rec_number=self.rec_number, frequencies=self.frequencies),
+            FullyConnected(full_number=self.full_number, frequencies=self.frequencies),
+            Probabilities(characters=self.characters, frequencies=self.frequencies)
+        )
+
+    def forward(self, x):
+        x = self.layer(x)
+        return x
+
+    """
+        Calculate loss using CTC loss function.
+        
+        Input:
+            output = Tensor of shape NxTxC where N and T are the same as in the input and
+            C is the number of character which we make predictions about.
+            target = tensor of shape NxS where N is batch size and S in length of
+            utterances.
+            
+            constraints:
+             -S <= T
+             -target has to be a positive integer tensor #https://discuss.pytorch.org/t/ctcloss-dont-work-in-pytorch/13859/3
+             -target can not have the same consequitive numbers?
+        Output: loss tensor     
+    """
+    @staticmethod
+    def criterion(output, target):
+        ctc_loss = nn.CTCLoss(reduction='mean')
+        batch_size = output.shape[0]
+        utterance_length = output.shape[1]
+        output = output.transpose(0, 1)
+        output_length = torch.full((batch_size,), utterance_length)
+        target_length = torch.full((target.shape[0],), target.shape[1])
+        return ctc_loss(output, target, output_length, target_length)
+
 
 def test():
-    x = torch.rand(1, 30, 5)
-    print(x)
-    net1 = Convolutions(frequencies=30, context=1, conv_number=1)
-    x = net1(x)
-    print(x)
-    net2 = Recurrent(frequencies=30)
-    x = net2(x)
-    print(x)
-    net3 = FullyConnected(frequencies=30)
-    x = net3(x)
-    print(x)
-    net4 = Probabilities(frequencies=30)
-    x = net4(x)
-    print(x)
-    print(x.shape)
+    N = 1
+    F = 30
+    T = 5
+    C = 10
+    for _ in range(100):
+        x = torch.rand(N, F, T)
+
+        net = DeepSpeech(frequencies=F, context=1, conv_number=1, characters=C)
+        x = net(x)
+
+        labels = torch.randint(1, C, (N, T))
+        loss = DeepSpeech.criterion(x, labels)
+
+        if loss.item() == float('inf'):
+            print("Bad:" + str(labels))
+        else:
+            print("Ok:" + str(labels))
+
 
 if __name__ == "__main__":
-    test()
+   test()
