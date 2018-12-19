@@ -3,6 +3,7 @@ import numpy as np
 import soundfile as sf
 import scipy.signal as signal
 
+
 #arguments: file_path - path to music file (must be mono)
 #           bucket_size - size of frequency bucket in hz
 #           time_overlap - overlap of time intervals in ms
@@ -28,8 +29,27 @@ def load_track(file_path, bucket_size, time_overlap):
     
     return spec
 
+
+def load_transcript(file_path):
+    def convert_char(c):
+        if ord('a') <= ord(c) <= ord('z'):
+            return ord(c) - ord('a') + 1
+        elif c == ' ':
+            return 27
+        elif c == '\'':
+            return 28
+        else:
+            raise Exception("Transcript unknown character:" + str(c))
+
+    with open(file_path, 'r') as f:
+        transcript = f.read()
+    transcript_num = [convert_char(c) for c in transcript[:-1]]
+
+    return transcript_num
+
+
 if len(sys.argv) < 2:
     print("give name of file")
 else:
     #spektrogram co 5hz z czasami długości 10ms, z overlapami 5ms
-    load_track(sys.argv[1], 5, 5)
+    print(load_track(sys.argv[1], 5, 5).shape)

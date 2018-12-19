@@ -183,7 +183,6 @@ class DeepSpeech(nn.Module):
             constraints:
              -S <= T
              -target has to be a positive integer tensor #https://discuss.pytorch.org/t/ctcloss-dont-work-in-pytorch/13859/3
-             -target can not have the same consequitive numbers?
         Output: loss tensor     
     """
     @staticmethod
