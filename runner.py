@@ -1,7 +1,7 @@
 from model import DeepSpeech
 import numpy as np
 from dataload import load_track, load_transcript
-from decoder import ctcBeamSearch
+from evaluator import eval_single
 import torch
 import torch.optim as optim
 
@@ -41,11 +41,9 @@ class Runner:
             output, probs = self.net(track)
             loss = DeepSpeech.criterion(output, transcript)
             print("loss={}".format(loss))
-            if epoch % 5 == 0:
-                probs = probs.squeeze()
-                list_aux = torch.split(probs, [1, 28], 1)
-                probs = torch.cat((list_aux[1], list_aux[0]), 1)
-                print(ctcBeamSearch(probs))
+            if epoch % 20 == 19:
+                eval_single(self.net, track_path, transcript_path,
+                            self.sound_bucket_size, self.sound_time_overlap)
             loss.backward()
             self.optimizer.step()
 

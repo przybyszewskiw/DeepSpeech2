@@ -57,7 +57,7 @@ def ctcBeamSearch(mat, classes='abcdefghijklmnopqrstuvwxyz \'', lm=None):
 
 	blankIdx = len(classes)
 	maxT, maxC = mat.shape
-	beamWidth = 25
+	beamWidth = 15
 
 	# initialise beam state
 	last = BeamState()
