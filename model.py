@@ -121,13 +121,18 @@ class Probabilities(nn.Module):
         super(Probabilities, self).__init__()
         self.characters = characters
         self.frequencies = frequencies
-        self.layer = nn.Sequential(
-          nn.Linear(frequencies, characters),
-          nn.LogSoftmax(dim=2)
-        )
+        #self.layer = nn.Sequential(
+        #  nn.Linear(frequencies, characters),
+        #  nn.LogSoftmax(dim=2)
+        #)
+        self.linear = nn.Linear(frequencies, characters)
+        self.logsoft = nn.LogSoftmax(dim=2)
+        self.soft = nn.Softmax(dim=2)
 
     def forward(self, x):
-        return self.layer(x)
+        #return self.layer(x)
+        x = self.linear(x)
+        return self.logsoft(x), self.soft(x)
 
 class DeepSpeech(nn.Module):
     """
@@ -168,22 +173,24 @@ class DeepSpeech(nn.Module):
         )
 
     def forward(self, x):
-        x = self.layer(x)
-        return x
+        #x = self.layer(x)
+        #return x
+        x, y = self.layer(x)
+        return x, y
 
     """
         Calculate loss using CTC loss function.
-        
+
         Input:
             output = Tensor of shape NxTxC where N and T are the same as in the input and
             C is the number of character which we make predictions about.
             target = tensor of shape NxS where N is batch size and S in length of
             utterances.
-            
+
             constraints:
              -S <= T
              -target has to be a positive integer tensor #https://discuss.pytorch.org/t/ctcloss-dont-work-in-pytorch/13859/3
-        Output: loss tensor     
+        Output: loss tensor
     """
     @staticmethod
     def criterion(output, target):

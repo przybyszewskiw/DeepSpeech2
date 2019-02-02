@@ -1,11 +1,12 @@
 from model import DeepSpeech
 import numpy as np
 from dataload import load_track, load_transcript
+from decoder import ctcBeamSearch
 import torch
 import torch.optim as optim
 
 class Runner:
-    def __init__(self, frequencies=4411,
+    def __init__(self, frequencies=1103,
                  conv_number=2,
                  context=5,
                  rec_number=3,
@@ -35,11 +36,17 @@ class Runner:
         transcript = load_transcript(transcript_path)
 
         track, transcript = self.get_tensors(track, transcript)
-        for _ in range(100):
+        for epoch in range(100):
             self.optimizer.zero_grad()
-            output = self.net(track)
+            output, probs = self.net(track)
             loss = DeepSpeech.criterion(output, transcript)
             print("loss={}".format(loss))
+            if epoch % 5 == 0:
+                probs = probs.squeeze()
+                list_aux = torch.split(probs, [1, 28], 1)
+                probs = torch.cat((list_aux[1], list_aux[0]), 1)
+                print(probs)
+                print(ctcBeamSearch(probs))
             loss.backward()
             self.optimizer.step()
 
@@ -50,4 +57,5 @@ def test():
 
 
 if __name__ == "__main__":
+    torch.set_printoptions(edgeitems = 20)
     test()
