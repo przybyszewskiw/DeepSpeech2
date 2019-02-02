@@ -45,7 +45,6 @@ class Runner:
                 probs = probs.squeeze()
                 list_aux = torch.split(probs, [1, 28], 1)
                 probs = torch.cat((list_aux[1], list_aux[0]), 1)
-                print(probs)
                 print(ctcBeamSearch(probs))
             loss.backward()
             self.optimizer.step()

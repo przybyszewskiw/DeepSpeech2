@@ -1,3 +1,6 @@
+"""
+Code form random github - we need to rewirte it with GPU version.
+"""
 from __future__ import division
 from __future__ import print_function
 import numpy as np
