@@ -1,7 +1,7 @@
 from __future__ import print_function
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+
 
 class Convolutions(nn.Module):
     """
@@ -40,6 +40,7 @@ class Convolutions(nn.Module):
             x = layer(x)
         return x
 
+
 class Recurrent(nn.Module):
     """
     Second part of DeepSpeech. Consists of one or more recurrent layers.
@@ -72,6 +73,7 @@ class Recurrent(nn.Module):
             x = x1 + x2
         return x
 
+
 class FullyConnected(nn.Module):
     """
     Third part of DeepSpeech. Consists of one or more fully connected layers.
@@ -101,6 +103,7 @@ class FullyConnected(nn.Module):
             x = layer(x)
         return x
 
+
 class Probabilities(nn.Module):
     """
     Fourth part of DeepSpeech. Consist of one fully connected layer which defines
@@ -121,18 +124,19 @@ class Probabilities(nn.Module):
         super(Probabilities, self).__init__()
         self.characters = characters
         self.frequencies = frequencies
-        #self.layer = nn.Sequential(
+        # self.layer = nn.Sequential(
         #  nn.Linear(frequencies, characters),
         #  nn.LogSoftmax(dim=2)
-        #)
+        # )
         self.linear = nn.Linear(frequencies, characters)
         self.logsoft = nn.LogSoftmax(dim=2)
         self.soft = nn.Softmax(dim=2)
 
     def forward(self, x):
-        #return self.layer(x)
+        # return self.layer(x)
         x = self.linear(x)
         return self.logsoft(x), self.soft(x)
+
 
 class DeepSpeech(nn.Module):
     """
@@ -158,7 +162,7 @@ class DeepSpeech(nn.Module):
                  rec_number=3, full_number=2, characters=29):
         super(DeepSpeech, self).__init__()
         self.characters = characters
-        #TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
+        # TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
         self.full_number = full_number
         self.rec_number = rec_number
         self.context = context
@@ -173,8 +177,8 @@ class DeepSpeech(nn.Module):
         )
 
     def forward(self, x):
-        #x = self.layer(x)
-        #return x
+        # x = self.layer(x)
+        # return x
         x, y = self.layer(x)
         return x, y
 
@@ -224,4 +228,4 @@ def test():
 
 
 if __name__ == "__main__":
-   test()
+    test()

@@ -5,6 +5,7 @@ from evaluator import eval_single
 import torch
 import torch.optim as optim
 
+
 class Runner:
     def __init__(self, frequencies=1103,
                  conv_number=2,
@@ -24,7 +25,6 @@ class Runner:
         self.sound_bucket_size = sound_bucket_size
         self.sound_time_overlap = sound_time_overlap
         self.optimizer = optim.SGD(self.net.parameters(), lr=lr)
-
 
     # TODO can be extended to work with many batches
     @staticmethod

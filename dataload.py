@@ -1,12 +1,11 @@
 import sys
-import numpy as np
 import soundfile as sf
 import scipy.signal as signal
 
 
-#arguments: file_path - path to music file (must be mono)
-#           bucket_size - size of frequency bucket in hz
-#           time_overlap - overlap of time intervals in ms
+# arguments: file_path - path to music file (must be mono)
+#            bucket_size - size of frequency bucket in hz
+#            time_overlap - overlap of time intervals in ms
 def load_track(file_path, bucket_size, time_overlap):
     data, sample_rate = sf.read(file_path)
 
@@ -51,5 +50,5 @@ def load_transcript(file_path):
 if len(sys.argv) < 2:
     print("give name of file")
 else:
-    #spektrogram co 5hz z czasami długości 10ms, z overlapami 5ms
+    # spektrogram co 5hz z czasami długości 10ms, z overlapami 5ms
     print(load_track(sys.argv[1], 5, 5).shape)
