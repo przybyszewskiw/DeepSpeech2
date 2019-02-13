@@ -3,7 +3,9 @@ from os.path import join as pjoin, abspath
 import shutil
 import subprocess
 import tempfile
+import soundfile as sf
 import urllib.request
+
 
 DATASETS = {
     'test-clean': 'http://www.openslr.org/resources/12/test-clean.tar.gz',
@@ -26,6 +28,15 @@ class LibriSpeech:
                 res.append((pjoin(dir, filename), transcription))
         return res
 
+    def _get_lenght(self, trackpath):
+        track = sf.SoundFile(trackpath)
+        return len(track) / track.samplerate
+
+    def _sort_dataset(self, dataset):
+        with_lenght = [(self._get_lenght(path), path, trans) for path, trans in dataset]
+        with_lenght = sorted(with_lenght)
+        return [(path, trans) for _, path, trans in with_lenght]
+
     def _decompress_dataset(self, fname):
         subprocess.check_call(['tar', 'zxvf', fname, '-C', '../datasets/'])
 
@@ -38,31 +49,34 @@ class LibriSpeech:
         return res
 
     def _download_dataset(self, dataset_url):
+        print('Dataset not found! Downloading {} in progress...'.format(dataset_url))
         tmpdir = tempfile.mkdtemp()
         path = pjoin(tmpdir, 'dataset.tar.gz')
         urllib.request.urlretrieve(dataset_url, pjoin(tmpdir, path))
         self._decompress_dataset(path)
         shutil.rmtree(tmpdir)
+        print('Done!')
 
-    def get_dataset(self, name):
+    def get_dataset(self, name, sort=True):
         dataset_root = abspath(pjoin('../datasets/LibriSpeech', name))
         if not os.path.isdir(dataset_root):
             self._download_dataset(DATASETS[name])
-        return self._parse_librispeech_root(dataset_root)
+        dataset = self._parse_librispeech_root(dataset_root)
+        return self._sort_dataset(dataset) if sort else dataset
 
     def get_all_datasets(self):
         res = []
         for k in DATASETS.keys():
-            res += self.get_dataset(k)
-        return res
+            res += self.get_dataset(k, sort=False)
+        return self._sort_dataset(res)
 
     def get_clean_datasets(self):
         res = []
         for k in DATASETS.keys():
             if 'clean' in k:
-                res += self.get_dataset(k)
-        return res
+                res += self.get_dataset(k, sort=False)
+        return self._sort_dataset(res)
 
 
 if __name__ == '__main__':
-    print(LibriSpeech().get_dataset('test-clean'))
+    print(LibriSpeech().get_dataset('train-clean-100'))
