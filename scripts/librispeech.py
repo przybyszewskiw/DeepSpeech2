@@ -79,4 +79,4 @@ class LibriSpeech:
 
 
 if __name__ == '__main__':
-    print(LibriSpeech().get_dataset('train-clean-100'))
+    print(LibriSpeech().get_dataset('test-clean'))
