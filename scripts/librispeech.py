@@ -58,7 +58,7 @@ class LibriSpeech:
         print('Done!')
 
     def get_dataset(self, name, sort=True):
-        dataset_root = abspath(pjoin('../datasets/LibriSpeech', name))
+        dataset_root = abspath(pjoin('./datasets/LibriSpeech', name))
         if not os.path.isdir(dataset_root):
             self._download_dataset(DATASETS[name])
         dataset = self._parse_librispeech_root(dataset_root)
