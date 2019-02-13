@@ -1,13 +1,14 @@
 from model import DeepSpeech
 import numpy as np
-from dataload import load_track, load_transcript
-from evaluator import eval_single
+from dataload import load_track, load_transcript, convert_char
+from evaluator import eval_single, eval_model
+from scripts.librispeech import LibriSpeech
 import torch
 import torch.optim as optim
 
 
 class Runner:
-    def __init__(self, frequencies=1103,
+    def __init__(self, frequencies=1601,
                  conv_number=2,
                  context=5,
                  rec_number=3,
@@ -47,10 +48,33 @@ class Runner:
             loss.backward()
             self.optimizer.step()
 
+    """
+        dataset - list of pairs (track_path, transcrip_string)
+    """
+    def train_epoch(self, dataset):
+        for (i, (track_path, transcrip_string)) in enumerate(dataset):
+            track = load_track(track_path, self.sound_bucket_size, self.sound_time_overlap)
+            transcript = [convert_char(c) for c in transcrip_string]
+
+            track, transcript = self.get_tensors(track, transcript)
+            self.optimizer.zero_grad()
+            output, probs = self.net(track)
+            loss = DeepSpeech.criterion(output, transcript)
+            print("loss in {}th iteration is {}".format(i, loss))
+
+    def train(self, dataset, epochs=2):
+        for epoch in range(epochs):
+            print(epoch)
+            if epoch % 2 == 1:
+                self.net.eval()
+                eval_model(self.net, dataset, self.sound_bucket_size, self.sound_time_overlap)
+            self.net.train()
+            self.train_epoch(dataset)
 
 def test():
     r = Runner()
-    r.train_single('test_track.wav', 'test_transcript.txt')
+    #r.train_single('test_track.wav', 'test_transcript.txt')
+    r.train(LibriSpeech().get_dataset('test-clean'))
 
 
 if __name__ == "__main__":

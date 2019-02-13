@@ -38,7 +38,7 @@ class LibriSpeech:
         return [(path, trans) for _, path, trans in with_lenght]
 
     def _decompress_dataset(self, fname):
-        subprocess.check_call(['tar', 'zxvf', fname, '-C', '../datasets/'])
+        subprocess.check_call(['tar', 'zxvf', fname, '-C', './datasets/'])
 
     def _parse_librispeech_root(self, root):
         res = []
@@ -58,7 +58,7 @@ class LibriSpeech:
         print('Done!')
 
     def get_dataset(self, name, sort=True):
-        dataset_root = abspath(pjoin('../datasets/LibriSpeech', name))
+        dataset_root = abspath(pjoin('./datasets/LibriSpeech', name))
         if not os.path.isdir(dataset_root):
             self._download_dataset(DATASETS[name])
         dataset = self._parse_librispeech_root(dataset_root)
