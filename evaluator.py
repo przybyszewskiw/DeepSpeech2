@@ -1,8 +1,26 @@
 import numpy as np
-from dataload import load_track
+from dataload import load_track, convert_char
 from decoder import ctcBeamSearch
 from jiwer import wer
 import torch
+
+
+def eval_model(model, dataset, sound_bucket_size, sound_time_overlap):
+    error = 0
+
+    for (track_path, transcript) in dataset:
+        track = load_track(track_path, sound_bucket_size, sound_time_overlap)
+        track = torch.from_numpy(track[np.newaxis, :]).float()
+
+        _, probs = model(track)
+        probs = probs.squeeze()
+        list_aux = torch.split(probs, [1, 28], 1)
+        probs = torch.cat((list_aux[1], list_aux[0]), 1)
+
+        answer = ctcBeamSearch(probs)
+        error += wer(transcript, answer)
+
+    print("Word Error Rate after evaluation {}.".format(error / len(dataset)))
 
 
 def eval_single(model, track_path, transcript_path, sound_bucket_size, sound_time_overlap):

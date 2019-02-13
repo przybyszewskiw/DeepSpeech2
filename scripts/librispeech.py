@@ -38,7 +38,7 @@ class LibriSpeech:
         return [(path, trans) for _, path, trans in with_lenght]
 
     def _decompress_dataset(self, fname):
-        subprocess.check_call(['tar', 'zxvf', fname, '-C', '../datasets/'])
+        subprocess.check_call(['tar', 'zxvf', fname, '-C', './datasets/'])
 
     def _parse_librispeech_root(self, root):
         res = []
