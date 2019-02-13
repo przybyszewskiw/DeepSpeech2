@@ -1,5 +1,5 @@
 import numpy as np
-from dataload import load_track, convert_char
+from dataload import load_track
 from decoder import ctcBeamSearch
 from jiwer import wer
 import torch

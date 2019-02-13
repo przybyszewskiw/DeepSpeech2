@@ -1,10 +1,10 @@
-from model import DeepSpeech
 import numpy as np
-from dataload import load_track, load_transcript, convert_char
-from evaluator import eval_single, eval_model
-from scripts.librispeech import LibriSpeech
 import torch
 import torch.optim as optim
+from dataload import load_track, load_transcript, convert_transcript
+from evaluator import eval_single, eval_model
+from model import DeepSpeech
+from scripts.librispeech import LibriSpeech
 
 
 class Runner:
@@ -27,16 +27,10 @@ class Runner:
         self.sound_time_overlap = sound_time_overlap
         self.optimizer = optim.SGD(self.net.parameters(), lr=lr)
 
-    # TODO can be extended to work with many batches
-    @staticmethod
-    def get_tensors(track, transcript):
-        return torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
-
     def train_single(self, track_path, transcript_path):
-        track = load_track(track_path, self.sound_bucket_size, self.sound_time_overlap)
         transcript = load_transcript(transcript_path)
+        track, transcript = self.get_tensors(track_path, transcript)
 
-        track, transcript = self.get_tensors(track, transcript)
         for epoch in range(100):
             self.optimizer.zero_grad()
             output, probs = self.net(track)
@@ -52,11 +46,8 @@ class Runner:
         dataset - list of pairs (track_path, transcrip_string)
     """
     def train_epoch(self, dataset):
-        for (i, (track_path, transcrip_string)) in enumerate(dataset):
-            track = load_track(track_path, self.sound_bucket_size, self.sound_time_overlap)
-            transcript = [convert_char(c) for c in transcrip_string]
-
-            track, transcript = self.get_tensors(track, transcript)
+        for (i, (track_path, transcript_string)) in enumerate(dataset):
+            track, transcript = self.load_tensors(track_path, transcript_string)
             self.optimizer.zero_grad()
             output, probs = self.net(track)
             loss = DeepSpeech.criterion(output, transcript)
@@ -71,12 +62,42 @@ class Runner:
             self.net.train()
             self.train_epoch(dataset)
 
-def test():
+    def merge_into_batch(self, tracks):
+        dim1 = tracks[0][0].shape[1]
+        dim2 = max([tensor.shape[2] for tensor, _ in tracks])
+        extended_audio_tensors = [
+            torch.cat(
+                [tensor, torch.zeros(1, dim1, dim2 - tensor.shape[2])],
+                dim=2
+            ) for tensor, _ in tracks
+        ]
+
+        lengths_tensor = torch.FloatTensor([len(trans) for _, trans in tracks]).int()
+        transs_tensor = torch.cat([trans for _, trans in tracks], dim=1)
+        audio_tensor = torch.cat(extended_audio_tensors, dim=0)
+
+        return audio_tensor, transs_tensor, lengths_tensor
+
+    def load_tensors(self, trackpath, transcript):
+        track = load_track(trackpath, self.sound_bucket_size, self.sound_time_overlap)
+        transcript = convert_transcript(transcript)
+        return torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
+
+
+def test2():
     r = Runner()
-    #r.train_single('test_track.wav', 'test_transcript.txt')
+    # r.train_single('test_track.wav', 'test_transcript.txt')
     r.train(LibriSpeech().get_dataset('test-clean'))
 
 
+def test():
+    r = Runner()
+    tracks = LibriSpeech().get_dataset('test-clean')[:16]
+    track_tens = [r.load_tensors(ph, ts) for ph, ts in tracks]
+    r.merge_into_batch(track_tens)
+
+
 if __name__ == "__main__":
-    torch.set_printoptions(edgeitems = 20)
+    torch.set_printoptions(edgeitems=20)
     test()
+    test2()
