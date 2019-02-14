@@ -46,15 +46,6 @@ class Runner:
     """
         dataset - list of pairs (track_path, transcrip_string)
     """
-    """
-    def train_epoch(self, dataset):
-        for (i, (track_path, transcript_string)) in enumerate(dataset):
-            track, transcript = self.load_tensors(track_path, transcript_string)
-            self.optimizer.zero_grad()
-            output, probs = self.net(track)
-            loss = DeepSpeech.criterion(output, transcript)
-            print("loss in {}th iteration is {}".format(i, loss))
-    """
 
     def train_epoch(self, dataset, batch_size=8):
         tracks_to_merge = []
