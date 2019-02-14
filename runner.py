@@ -72,7 +72,7 @@ class Runner:
                 self.optimizer.step()
                 print("loss in {}th iteration is {}".format(i, loss.item()))
 
-    def train(self, dataset, epochs=70):
+    def train(self, dataset, epochs=500):
         for epoch in range(epochs):
             if not os.path.isdir("./models"):
                 print("Creating a directory for saved models")
@@ -107,9 +107,8 @@ class Runner:
         return torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
 
 
-def test2():
+def test_training():
     r = Runner()
-    # r.train_single('test_track.wav', 'test_transcript.txt')
     r.train(LibriSpeech().get_dataset('test-clean'))
 
 
@@ -126,5 +125,5 @@ def test():
 
 if __name__ == "__main__":
     torch.set_printoptions(edgeitems=5)
-    test()
-    test2()
+    test_training()
+    # test2()
