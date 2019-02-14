@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch
 import torch.optim as optim
@@ -45,6 +46,7 @@ class Runner:
     """
         dataset - list of pairs (track_path, transcrip_string)
     """
+    """
     def train_epoch(self, dataset):
         for (i, (track_path, transcript_string)) in enumerate(dataset):
             track, transcript = self.load_tensors(track_path, transcript_string)
@@ -52,11 +54,33 @@ class Runner:
             output, probs = self.net(track)
             loss = DeepSpeech.criterion(output, transcript)
             print("loss in {}th iteration is {}".format(i, loss))
+    """
 
-    def train(self, dataset, epochs=2):
+    def train_epoch(self, dataset, batch_size=8):
+        tracks_to_merge = []
+        for (i, (track_path, transcript_string)) in enumerate(dataset):
+            if (i + 1) % batch_size != 0:
+                tracks_to_merge.append(self.load_tensors(track_path, transcript_string))
+            else:
+                (audio, transs, lengths) = self.merge_into_batch(tracks_to_merge)
+                tracks_to_merge = []
+                self.optimizer.zero_grad()
+                output, _ = self.net(audio)
+
+                loss = DeepSpeech.criterion(output, transs, lengths)
+                loss.backward()
+                self.optimizer.step()
+                print("loss in {}th iteration is {}".format(i, loss.item()))
+
+    def train(self, dataset, epochs=70):
         for epoch in range(epochs):
+            if not os.path.isdir("./models"):
+                print("Creating a directory for saved models")
+                os.makedirs("./models")
+            torch.save(self.net.state_dict(), "./models/{}-iters.pt".format(epoch))
             print(epoch)
-            if epoch % 2 == 1:
+            if epoch % 5 == 4:
+                torch.save(self.net.state_dict(), "./models/{}-iters.pt".format(epoch))
                 self.net.eval()
                 eval_model(self.net, dataset, self.sound_bucket_size, self.sound_time_overlap)
             self.net.train()
@@ -72,8 +96,8 @@ class Runner:
             ) for tensor, _ in tracks
         ]
 
-        lengths_tensor = torch.FloatTensor([len(trans) for _, trans in tracks]).int()
-        transs_tensor = torch.cat([trans for _, trans in tracks], dim=1)
+        lengths_tensor = torch.FloatTensor([trans.shape[1] for _, trans in tracks]).int()
+        transs_tensor = torch.cat([trans for _, trans in tracks], dim=1).squeeze()
         audio_tensor = torch.cat(extended_audio_tensors, dim=0)
 
         return audio_tensor, transs_tensor, lengths_tensor
@@ -94,10 +118,14 @@ def test():
     r = Runner()
     tracks = LibriSpeech().get_dataset('test-clean')[:16]
     track_tens = [r.load_tensors(ph, ts) for ph, ts in tracks]
-    r.merge_into_batch(track_tens)
+    (audio, transs, lengths) = r.merge_into_batch(track_tens)
+    print(tracks)
+    print(audio.shape)
+    print(transs)
+    print(lengths)
 
 
 if __name__ == "__main__":
-    torch.set_printoptions(edgeitems=20)
+    torch.set_printoptions(edgeitems=5)
     test()
     test2()

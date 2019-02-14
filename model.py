@@ -197,13 +197,14 @@ class DeepSpeech(nn.Module):
         Output: loss tensor
     """
     @staticmethod
-    def criterion(output, target):
+    def criterion(output, target, target_length=None):
         ctc_loss = nn.CTCLoss(reduction='mean')
         batch_size = output.shape[0]
         utterance_length = output.shape[1]
         output = output.transpose(0, 1)
         output_length = torch.full((batch_size,), utterance_length)
-        target_length = torch.full((target.shape[0],), target.shape[1])
+        if target_length is None:
+            target_length = torch.full((target.shape[0],), target.shape[1])
         return ctc_loss(output, target, output_length, target_length)
 
 
