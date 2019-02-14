@@ -77,7 +77,6 @@ class Runner:
             if not os.path.isdir("./models"):
                 print("Creating a directory for saved models")
                 os.makedirs("./models")
-            torch.save(self.net.state_dict(), "./models/{}-iters.pt".format(epoch))
             print(epoch)
             if epoch % 5 == 4:
                 torch.save(self.net.state_dict(), "./models/{}-iters.pt".format(epoch))
