@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import torch
 import torch.optim as optim
@@ -62,8 +63,11 @@ class Runner:
                 loss.backward()
                 self.optimizer.step()
                 print("loss in {}th iteration is {}".format(i, loss.item()))
+                # for some reason output is in the buffer until termination while redirecting to file,
+                # so we have to manually flush
+                sys.stdout.flush()
 
-    def train(self, dataset, epochs=500):
+    def train(self, dataset, epochs=50):
         for epoch in range(epochs):
             if not os.path.isdir("./models"):
                 print("Creating a directory for saved models")
