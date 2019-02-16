@@ -8,7 +8,8 @@ import torch
 def eval_model(model, dataset, sound_bucket_size, sound_time_overlap):
     error = 0
 
-    for (track_path, transcript) in dataset:
+    for track_path, transcript in dataset:
+        print('evaluating "{}" at {}'.format(transcript, track_path))
         track = load_track(track_path, sound_bucket_size, sound_time_overlap)
         track = torch.from_numpy(track[np.newaxis, :]).float()
 
@@ -18,6 +19,7 @@ def eval_model(model, dataset, sound_bucket_size, sound_time_overlap):
         probs = torch.cat((list_aux[1], list_aux[0]), 1)
 
         answer = ctcBeamSearch(probs)
+        print('answer = {}'.format(answer))
         error += wer(transcript, answer)
 
     print("Word Error Rate after evaluation {}.".format(error / len(dataset)))
