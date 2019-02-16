@@ -1,5 +1,7 @@
 import os
 import sys
+import time
+
 import numpy as np
 import torch
 import torch.optim as optim
@@ -57,6 +59,7 @@ class Runner:
             if (i + 1) % batch_size != 0:
                 tracks_to_merge.append(self.load_tensors(track_path, transcript_string))
             else:
+                start_time = time.time()
                 (audio, transs, lengths) = self.merge_into_batch(tracks_to_merge)
                 tracks_to_merge = []
                 self.optimizer.zero_grad()
@@ -65,23 +68,38 @@ class Runner:
                 loss = DeepSpeech.criterion(output, transs, lengths)
                 loss.backward()
                 self.optimizer.step()
-                print("loss in {}th iteration is {}".format(i, loss.item()))
+                print("loss in {}th iteration is {}, it took {} seconds".format(
+                    i,
+                    loss.item(),
+                    time.time() - start_time
+                ))
                 # for some reason output is in the buffer until termination while redirecting to file,
                 # so we have to manually flush
                 sys.stdout.flush()
 
-    def train(self, dataset, epochs=50):
-        for epoch in range(epochs):
+    def train(self, dataset, epochs=50, starting_epoch=0):
+        self.net.train()
+        for epoch in range(starting_epoch, epochs):
             if not os.path.isdir("./models"):
                 print("Creating a directory for saved models")
                 os.makedirs("./models")
             print(epoch)
-            if epoch % 5 == 4:
-                torch.save(self.net.state_dict(), "./models/{}-iters.pt".format(epoch))
-                self.net.eval()
-                eval_model(self.net, dataset, self.sound_bucket_size, self.sound_time_overlap)
-            self.net.train()
+
+            start_time = time.time()
             self.train_epoch(dataset)
+            print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
+
+            if epoch % 5 == 4:
+                print('Saving model')
+                torch.save(self.net.state_dict(), "./models/{}-iters.pt".format(epoch))
+                # Takes too much time!
+                # self.net.eval()
+                # eval_model(self.net, dataset, self.sound_bucket_size, self.sound_time_overlap)
+                # self.net.train()
+
+    def eval_on_dataset(self, dataset):
+        self.net.eval()
+        eval_model(self.net, dataset, self.sound_bucket_size, self.sound_time_overlap)
 
     def merge_into_batch(self, tracks):
         dim1 = tracks[0][0].shape[1]
@@ -106,8 +124,17 @@ class Runner:
 
 
 def test_training():
-    r = Runner()
-    r.train(LibriSpeech().get_dataset('test-clean'))
+    r = Runner(pretrained_model_path='models/4-iters.pt')
+    r.train(
+        dataset=LibriSpeech().get_dataset('test-clean'),
+        epochs=100,
+        starting_epoch=5
+    )
+
+
+def test_eval():
+    r = Runner(pretrained_model_path='models/4-iters.pt')
+    r.eval_on_dataset(LibriSpeech().get_dataset('test-clean', sort=False))
 
 
 def test():
@@ -123,5 +150,6 @@ def test():
 
 if __name__ == "__main__":
     torch.set_printoptions(edgeitems=5)
+    # test_eval()
     test_training()
     # test2()
