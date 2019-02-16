@@ -18,13 +18,16 @@ class Runner:
                  characters=29,
                  sound_bucket_size=5,
                  sound_time_overlap=5,
-                 lr=0.01):
+                 lr=0.01,
+                 pretrained_model_path=None):
         self.net = DeepSpeech(frequencies=frequencies,
                               conv_number=conv_number,
                               context=context,
                               rec_number=rec_number,
                               full_number=full_number,
                               characters=characters)
+        if pretrained_model_path is not None:
+            self.net.load_state_dict(torch.load(pretrained_model_path))
         self.sound_bucket_size = sound_bucket_size
         self.sound_time_overlap = sound_time_overlap
         self.optimizer = optim.SGD(self.net.parameters(), lr=lr)
