@@ -90,7 +90,7 @@
 
 %tu idzie streszczenie na strone poczatkowa
 \begin{abstract}
-  The authors of this thesis focus on implementing scripts for training DeepSpeech2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper DODAC DOKUMENTACJE using \texttt{PyTorch} framework. We also experiment with obtaining dataset for Polish language and trying DeepSpeech2 model for it. Finally, we provide fully trained models for English and Polish together with statistics about how changing hyperparametrs and architecture impacts model's performance and accuracy.
+  The authors of this thesis focus on implementing scripts for training DeepSpeech2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper \cite{DS2} using \texttt{PyTorch} framework. We also experiment with obtaining dataset for Polish language and trying DeepSpeech2 model for it. Finally, we provide fully trained models for English and Polish together with statistics about how changing hyperparametrs and architecture impacts model's performance and accuracy.
 \end{abstract}
 
 \tableofcontents
@@ -99,11 +99,26 @@
 
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
-%to jest punkt nr 2., czyli co jest celem naszej pracy
-The goal of our thesis is to implement Automatic Speech Recognition (ASR) model DeepSpeech2 described in \cite{DS2}. We will use  \texttt{PyTorch} deep learning framework, which is supported with CUDA, and is considered to be comfortable to work with. Authors of DeepSpeech2 prepared it only for recognizing English and Mandarin, so we will experiment with applying it to Polish language as well. We think, it is going to be the biggest challenge, since accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset. Therefore we plan to find appropriate one (paying attention to licenses and copyrights) and prepare it adequately. The great size of dataset creates another problem -- we need our model to be able to train on that data in reasonable time and then work in the real time. To achieve this we plan to use open-source libraries prepared by NVIDIA which make it possible to train one neural network over multiple GPUs. Another optimization which speeds computations up is using half precision floating point numbers (also known as FP16) instead of single precision. \\
+Transcription of spoken language is a crucial problem for many areas of modern technology industry. Being able to communicate with electronic devices not only by touching them, but also by talking to them them is important goal for IT companies. Such devices are more user-friendly so it is for sure beneficial for everybody. To achieve this goal various solutions were proposed and many of then use complex algorithm (e.g. Hidden Markov Models) \cite{DS1}. However it has been shown that the best accuracy can be achieved with Automatic Speech Recognition (ASR) models based on neural networks \cite{DS2}. Our thesis is concentrated on implementing state of the art ASR model DeepSpeech2.
 
+This thesis is realized with the support of NVIDIA company, and its goal is to implement Automatic Speech Recognition (ASR) model DeepSpeech2 described in \cite{DS2}. Authors of DeepSpeech2 prepared it only for recognizing English and Mandarin, so we experiment with applying it to Polish language as well. We think, it is the biggest challenge, since accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset. Therefore we have to find appropriate one (paying attention to licenses and copyrights) and prepare it adequately. The great size of dataset creates another problem -- we need our model to be able to train on that data in reasonable time and then work in the real time. Last but not least, in order to determine the best hyperparamters we have to run many experiments, collect their results, and finally analyze them.
 
+In order to accomplish our goals we have implemented DeepSpeech2 model using \texttt{PyTorch} deep learning framework, which is supported with CUDA, and is considered to be comfortable to work with. To achieve high performance system we used open-source libraries prepared by NVIDIA which made it possible to train one neural network over multiple GPUs. Another optimization which sped computations up was using half precision floating point numbers (also known as FP16) instead of single precision.  When it came to collecting datasets we found lots of free English utterances with transcriptions. However, for spoken corpus of Polish it was harder as we had to find hundreds of hours of Polish speech collected for university programs and from audiobooks.
+
+Structure of our thesis is following. In Chapter \ref{r:desc} we introduce architecture of DeepSpeech and DeepSpeech2 models in terms of i.a. used layers, data flow and functions. After that in Chapter \ref{r:extens} we present applied optimizations which increased network performance. Next we move on to Chapter \ref{r:hypers} where we describe the results of experiments on model hyperparameters. In Chapter \ref{r:polish} we describe how we modified and trained neural network to detect Polish language and compare obtained results with English model. Finally in Chapter \ref{r:concls} we summarize our experiments, show their results and present final version of the model.    
+
+We divided our work on model for two main parts. The first was preparing appropriate datasets (for English and for Polish) and processing them so they are in format our model can work on -- Łukasz Kondarciuk and Jan Tabaszewski were in charge of this one. The second was implementing model and doing GPU optimisations to it -- this was task for Piotr Ambroszczyk and Wojciech Przybyszewski.
 \chapter{Basic model description}\label{r:desc}
+
+DeepSpeech 2 system is a recurrent neural network trained to ingest speech spectrograms and generate text transcriptions.\\\\
+Let $\{(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), ...)\}$ be a training set. $x^{(i)}$ is a time-series of variable length where every time-slice is a spectrogram of power
+normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of utterance $x^{(i)}$.\\\\
+DS2 network's input is time-series $x$ and the output is a prediction over characters $p(l_t|x)$ at each output time-step. For english, possible values of $l_t$ are letters from 'a' to 'z', space, apostrophe and blank. Adding non-letter characters allows to find word boundaries.\\\\
+The model of the network is composed of one or more convolutional layers, followed by one or more recurrent layers, followed by one or more fully connected layers. Activation function used throughout the network is clipped rectified linear (ReLU) function $\sigma(x) = min(max(x, 0), 20)$. Recurrent layers appear in different variants - standard recurrent layers or Long Short-Term Memory (LSTM) or Gated Recurrent Units (GRU). After the recurrent layers and fully connected layers we count the output layer L as a softmax of the output of the last layer.\\\\
+Training is done using the CTC loss function and backpropagation through time algorithm.\\\\
+Accuracy of the model is measured by Word Error Rate (WER).\\\\
+For more detail in model architecture please refer to \cite{DS2}.
+
 
 \chapter{Additional extensions}\label{r:extens}
 
@@ -118,7 +133,7 @@ The goal of our thesis is to implement Automatic Speech Recognition (ASR) model 
 \section{Comparison of model's performance on English and Polish}
 
 
-\chapter{Conclusions}
+\chapter{Conclusions}\label{r:concls}
 
 To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also present already trained models for English and Polish as well as the results of our experiments justifying using specific hyperparameters and architecture solutions.\\
 
