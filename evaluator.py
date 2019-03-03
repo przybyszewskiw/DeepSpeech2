@@ -19,7 +19,7 @@ def eval_model(model, dataset, sound_bucket_size, sound_time_overlap):
         probs = torch.cat((list_aux[1], list_aux[0]), 1)
 
         answer = ctcBeamSearch(probs)
-        print('answer = {}'.format(answer))
+        print('answer = "{}"'.format(answer))
         error += wer(transcript, answer)
 
     print("Word Error Rate after evaluation {}.".format(error / len(dataset)))
