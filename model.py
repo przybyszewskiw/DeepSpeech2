@@ -23,7 +23,7 @@ class Convolutions(nn.Module):
         self.conv_number = conv_number
         self.context = context
 
-        self.layers = []
+        self.layers = nn.ModuleList()
         # TODO Is that what we really want? (namely are those the convolutions
         # over the time dimension that the paper tells us about)
         for _ in range(self.conv_number):
@@ -59,7 +59,7 @@ class Recurrent(nn.Module):
         self.rec_number = rec_number
         # TODO Use Hardtanh(0, 20) from paper instead of tanh or simple ReLU
         # which are default for torch.nn.RNN
-        self.layers = []
+        self.layers = nn.ModuleList()
         for _ in range(self.rec_number):
             new_layer = nn.RNN(input_size=self.frequencies, hidden_size=self.frequencies,
                                bidirectional=True)
@@ -90,7 +90,7 @@ class FullyConnected(nn.Module):
         super(FullyConnected, self).__init__()
         self.full_number = full_number
         self.frequencies = frequencies
-        self.layers = []
+        self.layers = nn.ModuleList()
         for _ in range(self.full_number):
             new_layer = nn.Sequential(
               nn.Linear(self.frequencies, self.frequencies),
@@ -175,6 +175,7 @@ class DeepSpeech(nn.Module):
             FullyConnected(full_number=self.full_number, frequencies=self.frequencies),
             Probabilities(characters=self.characters, frequencies=self.frequencies)
         )
+        self.layer = nn.DataParallel(self.layer)
 
     def forward(self, x):
         # x = self.layer(x)
@@ -196,6 +197,7 @@ class DeepSpeech(nn.Module):
              -target has to be a positive integer tensor #https://discuss.pytorch.org/t/ctcloss-dont-work-in-pytorch/13859/3
         Output: loss tensor
     """
+    #TODO move to GPU (works only on CPU)
     @staticmethod
     def criterion(output, target, target_length=None):
         ctc_loss = nn.CTCLoss(reduction='mean')
@@ -203,8 +205,10 @@ class DeepSpeech(nn.Module):
         utterance_length = output.shape[1]
         output = output.transpose(0, 1)
         output_length = torch.full((batch_size,), utterance_length)
+
         if target_length is None:
             target_length = torch.full((target.shape[0],), target.shape[1])
+
         return ctc_loss(output, target, output_length, target_length)
 
 
@@ -230,3 +234,4 @@ def test():
 
 if __name__ == "__main__":
     test()
+
