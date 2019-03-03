@@ -1,237 +1,166 @@
-from __future__ import print_function
+import os
+import sys
+import time
+
+import numpy as np
 import torch
-import torch.nn as nn
+import torch.optim as optim
+from dataload import load_track, load_transcript, convert_transcript
+from evaluator import eval_single, eval_model
+from model import DeepSpeech
+from scripts.librispeech import LibriSpeech
 
 
-class Convolutions(nn.Module):
-    """
-    First part of DeepSpeech net. Consists of one or more 1d convolutions.
-
-    Constructor parameters:
-        convolutions = number of convolutional layers
-        frequencies = number of different frequencies per time stamp
-        context = number of neighbouring time stamps we should care about
-        (implies kernel size)
-
-    Input: Tensor of shape NxFxT where N is batch size, F is the number of
-           different frequencies and T is lenght of time-series.
-    Output: Tensor of the same shape as input
-    """
-    def __init__(self, conv_number=2, frequencies=700, context=5):
-        super(Convolutions, self).__init__()
-        self.frequencies = frequencies
-        self.conv_number = conv_number
-        self.context = context
-
-        self.layers = nn.ModuleList()
-        # TODO Is that what we really want? (namely are those the convolutions
-        # over the time dimension that the paper tells us about)
-        for _ in range(self.conv_number):
-            new_layer = nn.Sequential(
-              nn.Conv1d(in_channels=self.frequencies, out_channels=self.frequencies,
-                        kernel_size=2*self.context+1, padding=self.context,
-                        groups=self.frequencies),
-              nn.Hardtanh(min_val=0, max_val=20, inplace=True)
-            )
-            self.layers.append(new_layer)
-
-    def forward(self, x):
-        for layer in self.layers:
-            x = layer(x)
-        return x
+class Runner:
+    def __init__(self, frequencies=1601,
+                 conv_number=2,
+                 context=5,
+                 rec_number=3,
+                 full_number=2,
+                 characters=29,
+                 sound_bucket_size=5,
+                 sound_time_overlap=5,
+                 lr=0.01,
+                 pretrained_model_path=None):
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.net = DeepSpeech(frequencies=frequencies,
+                              conv_number=conv_number,
+                              context=context,
+                              rec_number=rec_number,
+                              full_number=full_number,
+                              characters=characters)
+        self.net = self.net.to(self.device)
+        if pretrained_model_path is not None:
+            self.net.load_state_dict(torch.load(pretrained_model_path))
+        self.sound_bucket_size = sound_bucket_size
+        self.sound_time_overlap = sound_time_overlap
+        self.optimizer = optim.SGD(self.net.parameters(), lr=lr)
 
 
-class Recurrent(nn.Module):
-    """
-    Second part of DeepSpeech. Consists of one or more recurrent layers.
+    def train_single(self, track_path, transcript_path):
+        transcript = load_transcript(transcript_path)
+        track, transcript = self.get_tensors(track_path, transcript)
 
-    Constructor parameters:
-        rec_number = number of recurrent layers
-        frequencies = number of frequencies per one time stamp
-
-    Input: Tensor of shape NxFxT where N is batch size, F is the number of
-           different frequencies and T is length of time-series.
-    Output: Tensor of the shape NxTxF where N, T and F as in input
-    """
-    def __init__(self, rec_number=3, frequencies=700):
-        super(Recurrent, self).__init__()
-        self.frequencies = frequencies
-        self.rec_number = rec_number
-        # TODO Use Hardtanh(0, 20) from paper instead of tanh or simple ReLU
-        # which are default for torch.nn.RNN
-        self.layers = nn.ModuleList()
-        for _ in range(self.rec_number):
-            new_layer = nn.RNN(input_size=self.frequencies, hidden_size=self.frequencies,
-                               bidirectional=True)
-            self.layers.append(new_layer)
-
-    def forward(self, x):
-        x = x.transpose(1, 2)
-        for layer in self.layers:
-            x, _ = layer(x)
-            (x1, x2) = torch.chunk(x, 2, dim=2)
-            x = x1 + x2
-        return x
-
-
-class FullyConnected(nn.Module):
-    """
-    Third part of DeepSpeech. Consists of one or more fully connected layers.
-
-    Constructor parameters:
-        full_number = number of fully connected layers
-        frequencies = number of frequencies per one time stamp
-
-    Input: Tensor of shape NxTxF where N is batch size, F is the number of
-           different frequencies and T is lenght of time-series.
-    Output: Tensor of the same shape as input
-    """
-    def __init__(self, full_number=2, frequencies=700):
-        super(FullyConnected, self).__init__()
-        self.full_number = full_number
-        self.frequencies = frequencies
-        self.layers = nn.ModuleList()
-        for _ in range(self.full_number):
-            new_layer = nn.Sequential(
-              nn.Linear(self.frequencies, self.frequencies),
-              nn.Hardtanh(min_val=0, max_val=20, inplace=True)
-            )
-            self.layers.append(new_layer)
-
-    def forward(self, x):
-        for layer in self.layers:
-            x = layer(x)
-        return x
-
-
-class Probabilities(nn.Module):
-    """
-    Fourth part of DeepSpeech. Consist of one fully connected layer which defines
-    what is probability for each character in a given time moment and softmax
-    layer normalizing those probabilities using LogSoftmax (because PyTorch
-    CTCLoss requires LogSoftmax instead of 'standard' Softmax)
-
-    Constructor parameters:
-        characters = number of characters which we are predicting
-        frequencies = number of frequencies per one time stamp
-
-    Input: Tensor of shape NxTxF where N is batch size, F is the number of
-           different frequencies and T is lenght of time-series.
-    Output: Tensor of shape NxTxC where N and T are the same as in the input and
-            C is the number of character which we make predictions about.
-    """
-    def __init__(self, characters=29, frequencies=700):
-        super(Probabilities, self).__init__()
-        self.characters = characters
-        self.frequencies = frequencies
-        # self.layer = nn.Sequential(
-        #  nn.Linear(frequencies, characters),
-        #  nn.LogSoftmax(dim=2)
-        # )
-        self.linear = nn.Linear(frequencies, characters)
-        self.logsoft = nn.LogSoftmax(dim=2)
-        self.soft = nn.Softmax(dim=2)
-
-    def forward(self, x):
-        # return self.layer(x)
-        x = self.linear(x)
-        return self.logsoft(x), self.soft(x)
-
-
-class DeepSpeech(nn.Module):
-    """
-        Composition of the components: Convolutions, Recurrent, FullyConnected, Probabilities
-        into one DeepSpeech net.
-
-        Constructor parameters:
-            frequencies = number of frequencies per one time stamp
-            convolutions = number of convolutional layers
-            context = number of neighbouring time stamps we should care about
-            (implies kernel size)
-            rec_number = number of recurrent layers
-            full_number = number of fully connected layers
-            characters = number of characters which we are predicting
-
-        Input: Tensor of shape NxFxT where N is batch size, F is the number of
-           different frequencies and T is length of time-series.
-        Output: Tensor of shape NxTxC where N and T are the same as in the input and
-            C is the number of character which we make predictions about.
+        for epoch in range(100):
+            self.optimizer.zero_grad()
+            output, probs = self.net(track)
+            loss = DeepSpeech.criterion(output, transcript)
+            print("loss={}".format(loss))
+            if epoch % 20 == 19:
+                eval_single(self.net, track_path, transcript_path,
+                            self.sound_bucket_size, self.sound_time_overlap)
+            loss.backward()
+            self.optimizer.step()
 
     """
-    def __init__(self, frequencies=700, conv_number=2, context=5,
-                 rec_number=3, full_number=2, characters=29):
-        super(DeepSpeech, self).__init__()
-        self.characters = characters
-        # TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
-        self.full_number = full_number
-        self.rec_number = rec_number
-        self.context = context
-        self.conv_number = conv_number
-        self.frequencies = frequencies
-        self.layer = nn.Sequential(
-            Convolutions(conv_number=self.conv_number, frequencies=self.frequencies,
-                         context=self.context),
-            Recurrent(rec_number=self.rec_number, frequencies=self.frequencies),
-            FullyConnected(full_number=self.full_number, frequencies=self.frequencies),
-            Probabilities(characters=self.characters, frequencies=self.frequencies)
-        )
-        self.layer = nn.DataParallel(self.layer)
-
-    def forward(self, x):
-        # x = self.layer(x)
-        # return x
-        x, y = self.layer(x)
-        return x, y
-
+        dataset - list of pairs (track_path, transcrip_string)
     """
-        Calculate loss using CTC loss function.
 
-        Input:
-            output = Tensor of shape NxTxC where N and T are the same as in the input and
-            C is the number of character which we make predictions about.
-            target = tensor of shape NxS where N is batch size and S in length of
-            utterances.
+    def train_epoch(self, dataset, batch_size=8):
+        tracks_to_merge = []
+        for (i, (track_path, transcript_string)) in enumerate(dataset):
+            if (i + 1) % batch_size != 0:
+                tracks_to_merge.append(self.load_tensors(track_path, transcript_string))
+            else:
+                start_time = time.time()
+                (audio, transs, lengths) = self.merge_into_batch(tracks_to_merge)
+                tracks_to_merge = []
+                self.optimizer.zero_grad()
 
-            constraints:
-             -S <= T
-             -target has to be a positive integer tensor #https://discuss.pytorch.org/t/ctcloss-dont-work-in-pytorch/13859/3
-        Output: loss tensor
-    """
-    #TODO move to GPU (works only on CPU)
-    @staticmethod
-    def criterion(output, target, target_length=None):
-        ctc_loss = nn.CTCLoss(reduction='mean')
-        batch_size = output.shape[0]
-        utterance_length = output.shape[1]
-        output = output.transpose(0, 1)
-        output_length = torch.full((batch_size,), utterance_length)
+                audio = audio.to(self.device)
+                output, _ = self.net(audio)
 
-        if target_length is None:
-            target_length = torch.full((target.shape[0],), target.shape[1])
+                if self.device != torch.device("cpu"):
+                    print("moving net output to CPU")
+                    output = output.to("cpu")
 
-        return ctc_loss(output, target, output_length, target_length)
+                print("Starting criterion calculation")
+                loss = DeepSpeech.criterion(output, transs, lengths)
+                loss.backward()
+                self.optimizer.step()
+                print("loss in {}th iteration is {}, it took {} seconds".format(
+                    i,
+                    loss.item(),
+                    time.time() - start_time
+                ))
+                # for some reason output is in the buffer until termination while redirecting to file,
+                # so we have to manually flush
+                sys.stdout.flush()
+
+    def train(self, dataset, epochs=50, starting_epoch=0):
+        self.net.train()
+        for epoch in range(starting_epoch, epochs):
+            if not os.path.isdir("./models"):
+                print("Creating a directory for saved modeldevices")
+                os.makedirs("./models")
+            print(epoch)
+
+            start_time = time.time()
+            self.train_epoch(dataset)
+            print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
+
+            if epoch % 5 == 4:
+                print('Saving model')
+                torch.save(self.net.state_dict(), "./models/{}-iters.pt".format(epoch))
+                # Takes too much time!
+                # self.net.eval()
+                # eval_model(self.net, dataset, self.sound_bucket_size, self.sound_time_overlap)
+                # self.net.train()
+
+    def eval_on_dataset(self, dataset):
+        self.net.eval()
+        eval_model(self.net, dataset, self.sound_bucket_size, self.sound_time_overlap)
+
+    def merge_into_batch(self, tracks):
+        dim1 = tracks[0][0].shape[1]
+        dim2 = max([tensor.shape[2] for tensor, _ in tracks])
+        extended_audio_tensors = [
+            torch.cat(
+                [tensor, torch.zeros(1, dim1, dim2 - tensor.shape[2])],
+                dim=2
+            ) for tensor, _ in tracks
+        ]
+
+        lengths_tensor = torch.FloatTensor([trans.shape[1] for _, trans in tracks]).int()
+        transs_tensor = torch.cat([trans for _, trans in tracks], dim=1).squeeze()
+        audio_tensor = torch.cat(extended_audio_tensors, dim=0)
+
+        return audio_tensor, transs_tensor, lengths_tensor
+
+    def load_tensors(self, trackpath, transcript):
+        track = load_track(trackpath, self.sound_bucket_size, self.sound_time_overlap)
+        transcript = convert_transcript(transcript)
+        return torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
+
+
+def test_training():
+    r = Runner(pretrained_model_path='models/4-iters.pt')
+    r.train(
+        dataset=LibriSpeech().get_dataset('test-clean'),
+        epochs=100,
+        starting_epoch=5
+    )
+
+
+def test_eval():
+    r = Runner(pretrained_model_path='models/4-iters.pt')
+    r.eval_on_dataset(LibriSpeech().get_dataset('test-clean', sort=False))
 
 
 def test():
-    N = 1
-    F = 30
-    T = 5
-    C = 10
-    for _ in range(100):
-        x = torch.rand(N, F, T)
-
-        net = DeepSpeech(frequencies=F, context=1, conv_number=1, characters=C)
-        x = net(x)
-
-        labels = torch.randint(1, C, (N, T))
-        loss = DeepSpeech.criterion(x, labels)
-
-        if loss.item() == float('inf'):
-            print("Bad:" + str(labels))
-        else:
-            print("Ok:" + str(labels))
+    r = Runner()
+    tracks = LibriSpeech().get_dataset('test-clean')[:16]
+    track_tens = [r.load_tensors(ph, ts) for ph, ts in tracks]
+    (audio, transs, lengths) = r.merge_into_batch(track_tens)
+    print(tracks)
+    print(audio.shape)
+    print(transs)
+    print(lengths)
 
 
 if __name__ == "__main__":
-    test()
+    torch.set_printoptions(edgeitems=5)
+    # test_eval()
+    #test_training()
+    # test2()
 
