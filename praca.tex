@@ -16,6 +16,7 @@
 % dodaj opcję [en] dla wersji angielskiej (mogą być obie: [licencjacka,en])
 \documentclass[licencjacka,en]{pracamgr}
 \usepackage{hyperref}
+\usepackage{mathtools}
 \newcommand{\bibDownloadDate}{\today}
 
 
@@ -111,12 +112,43 @@ We divided our work on model for two main parts. The first was preparing appropr
 \chapter{Basic model description}\label{r:desc}
 
 DeepSpeech 2 system is a recurrent neural network trained to ingest speech spectrograms and generate text transcriptions.\\\\
+
+\section{Input and Output specification}
 Let $\{(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), ...)\}$ be a training set. $x^{(i)}$ is a time-series of variable length where every time-slice is a spectrogram of power
 normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of utterance $x^{(i)}$.\\\\
-DS2 network's input is time-series $x$ and the output is a prediction over characters $p(l_t|x)$ at each output time-step. For english, possible values of $l_t$ are letters from 'a' to 'z', space, apostrophe and blank. Adding non-letter characters allows to find word boundaries.\\\\
-The model of the network is composed of one or more convolutional layers, followed by one or more recurrent layers, followed by one or more fully connected layers. Activation function used throughout the network is clipped rectified linear (ReLU) function $\sigma(x) = min(max(x, 0), 20)$. Recurrent layers appear in different variants - standard recurrent layers or Long Short-Term Memory (LSTM) or Gated Recurrent Units (GRU). After the recurrent layers and fully connected layers we count the output layer L as a softmax of the output of the last layer.\\\\
-Training is done using the CTC loss function and backpropagation through time algorithm.\\\\
-Accuracy of the model is measured by Word Error Rate (WER).\\\\
+DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ at each output time-step. For english, possible values of $l_t$ are:
+
+\begin{itemize}
+  \item letter from 'a' to 'z';
+  \item space;
+  \item apostrophe;
+  \item blank.
+\end{itemize}
+
+Adding non-letter characters allows to find word boundaries. Special symbol blank is outputted each time, when the network is unable
+to tell, which character is most likely to occur for the current input spectrogram.\\\\
+
+\section{Layers}
+The model of the network is composed of one or more convolutional layers, followed by one or more recurrent layers, followed by one or more fully connected layers. Activation function used throughout the network is clipped rectified linear (ReLU) function: 
+$$
+	\sigma(x) = 
+	\begin{cases*}
+		0 & for $x < 0$, \\
+		20 & for $x > 20$, \\
+		x & otherwise.
+	\end{cases*}
+$$
+Recurrent layers appear in a few different variants - standard recurrent layers or Long Short-Term Memory (LSTM) or Gated Recurrent Units (GRU). After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer. TODO Opisać o co chodzi z softmaxem\\\\
+
+\section{CTC Loss}
+TODO opisać co robi CTC loss\\\\
+
+\section{Training}
+Training is done using the CTC loss function and backpropagation through time algorithm. \\\\
+Accuracy of the model is measured by Word Error Rate (WER). TODO opisać co to WER\\\\
+
+\section{Generating transcription}
+TODO OPISAĆ jak działa CTCBeam \\\\
 For more detail in model architecture please refer to \cite{DS2}.
 
 
