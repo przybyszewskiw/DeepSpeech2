@@ -141,14 +141,21 @@ $$
 Recurrent layers appear in a few different variants - standard recurrent layers or Long Short-Term Memory (LSTM) or Gated Recurrent Units (GRU). After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer. TODO Opisać o co chodzi z softmaxem\\\\
 
 \section{CTC Loss}
-TODO opisać co robi CTC loss\\\\
+For training of neural network we typically need a function, which would tell us, how good current network's output is. The lesser value this function has, the better results our network achieves. This kind of function is called a \textbf{loss}. Ussually, minimizing value of the loss is a main goal of training. \\\\
+In our case, we need a metric, which would tell us, how far probabilities, returned by network, are from desired output: the actual transcription of the track.\\\\
+It occurs to be quite a difficult task, since ....\\\\
+In \cite{DS3} Graves, A. et al approched this problem by using Connectionist Temporal Classification.
+TODO krótkie strzeszczenie, jak to działa. I jak z tego wyliczyć backward propagację. \\\\
+More detailed description, how CTC Loss works, can be found in \cite{DS3}.\\\\
 
 \section{Training}
 Training is done using the CTC loss function and backpropagation through time algorithm. \\\\
 Accuracy of the model is measured by Word Error Rate (WER). TODO opisać co to WER\\\\
+TODO Opisać na czym polega trenowanie, co to jest learning rate, co to jest epoka itp \\\\
 
 \section{Generating transcription}
-TODO OPISAĆ jak działa CTCBeam \\\\
+TODO opisać jak działa CTCBeam i przerabianie prawdopodobieństw na słowa. \\\\
+
 For more detail in model architecture please refer to \cite{DS2}.
 
 
@@ -176,7 +183,10 @@ To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model fo
 \textit{Deep Speech: Scaling up end-to-end speech recognition}, Silicon Valley AI Lab 2014, \href{https://arxiv.org/abs/1412.5567}{https://arxiv.org/abs/1412.5567}
   
 \bibitem{DS2} Baidu Research \textit{ Deep Speech 2: End-to-End Speech Recognition in English and Mandarin}, Silicon Valley AI Lab 2015, \href{https://arxiv.org/abs/1512.02595}{https://arxiv.org/abs/1512.02595}
-  
+
+\bibitem{DS3} A. Graves, S. Fernandez, F. Gomez, and J. Schmidhuber. \textit{ Connectionist temporal classification:
+Labelling unsegmented sequence data with recurrent neural networks. In ICML, pages 369-376. ACM, 2006. }
+ 
 \end{thebibliography}
 All the files were downloaded on \bibDownloadDate
 
