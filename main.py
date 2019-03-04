@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import torch.cuda
 from runner import Runner
 from scripts.librispeech import LibriSpeech
 
@@ -12,18 +13,22 @@ def main():
     parser.add_argument('--model', type=str, required=False)
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--starting-epoch', type=int, default=0)
+    parser.add_argument('--device', type=str, required=False, default='cpu', choices=['gpu', 'cpu'])
 
     args = parser.parse_args()
 
+    if args.device == 'gpu':
+        if not torch.cuda.is_available():
+            raise Exception("CUDA (GPU) is not available!")
+
     if args.model is not None:
-        run = Runner(pretrained_model_path=args.model)
+        run = Runner(pretrained_model_path=args.model, device=args.device)
     else:
-        run = Runner()
+        run = Runner(device=args.device)
 
     if args.task == 'train':
         if args.dataset is None:
             raise Exception("Specify dataset to train on!")
-
         run.train(dataset=LibriSpeech().get_dataset(args.dataset),
                   epochs=args.epochs,
                   starting_epoch=args.starting_epoch)
@@ -41,3 +46,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

@@ -5,6 +5,7 @@ import time
 import numpy as np
 import torch
 import torch.optim as optim
+import torch.nn as nn
 from dataload import load_track, load_transcript, convert_transcript
 from evaluator import eval_single, eval_model
 from model import DeepSpeech
@@ -21,15 +22,21 @@ class Runner:
                  sound_bucket_size=5,
                  sound_time_overlap=5,
                  lr=0.01,
-                 pretrained_model_path=None):
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+                 pretrained_model_path=None,
+                 device='cpu'):
         self.net = DeepSpeech(frequencies=frequencies,
                               conv_number=conv_number,
                               context=context,
                               rec_number=rec_number,
                               full_number=full_number,
                               characters=characters)
+        if device == 'gpu':
+            device = 'cuda:0'
+            self.net = nn.DataParallel(self.net)
+
+        self.device = torch.device(device)
         self.net = self.net.to(self.device)
+
         if pretrained_model_path is not None:
             self.net.load_state_dict(torch.load(pretrained_model_path))
         self.sound_bucket_size = sound_bucket_size
@@ -94,7 +101,6 @@ class Runner:
                 print("Creating a directory for saved modeldevices")
                 os.makedirs("./models")
             print(epoch)
-
             start_time = time.time()
             self.train_epoch(dataset)
             print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
@@ -131,6 +137,9 @@ class Runner:
         track = load_track(trackpath, self.sound_bucket_size, self.sound_time_overlap)
         transcript = convert_transcript(transcript)
         return torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
+
+    def _work_on_gpu(self):
+        return self.device != torch.device('cpu')
 
 
 def test_training():

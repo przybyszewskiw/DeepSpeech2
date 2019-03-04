@@ -175,7 +175,6 @@ class DeepSpeech(nn.Module):
             FullyConnected(full_number=self.full_number, frequencies=self.frequencies),
             Probabilities(characters=self.characters, frequencies=self.frequencies)
         )
-        self.layer = nn.DataParallel(self.layer)
 
     def forward(self, x):
         # x = self.layer(x)
