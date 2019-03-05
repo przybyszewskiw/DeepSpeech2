@@ -120,7 +120,7 @@ normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th fre
 DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ at each output time-step. For english, possible values of $l_t$ are:
 
 \begin{itemize}
-  \item letter from 'a' to 'z';
+  \item letters from 'a' to 'z';
   \item space;
   \item apostrophe;
   \item blank.
@@ -130,7 +130,7 @@ Adding non-letter characters allows to find word boundaries. Special symbol blan
 to tell, which character is most likely to occur for the current input spectrogram.\\\\
 
 \section{Layers}
-The model of the network is composed of one or more convolutional layers, followed by one or more recurrent layers, followed by one or more fully connected layers. Activation function used throughout the network is clipped rectified linear (ReLU) function: 
+The model of the network is composed of one or more convolutional layers, followed by one or more bidirectional recurrent layers \cite{DS4}, followed by one or more fully connected layers. Activation function used throughout the network is clipped rectified linear (ReLU) function:
 $$
 	\sigma(x) = 
 	\begin{cases*}
@@ -139,8 +139,8 @@ $$
 		x & otherwise.
 	\end{cases*}
 $$
-Recurrent layers appear in a few different variants - standard recurrent layers or Long Short-Term Memory (LSTM) or Gated Recurrent Units (GRU). After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.\\\\
-Softmax function $f : \mathbb{R}^k \rightarrow \mathbb{R}^k$ defined by the formula:
+Recurrent layers appear in a few different variants - standard recurrent layers or Long Short-Term Memory (LSTM) \cite{DS5} or Gated Recurrent Units (GRU) \cite{DS6}. After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.\\\\
+Softmax function $f : \mathbb{R}^k \rightarrow \mathbb{R}^k$ is defined by the formula:
 $$
 f_i(v) = \frac{e^{v_i}}{\sum_{i=1}^{k} e^{v_j}},
 $$
@@ -151,17 +151,28 @@ $$
 We basically apply exponential function to each outputed value, and normalize these values, to make sure that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
 
 \section{CTC Loss}
-For training of neural network we typically need a function, which would tell us, how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss}. Usually, minimizing value of the loss is a main goal of training. \\\\
-In our case, we need a metric, which would tell us, how far probabilities, returned by network, are from desired output: the actual transcription of the track.\\\\
+To train a neural network we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing value of the loss function is a main goal of training. \\\\
+In our case we need a metric which would tell us how far probabilities returned by network are from desired output: the actual transcription of the track.\\\\
 It occurs to be quite a difficult task, since ....\\\\
 In \cite{DS3} Graves, A. et al approched this problem by using Connectionist Temporal Classification.
 TODO krótkie strzeszczenie, jak to działa. I jak z tego wyliczyć backward propagację. \\\\
 More detailed description, how CTC Loss works, can be found in \cite{DS3}.\\\\
 
 \section{Training}
-Training is done using the CTC loss function and backpropagation through time algorithm. \\\\
-Accuracy of the model is measured by Word Error Rate (WER). TODO opisać co to WER (na angielskiej wikipedii jest artykuł)\\\\
-TODO Opisać na czym polega trenowanie, co to jest learning rate, co to jest epoka itp \\\\
+Training is done using the CTC loss function and backpropagation through time algorithm. During training test sets are divided into batches of some certain size. Then one batch is fed into the model and after that loss is counted and backpropagated and model updated. The speed in which changes are applied to the model depends on some chosen constant -- learning rate. All test sets make up for an epoch of training and training lasts for many epochs -- until loss doesn't decrease or decreases very slightly.\\\\
+Accuracy of the model is measured by Word Error Rate (WER). It is a common (TODO dodać przykłady użycia) metric of the performance of speech recognition systems. To measure it we compare the recognized word sequence with the reference word sequence by transforming the latter to the former and find:
+
+\begin{itemize}
+  \item S -- the number of substitutions,
+  \item D -- the number of deletions,
+  \item I -- the number of insertions,
+  \item C -- the number of correct words,
+  \item N -- the number of words in the reference (N=S+D+C)
+\end{itemize}
+Now the WER can be computed as:
+$$
+WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
+$$
 
 \section{Generating transcription}
 TODO opisać jak działa CTCBeam i przerabianie prawdopodobieństw na słowa. \\\\
@@ -192,11 +203,17 @@ To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model fo
 \bibitem{DS1} Hannun et al. 
 \textit{Deep Speech: Scaling up end-to-end speech recognition}, Silicon Valley AI Lab 2014, \href{https://arxiv.org/abs/1412.5567}{https://arxiv.org/abs/1412.5567}
   
-\bibitem{DS2} Baidu Research \textit{ Deep Speech 2: End-to-End Speech Recognition in English and Mandarin}, Silicon Valley AI Lab 2015, \href{https://arxiv.org/abs/1512.02595}{https://arxiv.org/abs/1512.02595}
+\bibitem{DS2} Baidu Research \textit{Deep Speech 2: End-to-End Speech Recognition in English and Mandarin}, Silicon Valley AI Lab 2015, \href{https://arxiv.org/abs/1512.02595}{https://arxiv.org/abs/1512.02595}
 
-\bibitem{DS3} A. Graves, S. Fernandez, F. Gomez, and J. Schmidhuber. \textit{ Connectionist temporal classification:
-Labelling unsegmented sequence data with recurrent neural networks. In ICML, pages 369-376. ACM, 2006. }
- 
+\bibitem{DS3} A. Graves, S. Fernandez, F. Gomez, and J. Schmidhuber. \textit{Connectionist temporal classification:
+Labelling unsegmented sequence data with recurrent neural networks. In ICML, pages 369-376. ACM, 2006.}
+
+\bibitem{DS4} M. Schuster and K. K. Paliwal. \textit{Bidirectional recurrent neural networks.} IEEE Transactions on Signal Processing, 45(11):2673–2681, 1997.
+
+\bibitem{DS5} S. Hochreiter and J. Schmidhuber. \textit{Long short--term memory.} Neural Computation, 9(8):1735—1780, 1997.
+
+\bibitem{DS6} K. Cho, B. Van Merrienboer, C. Gulcehre, D. Bahdanau, F. Bougares, H. Schwenk, and Y. Bengio. \textit{Learning phrase representations using rnn encoder-decoder for statistical machine translation.} In EMNLP, 2014. \href{https://arxiv.org/pdf/1406.1078.pdf}{https://arxiv.org/pdf/1406.1078.pdf}
+
 \end{thebibliography}
 All the files were downloaded on \bibDownloadDate
 
