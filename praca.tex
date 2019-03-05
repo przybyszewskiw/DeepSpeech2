@@ -17,6 +17,7 @@
 \documentclass[licencjacka,en]{pracamgr}
 \usepackage{hyperref}
 \usepackage{mathtools}
+\usepackage{amssymb}
 \newcommand{\bibDownloadDate}{\today}
 
 
@@ -138,7 +139,16 @@ $$
 		x & otherwise.
 	\end{cases*}
 $$
-Recurrent layers appear in a few different variants - standard recurrent layers or Long Short-Term Memory (LSTM) or Gated Recurrent Units (GRU). After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer. TODO Opisać o co chodzi z softmaxem\\\\
+Recurrent layers appear in a few different variants - standard recurrent layers or Long Short-Term Memory (LSTM) or Gated Recurrent Units (GRU). After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.\\\\
+Softmax function $f : \mathbb{R}^k \rightarrow \mathbb{R}^k$ defined by the formula:
+$$
+f_i(v) = \frac{e^{v_i}}{\sum_{i=1}^{k} e^{v_j}},
+$$
+and
+$$
+f(v) = \big(f_1(v), f_2(v), \ldots, f_k(v) \big).
+$$
+We basically apply exponential function to each outputed value, and normalize these values, to make sure that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
 
 \section{CTC Loss}
 For training of neural network we typically need a function, which would tell us, how good current network's output is. The lesser value this function has, the better results our network achieves. This kind of function is called a \textbf{loss}. Ussually, minimizing value of the loss is a main goal of training. \\\\
