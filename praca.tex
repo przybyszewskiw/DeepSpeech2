@@ -152,14 +152,13 @@ We basically apply exponential function to each outputed value, and normalize th
 
 \section{CTC Loss}
 To train a neural network we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing value of the loss function is a main goal of training. \\\\
-In our case we need a metric which would tell us how far probabilities returned by network are from desired output: the actual transcription of the track.\\\\
-It occurs to be quite a difficult task, since ....\\\\
-In \cite{DS3} Graves, A. et al approched this problem by using Connectionist Temporal Classification.
-TODO krótkie strzeszczenie, jak to działa. I jak z tego wyliczyć backward propagację. \\\\
-More detailed description, how CTC Loss works, can be found in \cite{DS3}.\\\\
+Loss function used in DS2 is Connectionist Temporal Classification (CTC) \cite{DS3}. To define this loss let's introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". Only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".\\
+For example possible encodings of \textit{"to"} are \textit{"-tttooo"} and \textit{"-tttoo-o"} but only the latter could be an encoding of \textit{"too"}.\\
+Now we say that the probability of the actual transcription is the sum of probabilities of all possible encodings of actual transcription that are the same length as the output of the model. The loss simply is the negative logarithm of this probability. Having this we can count derivatives of this loss function with respect to model output and then apply backpropagation through time algorithm to train the network.\\\\
+More detailed description, how CTC Loss works, can be found in \cite{DS3}.
 
 \section{Training}
-Training is done using the CTC loss function and backpropagation through time algorithm. During training test sets are divided into batches of some certain size. Then one batch is fed into the model and after that loss is counted and backpropagated and model updated. The speed in which changes are applied to the model depends on some chosen constant -- learning rate. All test sets make up for an epoch of training and training lasts for many epochs -- until loss doesn't decrease or decreases very slightly.\\\\
+During training test sets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated and model is updated. The speed in which changes are applied to the model depends on some chosen constant -- learning rate. All test sets make up for an epoch of training and training lasts for many epochs -- until loss doesn't decrease or decreases very slightly.\\\\
 Accuracy of the model is measured by Word Error Rate (WER). It is a common (TODO dodać przykłady użycia) metric of the performance of speech recognition systems. To measure it we compare the recognized word sequence with the reference word sequence by transforming the latter to the former and find:
 
 \begin{itemize}
@@ -175,6 +174,7 @@ WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
 $$
 
 \section{Generating transcription}
+In order to find Word Error Rate of the model one, of course, has to generate some transcription.
 TODO opisać jak działa CTCBeam i przerabianie prawdopodobieństw na słowa. \\\\
 https://towardsdatascience.com/beam-search-decoding-in-ctc-trained-neural-networks-5a889a3d85a7 <- Przeczytać i streścić to\\\\
 For more detail in model architecture please refer to \cite{DS2}.
