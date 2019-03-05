@@ -151,7 +151,7 @@ $$
 We basically apply exponential function to each outputed value, and normalize these values, to make sure that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
 
 \section{CTC Loss}
-For training of neural network we typically need a function, which would tell us, how good current network's output is. The lesser value this function has, the better results our network achieves. This kind of function is called a \textbf{loss}. Ussually, minimizing value of the loss is a main goal of training. \\\\
+For training of neural network we typically need a function, which would tell us, how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss}. Usually, minimizing value of the loss is a main goal of training. \\\\
 In our case, we need a metric, which would tell us, how far probabilities, returned by network, are from desired output: the actual transcription of the track.\\\\
 It occurs to be quite a difficult task, since ....\\\\
 In \cite{DS3} Graves, A. et al approched this problem by using Connectionist Temporal Classification.
@@ -160,12 +160,12 @@ More detailed description, how CTC Loss works, can be found in \cite{DS3}.\\\\
 
 \section{Training}
 Training is done using the CTC loss function and backpropagation through time algorithm. \\\\
-Accuracy of the model is measured by Word Error Rate (WER). TODO opisać co to WER\\\\
+Accuracy of the model is measured by Word Error Rate (WER). TODO opisać co to WER (na angielskiej wikipedii jest artykuł)\\\\
 TODO Opisać na czym polega trenowanie, co to jest learning rate, co to jest epoka itp \\\\
 
 \section{Generating transcription}
 TODO opisać jak działa CTCBeam i przerabianie prawdopodobieństw na słowa. \\\\
-
+https://towardsdatascience.com/beam-search-decoding-in-ctc-trained-neural-networks-5a889a3d85a7 <- Przeczytać i streścić to\\\\
 For more detail in model architecture please refer to \cite{DS2}.
 
 
