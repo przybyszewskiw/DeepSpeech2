@@ -31,7 +31,7 @@ def main():
     if args.task == 'train':
         if args.dataset is None:
             raise Exception("Specify dataset to train on!")
-        run.train(dataset=LibriSpeech().get_dataset(args.dataset),
+        run.train(raw_dataset=LibriSpeech().get_dataset(args.dataset),
                   epochs=args.epochs,
                   starting_epoch=args.starting_epoch)
     elif args.task == 'eval':

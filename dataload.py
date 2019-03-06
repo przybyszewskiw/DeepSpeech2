@@ -75,6 +75,21 @@ class Loader:
 
         return audio_tensor, transs_tensor, lengths_tensor
 
+    def load_dataset(self, dataset, batch_size):
+        tracks_to_merge = []
+        res = []
+        for (i, (track_path, transcript_string)) in enumerate(dataset):
+            if (i + 1) % batch_size != 0:
+                print('{}. Loading {}'.format(i, track_path))
+                tracks_to_merge.append(self.load_tensors(
+                    track_path,
+                    transcript_string
+                ))
+            else:
+                tensors = self.loader.merge_into_batch(tracks_to_merge)
+                res.append(tensors)
+        return res
+
 
 def test():
     if len(sys.argv) < 2:

@@ -59,42 +59,35 @@ class Runner:
         dataset - list of pairs (track_path, transcript_string)
     """
 
-    def train_epoch(self, dataset, batch_size=8):
-        tracks_to_merge = []
-        for (i, (track_path, transcript_string)) in enumerate(dataset):
-            if (i + 1) % batch_size != 0:
-                tracks_to_merge.append(self.loader.load_tensors(
-                    track_path,
-                    transcript_string
-                ))
-            else:
-                start_time = time.time()
-                (audio, transs, lengths) = self.loader.merge_into_batch(tracks_to_merge)
-                tracks_to_merge = []
-                self.optimizer.zero_grad()
+    def train_epoch(self, dataset):
+        for (i, (audio, transs, lengths)) in enumerate(dataset):
+            start_time = time.time()
+            self.optimizer.zero_grad()
 
-                audio = audio.to(self.device)
-                output, _ = self.net(audio)
+            audio = audio.to(self.device)
+            output, _ = self.net(audio)
 
-                if self.device != torch.device("cpu"):
-                    print("moving net output to CPU")
-                    output = output.to("cpu")
+            if self.device != torch.device("cpu"):
+                print("moving net output to CPU")
+                output = output.to("cpu")
 
-                print("Starting criterion calculation")
-                loss = DeepSpeech.criterion(output, transs, lengths)
-                loss.backward()
-                self.optimizer.step()
-                print("loss in {}th iteration is {}, it took {} seconds".format(
-                    i,
-                    loss.item(),
-                    time.time() - start_time
-                ))
-                # for some reason output is in the buffer until termination while redirecting to file,
-                # so we have to manually flush
-                sys.stdout.flush()
+            print("Starting criterion calculation")
+            loss = DeepSpeech.criterion(output, transs, lengths)
+            loss.backward()
+            self.optimizer.step()
+            print("loss in {}th iteration is {}, it took {} seconds".format(
+                i,
+                loss.item(),
+                time.time() - start_time
+            ))
+            # for some reason output is in the buffer until termination while redirecting to file,
+            # so we have to manually flush
+            sys.stdout.flush()
 
-    def train(self, dataset, epochs=50, starting_epoch=0):
+    def train(self, raw_dataset, epochs=50, starting_epoch=0, batch_size=8):
         self.net.train()
+        print('Loading Dataset...')
+        dataset = self.loader.load_dataset(raw_dataset, batch_size)
         for epoch in range(starting_epoch, epochs):
             if not os.path.isdir("./models"):
                 print("Creating a directory for saved modeldevices")
@@ -123,7 +116,7 @@ class Runner:
 def test_training():
     r = Runner(pretrained_model_path='models/4-iters.pt')
     r.train(
-        dataset=LibriSpeech().get_dataset('test-clean'),
+        raw_dataset=LibriSpeech().get_dataset('test-clean'),
         epochs=100,
         starting_epoch=5
     )
