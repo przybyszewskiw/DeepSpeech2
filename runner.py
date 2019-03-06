@@ -4,7 +4,7 @@ import time
 import torch
 import torch.optim as optim
 import torch.nn as nn
-from dataload import load_transcript, load_tensors, merge_into_batch
+from dataload import Loader
 from evaluator import eval_single, eval_model
 from model import DeepSpeech
 from scripts.librispeech import LibriSpeech
@@ -37,13 +37,12 @@ class Runner:
 
         if pretrained_model_path is not None:
             self.net.load_state_dict(torch.load(pretrained_model_path))
-        self.sound_bucket_size = sound_bucket_size
-        self.sound_time_overlap = sound_time_overlap
+        self.loader = Loader(sound_bucket_size, sound_time_overlap)
         self.optimizer = optim.SGD(self.net.parameters(), lr=lr)
 
     def train_single(self, track_path, transcript_path):
-        transcript = load_transcript(transcript_path)
-        track, transcript = self.get_tensors(track_path, transcript)
+        transcript = self.loader.load_transcript(transcript_path)
+        track, transcript = self.loader.load_tensors(track_path, transcript)
 
         for epoch in range(100):
             self.optimizer.zero_grad()
@@ -52,7 +51,7 @@ class Runner:
             print("loss={}".format(loss))
             if epoch % 20 == 19:
                 eval_single(self.net, track_path, transcript_path,
-                            self.sound_bucket_size, self.sound_time_overlap)
+                            self.loader)
             loss.backward()
             self.optimizer.step()
 
@@ -64,15 +63,13 @@ class Runner:
         tracks_to_merge = []
         for (i, (track_path, transcript_string)) in enumerate(dataset):
             if (i + 1) % batch_size != 0:
-                tracks_to_merge.append(load_tensors(
+                tracks_to_merge.append(self.loader.load_tensors(
                     track_path,
-                    transcript_string,
-                    self.sound_bucket_size,
-                    self.sound_time_overlap
+                    transcript_string
                 ))
             else:
                 start_time = time.time()
-                (audio, transs, lengths) = merge_into_batch(tracks_to_merge)
+                (audio, transs, lengths) = self.loader.merge_into_batch(tracks_to_merge)
                 tracks_to_merge = []
                 self.optimizer.zero_grad()
 
@@ -117,7 +114,7 @@ class Runner:
 
     def eval_on_dataset(self, dataset):
         self.net.eval()
-        eval_model(self.net, dataset, self.sound_bucket_size, self.sound_time_overlap)
+        eval_model(self.net, dataset, self.loader)
 
     def _work_on_gpu(self):
         return self.device != torch.device('cpu')
@@ -140,8 +137,8 @@ def test_eval():
 def test():
     r = Runner()
     tracks = LibriSpeech().get_dataset('test-clean')[:16]
-    track_tens = [load_tensors(ph, ts) for ph, ts in tracks]
-    (audio, transs, lengths) = merge_into_batch(track_tens)
+    track_tens = [r.loader.load_tensors(ph, ts) for ph, ts in tracks]
+    (audio, transs, lengths) = r.loader.merge_into_batch(track_tens)
     print(tracks)
     print(audio.shape)
     print(transs)

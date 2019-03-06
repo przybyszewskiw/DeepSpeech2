@@ -1,16 +1,15 @@
 import numpy as np
-from dataload import load_track
 from decoder import ctcBeamSearch
 from jiwer import wer
 import torch
 
 
-def eval_model(model, dataset, sound_bucket_size, sound_time_overlap):
+def eval_model(model, dataset, loader):
     error = 0
 
     for track_path, transcript in dataset:
         print('evaluating "{}" at {}'.format(transcript, track_path))
-        track = load_track(track_path, sound_bucket_size, sound_time_overlap)
+        track = loader.load_track(track_path)
         track = torch.from_numpy(track[np.newaxis, :]).float()
 
         _, probs = model(track)
