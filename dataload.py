@@ -86,7 +86,7 @@ class Loader:
                     transcript_string
                 ))
             else:
-                tensors = self.loader.merge_into_batch(tracks_to_merge)
+                tensors = self.merge_into_batch(tracks_to_merge)
                 res.append(tensors)
         return res
 
