@@ -1,4 +1,6 @@
 import sys
+import numpy as np
+import torch
 import soundfile as sf
 import scipy.signal as signal
 
@@ -47,6 +49,29 @@ def convert_transcript(trans):
         else:
             raise Exception("Transcript unknown character:" + str(c))
     return [convert_char(c) for c in trans.lower()]
+
+
+def load_tensors(self, trackpath, transcript):
+    track = load_track(trackpath, self.sound_bucket_size, self.sound_time_overlap)
+    transcript = convert_transcript(transcript)
+    return torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
+
+
+def merge_into_batch(self, tracks):
+    dim1 = tracks[0][0].shape[1]
+    dim2 = max([tensor.shape[2] for tensor, _ in tracks])
+    extended_audio_tensors = [
+        torch.cat(
+            [tensor, torch.zeros(1, dim1, dim2 - tensor.shape[2])],
+            dim=2
+        ) for tensor, _ in tracks
+    ]
+
+    lengths_tensor = torch.FloatTensor([trans.shape[1] for _, trans in tracks]).int()
+    transs_tensor = torch.cat([trans for _, trans in tracks], dim=1).squeeze()
+    audio_tensor = torch.cat(extended_audio_tensors, dim=0)
+
+    return audio_tensor, transs_tensor, lengths_tensor
 
 
 def test():

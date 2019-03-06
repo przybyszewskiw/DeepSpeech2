@@ -6,6 +6,8 @@ from scripts.librispeech import LibriSpeech
 
 
 def main():
+    torch.set_printoptions(edgeitems=5)
+
     parser = argparse.ArgumentParser(description='DeepSpeech2!')
     parser.add_argument('task', action='store', choices=['train', 'eval'])
     parser.add_argument('--dataset', type=str, required=False)
