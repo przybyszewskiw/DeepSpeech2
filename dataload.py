@@ -51,13 +51,13 @@ def convert_transcript(trans):
     return [convert_char(c) for c in trans.lower()]
 
 
-def load_tensors(self, trackpath, transcript):
-    track = load_track(trackpath, self.sound_bucket_size, self.sound_time_overlap)
+def load_tensors(trackpath, transcript, sound_bucket_size, sound_time_overlap):
+    track = load_track(trackpath, sound_bucket_size, sound_time_overlap)
     transcript = convert_transcript(transcript)
     return torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
 
 
-def merge_into_batch(self, tracks):
+def merge_into_batch(tracks):
     dim1 = tracks[0][0].shape[1]
     dim2 = max([tensor.shape[2] for tensor, _ in tracks])
     extended_audio_tensors = [

@@ -64,7 +64,12 @@ class Runner:
         tracks_to_merge = []
         for (i, (track_path, transcript_string)) in enumerate(dataset):
             if (i + 1) % batch_size != 0:
-                tracks_to_merge.append(load_tensors(track_path, transcript_string))
+                tracks_to_merge.append(load_tensors(
+                    track_path,
+                    transcript_string,
+                    self.sound_bucket_size,
+                    self.sound_time_overlap
+                ))
             else:
                 start_time = time.time()
                 (audio, transs, lengths) = merge_into_batch(tracks_to_merge)
