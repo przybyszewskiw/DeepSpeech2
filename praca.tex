@@ -112,12 +112,12 @@ Structure of our thesis is the following. In Chapter \ref{r:desc} we introduce a
 We divided our work on the model into two main parts. The first one consisted of preparing appropriate datasets (for both English and Polish) and processing them to fit the model -- Łukasz Kondraciuk and Jan Tabaszewski were in charge of this part. The second one consisted of implementing the model and applying GPU optimisations to it -- this was the task for Piotr Ambroszczyk and Wojciech Przybyszewski.
 \chapter{Basic model description}\label{r:desc}
 
-DeepSpeech 2 system is a recurrent neural network trained to ingest speech spectrograms and generate text transcriptions.
-
+DeepSpeech 2 (DS2) system is a recurrent neural network trained to ingest speech spectrograms and generate a text transcription.
+Following description of the model architecture is pretty basic. For more detailed one please refer to \cite{DS2}.
 \section{Input and Output specification}
 Let $\{(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), ...)\}$ be a training set. $x^{(i)}$ is a time-series of variable length where every time-slice is a spectrogram of power
-normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of utterance $x^{(i)}$.\\\\
-DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ at each output time-step. For english, possible values of $l_t$ are:
+normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of the utterance $x^{(i)}$.\\\\
+DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ for each output time-step. For english language possible values of $l_t$ are:
 
 \begin{itemize}
   \item letters from 'a' to 'z';
@@ -127,10 +127,10 @@ DS2 network's input is a time-series $x$ and the output is a prediction over cha
 \end{itemize}
 
 Adding non-letter characters allows to find word boundaries. Special symbol blank is outputted each time, when the network is unable
-to tell, which character is most likely to occur for the current input spectrogram.
+to tell which character is most likely to occur for the current input spectrogram.
 
 \section{Layers}
-The model of the network is composed of one or more convolutional layers, followed by one or more bidirectional recurrent layers \cite{DS4}, followed by one or more fully connected layers. Activation function used throughout the network is clipped rectified linear (ReLU) function:
+The model of the network is composed of one or more convolutional layers, followed by one or more bidirectional recurrent layers \cite{DS4}, followed by one or more fully connected layers. Activation function used throughout the network is the Clipped Rectified Linear (ReLU) function, given by the formula:
 $$
 	\sigma(x) = 
 	\begin{cases*}
@@ -139,7 +139,7 @@ $$
 		x & otherwise.
 	\end{cases*}
 $$
-Recurrent layers appear in a few different variants - standard recurrent layers or Long Short-Term Memory (LSTM) \cite{DS5} or Gated Recurrent Units (GRU) \cite{DS6}. After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.\\\\
+The recurrent layers appear in a few different variants - standard recurrent layers or Long Short-Term Memory (LSTM) \cite{DS5}, or Gated Recurrent Units (GRU) \cite{DS6}. After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.\\\\
 Softmax function $f : \mathbb{R}^k \rightarrow \mathbb{R}^k$ is defined by the formula:
 $$
 f_i(v) = \frac{e^{v_i}}{\sum_{i=1}^{k} e^{v_j}},
@@ -148,44 +148,45 @@ and
 $$
 f(v) = \big(f_1(v), f_2(v), \ldots, f_k(v) \big).
 $$
-We basically apply exponential function to each outputed value, and normalize these values, to make sure that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
+We basically apply exponential function to each outputed value, and then normalize these values to make sure, that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
 
 \section{CTC Loss}
-To train a neural network we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing value of the loss function is a main goal of training. \\\\
-Loss function used in DS2 is Connectionist Temporal Classification (CTC) \cite{DS3}. To define this loss let's introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". Only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".\\
-For example possible encodings of \textit{"to"} are \textit{"-tttooo"} and \textit{"-tttoo-o"} but only the latter could be an encoding of \textit{"too"}.\\
-Now we say that the probability of the actual transcription is the sum of probabilities of all possible encodings of actual transcription that are the same length as the output of the model. The loss simply is the negative logarithm of this probability. Having this we can count derivatives of this loss function with respect to model output and then apply backpropagation through time algorithm to train the network.
+To train a neural network we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing a value of the loss function is a main goal of the training. \\\\
+Loss function used in DS2 is Connectionist Temporal Classification (CTC) \cite{DS3}. To define this loss let us introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". Only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".\\
+For instance, possible encodings of \textit{"to"} are \textit{"-tttooo"} and \textit{"-tttoo-o"}, but only the latter could be an encoding of the word \textit{"too"}.\\
+Now we say that the probability of an actual transcription is the sum of probabilities of all possible encodings of the actual transcription, that have the same length as the output of the model. The loss function here is simply the negative logarithm of this probability. Having this we can, count derivatives of this loss function with respect to model output and then apply \textit{backpropagation through time} algorithm to train the network. (TODO może przydałoby się jakiś przypis, bo sformułowanie "backpropagation through time" nic mi nie mówi)
 
 \section{Training}
-During training test sets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated and model is updated. The speed in which changes are applied to the model depends on some chosen constant -- learning rate. All test sets make up for an epoch of training and training lasts for many epochs -- until loss doesn't decrease or decreases very slightly.\\\\
-Accuracy of the model is measured by Word Error Rate (WER). It is a common metric of the performance of speech recognition systems. Here \cite{DS8} many commercial ASR systems were compared using WER. To measure Word error rate we compare the recognized word sequence with the reference word sequence by transforming the latter to the former and find:
+During the training data sets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated through network, and then weights on the layers are updated. The speed in which changes are applied to the model depends on some chosen constant -- \textbf{learning rate}. All data sets make up for an epoch of training and training lasts for many epochs -- until loss doesn't decrease anymore or decreases very slightly.\\\\
+Accuracy of the model is measured by Word Error Rate (WER). It is a common metric of the performance of speech recognition systems. Here \cite{DS8} many commercial ASR systems were compared using WER. To measure Word Error Rate we compare the recognized word sequence with a reference word sequence by transforming the latter to the former and find:
 
 \begin{itemize}
-  \item S -- the number of substitutions,
-  \item D -- the number of deletions,
-  \item I -- the number of insertions,
-  \item C -- the number of correct words,
-  \item N -- the number of words in the reference (N=S+D+C).
+  \item $S$ -- the number of substitutions,
+  \item $D$ -- the number of deletions,
+  \item $I$ -- the number of insertions,
+  \item $C$ -- the number of correct words,
+  \item $N$ -- the number of words in the reference ($N=S+D+C$).
 \end{itemize}
-Now the WER can be computed as:
+Now the $WER$ can be computed as:
 $$
 WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
 $$
 
 \section{Generating transcription}
-In order to find Word Error Rate of the model one, of course, has to generate some final transcription. It is generated based on both output of the model and a language model (TODO opisać language model). To generate the final transcription we search for transcription \textit{y} that maximizes \textit{Q(y)}, where \textit{Q} is given as follows:
+In order to find Word Error Rate of the model, one has to generate some final transcription. It is generated based on both output of the model and a language model (TODO opisać language model). To generate the final transcription we search for transcription \textit{y} that maximizes \textit{Q(y)}, where \textit{Q} is given as follows:
+
 $$
-Q(y) = log(\mathbb{P}_{ctc}(y|x)) + \alpha \cdot log(\mathbb{P}_{lm}(y)) + \beta \cdot word\_count(y)
+Q(y) = \log \big(\mathbb{P}_{ctc}(y|x)\big) + \alpha \cdot \log \big( \mathbb{P}_{lm}(y) \big) + \beta \cdot word\_count(y).
 $$
-The term $\mathbb{P}_{ctc}(y|x)$ denotes probability of $y$ being a transcrition of utterance $x$ as described in section 1.3 and the term $\mathbb{P}_{lm}(y)$ denotes probability of the sequence $y$ according to the language model. The weight $\alpha$ controls the relative contributions of the language model and the CTC network. The weight $\beta$ encourages more words in the transcription. Both of those parameters are tunable. We use a beam search similar to one described in \cite{DS7} to find the optimal transcription \textit{y}.\\\\
-Beam search is an algorithm that iterates over each time-step in the output of DS2 model remembering some constant number (let this number be $BW$ - "Beam Width") of most probable transcriptions up to this point. When considering next time-step, we create $BW \cdot C$ new transcriptions corresponding to appending every possible character to the end of remembered $BW$ transcriptions. After merging identical transcriptions and recalculating their probabilites we again keep $BW$ best ones. In the end we have $BW$ \textit{most probable} transcriptions and just take the best one.\\
-In order to efficiently merge transcriptions and recalculate new probabilities for them we must store probabilities $\mathbb{P}_{b}, \mathbb{P}_{nb}, \mathbb{P}_{lm}$ for all kept transcriptions where:
+
+The term $\mathbb{P}_{ctc}(y|x)$ denotes the probability of $y$ being a transcrition of the utterance $x$ as described in section 1.3 and the term $\mathbb{P}_{lm}(y)$ denotes the probability of the sequence $y$ according to the language model. The weight $\alpha$ controls the relative contributions of the language model and the CTC network. The weight $\beta$ encourages more words in the transcription. Both of those parameters are tunable. We use a beam search similar to one described in \cite{DS7} to find the optimal transcription \textit{y}.\\\\
+Beam search is an algorithm that iterates over each time-step in the output of DS2 model, while remembering some constant number (let this number be $BW$ - \textit{Beam Width}) of the most probable transcriptions up to this point. When considering the next time-step, we create $BW \cdot C$ new transcriptions corresponding to appending every possible character to the end of each one of $BW$ remembered transcriptions. After merging identical transcriptions and recalculating their probabilites we again keep $BW$ best ones. In the end we have $BW$ \textit{most probable} transcriptions, so we just take the best one.\\
+In order to efficiently merge transcriptions and recalculate new probabilities for them we must store probabilities $\mathbb{P}_{b}$, $\mathbb{P}_{nb}$, $\mathbb{P}_{lm}$ for all kept transcriptions, where:
 \begin{itemize}
-  \item $\mathbb{P}_{b}(y, t)$ = probability of given transcrition y at time-step t but encoding ends with \textit{blank},
-  \item $\mathbb{P}_{nb}(y, t)$ = probability of given transcrition y at time-step t but encoding doesn't end with \textit{blank},
-  \item $\mathbb{P}_{lm}(y)$ = probability of given transcrition y according to the language model.\\
+  \item $\mathbb{P}_{b}(y, t)$ -- the probability of the given transcrition $y$ at time-step $t$ if the encoding ends with \textit{blank},
+  \item $\mathbb{P}_{nb}(y, t)$ -- the probability of the given transcrition $y$ at time-step $t$ if the encoding doesn't end with \textit{blank},
+  \item $\mathbb{P}_{lm}(y)$ -- the probability of the given transcrition $y$, according to the language model.\\
 \end{itemize}
-For more detail in model architecture please refer to \cite{DS2}.
 
 
 \chapter{Additional extensions}\label{r:extens}
