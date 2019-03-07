@@ -1,4 +1,6 @@
 import sys
+import time
+
 import numpy as np
 import torch
 import soundfile as sf
@@ -55,11 +57,15 @@ class Loader:
         return [convert_char(c) for c in trans.lower()]
 
     def load_tensors(self, trackpath, transcript):
+        start = time.time()
         track = self.load_track(trackpath)
         transcript = self.convert_transcript(transcript)
-        return torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
+        res = torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
+        print('Loading took {}'.format(time.time() - start))
+        return res
 
     def merge_into_batch(self, tracks):
+        start = time.time()
         dim1 = tracks[0][0].shape[1]
         dim2 = max([tensor.shape[2] for tensor, _ in tracks])
         extended_audio_tensors = [
@@ -72,7 +78,7 @@ class Loader:
         lengths_tensor = torch.FloatTensor([trans.shape[1] for _, trans in tracks]).int()
         transs_tensor = torch.cat([trans for _, trans in tracks], dim=1).squeeze()
         audio_tensor = torch.cat(extended_audio_tensors, dim=0)
-
+        print('Merging took {}'.format(time.time() - start))
         return audio_tensor, transs_tensor, lengths_tensor
 
 
