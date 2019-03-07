@@ -1,6 +1,6 @@
 import sys
 import time
-
+import os
 import numpy as np
 import torch
 import soundfile as sf
@@ -58,11 +58,20 @@ class Loader:
 
     def load_tensors(self, trackpath, transcript):
         start = time.time()
-        track = self.load_track(trackpath)
         transcript = self.convert_transcript(transcript)
-        res = torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
+        trans_ten = torch.FloatTensor([transcript]).int()
+        pthpath = trackpath.replace('flac', 'pth')
+
+        if os.path.isfile(pthpath):
+            track_ten = torch.load(pthpath)
+        else:
+            print('Generating new tensor')
+            track = self.load_track(trackpath)
+            track_ten = torch.from_numpy(track[np.newaxis, :]).float()
+            torch.save(track_ten, pthpath)
+
         print('Loading took {}'.format(time.time() - start))
-        return res
+        return track_ten, trans_ten
 
     def merge_into_batch(self, tracks):
         start = time.time()
