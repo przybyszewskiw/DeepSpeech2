@@ -1,4 +1,6 @@
 import sys
+import time
+import os
 import numpy as np
 import torch
 import soundfile as sf
@@ -55,10 +57,20 @@ class Loader:
                 raise Exception("Transcript unknown character:" + str(c))
         return [convert_char(c) for c in trans.lower()]
 
-    def load_tensors(self, trackpath, transcript):
-        track = self.load_track(trackpath)
+    def load_tensors(self, track_path, transcript):
         transcript = self.convert_transcript(transcript)
-        return torch.from_numpy(track[np.newaxis, :]).float(), torch.FloatTensor([transcript]).int()
+        trans_ten = torch.FloatTensor([transcript]).int()
+        tensor_path = track_path.replace('flac', 'pth')
+
+        if os.path.isfile(tensor_path):
+            track_ten = torch.load(tensor_path)
+        else:
+            print('Converting {} to tensor and saving...'.format(track_path))
+            track = self.load_track(track_path)
+            track_ten = torch.from_numpy(track[np.newaxis, :]).float()
+            torch.save(track_ten, tensor_path)
+
+        return track_ten, trans_ten
 
     def merge_into_batch(self, tracks):
         dim1 = tracks[0][0].shape[1]
@@ -73,7 +85,6 @@ class Loader:
         lengths_tensor = torch.FloatTensor([trans.shape[1] for _, trans in tracks]).int()
         transs_tensor = torch.cat([trans for _, trans in tracks], dim=1).squeeze()
         audio_tensor = torch.cat(extended_audio_tensors, dim=0)
-
         return audio_tensor, transs_tensor, lengths_tensor
 
 
