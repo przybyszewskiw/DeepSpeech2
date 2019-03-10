@@ -19,6 +19,7 @@ class Runner:
                  characters=29,
                  sound_bucket_size=5,
                  sound_time_overlap=5,
+                 sound_time_length=20,
                  lr=0.01,
                  pretrained_model_path=None,
                  device='cpu'):
@@ -37,7 +38,11 @@ class Runner:
 
         if pretrained_model_path is not None:
             self.net.load_state_dict(torch.load(pretrained_model_path))
-        self.loader = Loader(sound_bucket_size, sound_time_overlap)#TODO - change usage of Loader
+
+        self.loader = Loader(bucket_size=sound_bucket_size,
+                             time_overlap=sound_time_overlap,
+                             time_length=sound_time_length)
+
         self.optimizer = optim.SGD(self.net.parameters(), lr=lr)
 
     def train_single(self, track_path, transcript_path):
