@@ -37,7 +37,7 @@ class Runner:
 
         if pretrained_model_path is not None:
             self.net.load_state_dict(torch.load(pretrained_model_path))
-        self.loader = Loader(sound_bucket_size, sound_time_overlap)
+        self.loader = Loader(sound_bucket_size, sound_time_overlap)#TODO - change usage of Loader
         self.optimizer = optim.SGD(self.net.parameters(), lr=lr)
 
     def train_single(self, track_path, transcript_path):

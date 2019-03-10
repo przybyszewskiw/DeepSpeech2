@@ -6,8 +6,9 @@ import scipy.signal as signal
 
 
 class Loader:
-    def __init__(self, bucket_size, time_overlap):
+    def __init__(self, bucket_size, time_length, time_overlap):
         self.bucket_size = bucket_size
+        self.time_length = time_length
         self.time_overlap = time_overlap
 
     # arguments: file_path - path to music file (must be mono)
@@ -18,21 +19,21 @@ class Loader:
 
         if debug: print("length of data: {}".format(len(data)))
         if debug: print("sample rate: {}".format(sample_rate))
-        nperseg = int(round(sample_rate / self.bucket_size))
-        noverlap = int(round(sample_rate / self.bucket_size
-                             - self.time_overlap * sample_rate / 1e3))
+        nperseg = int(round(sample_rate * self.time_length / 1e3))
+        noverlap = int(round(sample_rate * self.time_overlap / 1e3))
+        nfft = int(round(sample_rate / self.bucket_size))
 
         freqs, times, spec = signal.spectrogram(data, fs=sample_rate,
-                                                window='hann',
+                                                window=signal.get_window('hann', nperseg),
                                                 nperseg=nperseg,
                                                 noverlap=noverlap,
-                                                detrend=False)
+                                                nfft=nfft)
 
         if debug: print("spectrogram done")
         if debug: print("number of frequency bins: {}".format(len(freqs)))
         if debug: print("size of frequency bin: {} Hz".format(freqs[1] - freqs[0]))
         if debug: print("number of time samples: {}".format(len(times)))
-        if debug: print("size of time sample: {} ms".format(times[1] - times[0]))
+        if debug: print("step between time samples: {} ms".format((times[1] - times[0]) * 1e3))
 
         return spec
 
@@ -80,9 +81,9 @@ def test():
     if len(sys.argv) < 2:
         print("give name of file")
     else:
-        # spektrogram co 5hz z czasami długości 10ms, z overlapami 5ms
-        loader = Loader(5, 5)
-        print(loader.load_track(sys.argv[1].shape))
+        # spectrogram with 5Hz frequency bins ans 20ms time bins overlapping 10ms
+        loader = Loader(5, 20, 10)
+        print(loader.load_track(sys.argv[1], True))
 
 
 if __name__ == '__main__':
