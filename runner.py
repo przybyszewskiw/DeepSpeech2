@@ -67,12 +67,12 @@ class Runner:
     def train_epoch(self, dataset, batch_size=8):
         tracks_to_merge = []
         for (i, (track_path, transcript_string)) in enumerate(dataset):
-            if (i + 1) % batch_size != 0:
-                tracks_to_merge.append(self.loader.load_tensors(
-                    track_path,
-                    transcript_string
-                ))
-            else:
+            tracks_to_merge.append(self.loader.load_tensors(
+                track_path,
+                transcript_string
+            ))
+
+            if (i + 1) % batch_size == 0:
                 start_time = time.time()
                 (audio, transs, lengths) = self.loader.merge_into_batch(tracks_to_merge)
                 tracks_to_merge = []
@@ -98,7 +98,7 @@ class Runner:
                 # so we have to manually flush
                 sys.stdout.flush()
 
-    def train(self, dataset, epochs=50, starting_epoch=0):
+    def train(self, dataset, batch_size=8, epochs=50, starting_epoch=0):
         self.net.train()
         for epoch in range(starting_epoch, epochs):
             if not os.path.isdir("./models"):
@@ -106,7 +106,7 @@ class Runner:
                 os.makedirs("./models")
             print(epoch)
             start_time = time.time()
-            self.train_epoch(dataset)
+            self.train_epoch(dataset, batch_size=batch_size)
             print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
 
             if epoch % 5 == 4:

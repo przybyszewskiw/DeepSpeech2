@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--starting-epoch', type=int, default=0)
     parser.add_argument('--device', type=str, required=False, default='cpu', choices=['gpu', 'cpu'])
+    parser.add_argument('--batch-size', type=int, default=8)
 
     args = parser.parse_args()
 
@@ -33,7 +34,9 @@ def main():
             raise Exception("Specify dataset to train on!")
         run.train(dataset=LibriSpeech().get_dataset(args.dataset),
                   epochs=args.epochs,
-                  starting_epoch=args.starting_epoch)
+                  starting_epoch=args.starting_epoch,
+                  batch_size=args.batch_size)
+
     elif args.task == 'eval':
         if args.model is None:
             raise Exception('Specify model to evaluate!')
