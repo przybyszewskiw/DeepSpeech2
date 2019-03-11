@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 from decoder import ctcBeamSearch
 from jiwer import wer
@@ -20,6 +22,7 @@ def eval_model(model, dataset, loader):
         answer = ctcBeamSearch(probs)
         print('answer = "{}"'.format(answer))
         error += wer(transcript, answer)
+        sys.stdout.flush()
 
     print("Word Error Rate after evaluation {}.".format(error / len(dataset)))
 
