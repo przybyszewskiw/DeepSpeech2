@@ -42,7 +42,7 @@ def main():
             raise Exception('Specify model to evaluate!')
 
         if args.dataset is not None:
-            run.eval_on_dataset(LibriSpeech().get_dataset(args.dataset, sort=False))
+            run.eval_on_dataset(LibriSpeech().get_dataset(args.dataset))
         elif args.track is not None:
             assert 'Not implemented yet!'
         else:
