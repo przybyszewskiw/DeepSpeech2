@@ -29,7 +29,7 @@ class Loader:
                                                 window=signal.get_window('hann', nperseg),
                                                 nperseg=nperseg,
                                                 noverlap=noverlap,
-                                                #nfft=nfft,
+                                                nfft=nfft,
                                                 detrend=False)
 
         if debug: print("spectrogram done")
