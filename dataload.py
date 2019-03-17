@@ -7,10 +7,11 @@ import scipy.signal as signal
 
 
 class Loader:
-    def __init__(self, bucket_size, time_length, time_overlap):
+    def __init__(self, bucket_size, time_length, time_overlap, eps=1e-10):
         self.bucket_size = bucket_size
         self.time_length = time_length
         self.time_overlap = time_overlap
+        self.eps = eps
 
     # arguments: file_path - path to music file (must be mono)
     #            bucket_size - size of frequency bucket in hz
@@ -28,7 +29,8 @@ class Loader:
                                                 window=signal.get_window('hann', nperseg),
                                                 nperseg=nperseg,
                                                 noverlap=noverlap,
-                                                nfft=nfft)
+                                                #nfft=nfft,
+                                                detrend=False)
 
         if debug: print("spectrogram done")
         if debug: print("number of frequency bins: {}".format(len(freqs)))
@@ -36,7 +38,8 @@ class Loader:
         if debug: print("number of time samples: {}".format(len(times)))
         if debug: print("step between time samples: {} ms".format((times[1] - times[0]) * 1e3))
 
-        return spec
+        return np.log(spec + self.eps)
+        #return spec
 
     def load_transcript(self, file_path):
         with open(file_path, 'r') as f:
