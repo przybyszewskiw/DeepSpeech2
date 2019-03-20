@@ -11,7 +11,7 @@ from scripts.librispeech import LibriSpeech
 
 
 class Runner:
-    def __init__(self, frequencies=1601,
+    def __init__(self, frequencies=161,
                  conv_number=2,
                  context=5,
                  rec_number=3,
