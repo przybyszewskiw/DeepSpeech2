@@ -17,7 +17,7 @@ class Runner:
                  rec_number=3,
                  full_number=2,
                  characters=29,
-                 sound_bucket_size=5,
+                 sound_bucket_size=50,
                  sound_time_overlap=5,
                  sound_time_length=20,
                  lr=0.01,
