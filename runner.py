@@ -20,7 +20,7 @@ class Runner:
                  sound_bucket_size=50,
                  sound_time_overlap=5,
                  sound_time_length=20,
-                 lr=0.01,
+                 lr=0.001,
                  pretrained_model_path=None,
                  device='cpu'):
         self.net = DeepSpeech(frequencies=frequencies,
@@ -43,7 +43,7 @@ class Runner:
                              time_overlap=sound_time_overlap,
                              time_length=sound_time_length)
 
-        self.optimizer = optim.SGD(self.net.parameters(), lr=lr)
+        self.optimizer = optim.Adam(self.net.parameters(), lr=lr, betas=(0.9, 0.999))
 
     def train_single(self, track_path, transcript_path):
         transcript = self.loader.load_transcript(transcript_path)
@@ -155,4 +155,3 @@ if __name__ == "__main__":
     # test_eval()
     # test_training()
     # test2()
-
