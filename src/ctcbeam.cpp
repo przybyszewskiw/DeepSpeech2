@@ -1,3 +1,4 @@
+#define NPY_NO_DEPRECATED_API NPY_1_13_API_VERSION
 #include <Python.h>
 #include "numpy/arrayobject.h"
 #include <vector>
@@ -11,18 +12,14 @@
 static PyObject *
 ctcBeamWrapper(PyObject *dummy, PyObject *args)
 {
-    PyObject *arg1=NULL;
-    PyObject *arr1=NULL;
+    PyArrayObject *arg1=NULL;
 
     if (!PyArg_ParseTuple(args, "O", &arg1)) return NULL;
 
-    arr1 = PyArray_FROM_OTF(arg1, NPY_DOUBLE, NPY_IN_ARRAY);
-    if (arr1 == NULL) return NULL;
-
     printf("c++ here:\n");
-    int nd = PyArray_NDIM(arr1);
-    npy_intp *lol = PyArray_DIMS(arr1);
-    double *dptr = (double *)PyArray_DATA(arr1);
+    int nd = PyArray_NDIM(arg1);
+    npy_intp *lol = PyArray_DIMS(arg1);
+    double *dptr = (double *)PyArray_DATA(arg1);
     printf("ndim: %d dims: %d %d\n", nd, (int)lol[0], (int)lol[1]);
     for (int i = 0; i < lol[0]; i++)
     {
@@ -34,7 +31,6 @@ ctcBeamWrapper(PyObject *dummy, PyObject *args)
     }
     //here we count ctcbeam
 
-    Py_DECREF(arr1);
     Py_INCREF(Py_None);
     return Py_None;
 }
