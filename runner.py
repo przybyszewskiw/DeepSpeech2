@@ -66,6 +66,8 @@ class Runner:
 
     def train_epoch(self, dataset, batch_size=8):
         tracks_to_merge = []
+        total_loss = 0.
+        iterations = 0
         for (i, (track_path, transcript_string)) in enumerate(dataset):
             tracks_to_merge.append(self.loader.load_tensors(
                 track_path,
@@ -94,9 +96,13 @@ class Runner:
                     loss.item(),
                     time.time() - start_time
                 ))
+                total_loss += loss.item()
+                iterations += 1
                 # for some reason output is in the buffer until termination while redirecting to file,
                 # so we have to manually flush
                 sys.stdout.flush()
+
+        print('Total loss in this epoch is {}'.format(total_loss / iterations))
 
     def train(self, dataset, batch_size=8, epochs=50, starting_epoch=0):
         self.net.train()
