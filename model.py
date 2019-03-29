@@ -203,7 +203,7 @@ class DeepSpeech(nn.Module):
         batch_size = output.shape[0]
         utterance_length = output.shape[1]
         output = output.transpose(0, 1)
-        output_length = torch.full((batch_size,), utterance_length)
+        output_length = torch.full((batch_size,), utterance_length, dtype=torch.int32)
 
         if target_length is None:
             target_length = torch.full((target.shape[0],), target.shape[1])
