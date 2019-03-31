@@ -20,8 +20,9 @@ def eval_model(model, dataset, loader):
         probs = torch.cat((list_aux[1], list_aux[0]), 1)
 
         answer = ctcBeamSearch(probs)
-        print('answer = "{}"'.format(answer))
-        error += wer(transcript, answer)
+        word_error_rate = wer(transcript, answer)
+        error += word_error_rate
+        print('answer = "{}" WER = {}'.format(answer, word_error_rate))
         sys.stdout.flush()
 
     print("Word Error Rate after evaluation {}.".format(error / len(dataset)))
