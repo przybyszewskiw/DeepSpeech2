@@ -1,4 +1,7 @@
 from __future__ import print_function
+
+from collections import OrderedDict
+
 import torch
 import torch.nn as nn
 
@@ -151,6 +154,7 @@ class DeepSpeech(nn.Module):
             rec_number = number of recurrent layers
             full_number = number of fully connected layers
             characters = number of characters which we are predicting
+            batch_norm = whether to use batch normalization before RNN
 
         Input: Tensor of shape NxFxT where N is batch size, F is the number of
            different frequencies and T is length of time-series.
@@ -159,7 +163,7 @@ class DeepSpeech(nn.Module):
 
     """
     def __init__(self, frequencies=700, conv_number=2, context=5,
-                 rec_number=3, full_number=2, characters=29):
+                 rec_number=3, full_number=2, characters=29, batch_norm=False):
         super(DeepSpeech, self).__init__()
         self.characters = characters
         # TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
@@ -168,17 +172,18 @@ class DeepSpeech(nn.Module):
         self.context = context
         self.conv_number = conv_number
         self.frequencies = frequencies
-        self.layer = nn.Sequential(
-            Convolutions(conv_number=self.conv_number, frequencies=self.frequencies,
-                         context=self.context),
-            Recurrent(rec_number=self.rec_number, frequencies=self.frequencies),
-            FullyConnected(full_number=self.full_number, frequencies=self.frequencies),
-            Probabilities(characters=self.characters, frequencies=self.frequencies)
-        )
+
+        d = OrderedDict([('conv', Convolutions(conv_number=self.conv_number, frequencies=self.frequencies,
+                         context=self.context))])
+        if batch_norm:
+            d.update({'bn': nn.BatchNorm1d(self.frequencies)})
+        d.update({'rnn': Recurrent(rec_number=self.rec_number, frequencies=self.frequencies)})
+        d.update({'fc': FullyConnected(full_number=self.full_number, frequencies=self.frequencies)})
+        d.update({'probs': Probabilities(characters=self.characters, frequencies=self.frequencies)})
+        print(d)
+        self.layer = nn.Sequential(d)
 
     def forward(self, x):
-        # x = self.layer(x)
-        # return x
         x, y = self.layer(x)
         return x, y
 

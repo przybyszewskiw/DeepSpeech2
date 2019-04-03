@@ -17,6 +17,8 @@ def main():
     parser.add_argument('--starting-epoch', type=int, default=0)
     parser.add_argument('--device', type=str, required=False, default='cpu', choices=['gpu', 'cpu'])
     parser.add_argument('--batch-size', type=int, default=8)
+    parser.add_argument('--batch-norm', dest='batch_norm', action='store_true')
+    parser.set_defaults(batch_norm=False)
 
     args = parser.parse_args()
 
@@ -25,9 +27,12 @@ def main():
             raise Exception("CUDA (GPU) is not available!")
 
     if args.model is not None:
-        run = Runner(pretrained_model_path=args.model, device=args.device)
+        run = Runner(pretrained_model_path=args.model,
+                     device=args.device,
+                     batch_norm=args.batch_norm)
     else:
-        run = Runner(device=args.device)
+        run = Runner(device=args.device,
+                     batch_norm=args.batch_norm)
 
     if args.task == 'train':
         if args.dataset is None:

@@ -22,13 +22,15 @@ class Runner:
                  sound_time_length=20,
                  lr=0.001,
                  pretrained_model_path=None,
+                 batch_norm=False,
                  device='cpu'):
         self.net = DeepSpeech(frequencies=frequencies,
                               conv_number=conv_number,
                               context=context,
                               rec_number=rec_number,
                               full_number=full_number,
-                              characters=characters)
+                              characters=characters,
+                              batch_norm=batch_norm)
         if device == 'gpu':
             device = 'cuda:0'
             self.net = nn.DataParallel(self.net)
