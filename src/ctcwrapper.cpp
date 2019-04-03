@@ -1,38 +1,35 @@
 #define NPY_NO_DEPRECATED_API NPY_1_13_API_VERSION
 #include <Python.h>
-#include "numpy/arrayobject.h"
 #include <vector>
 #include <string>
-
-/*std::string ctcBeam(std::vector<std::vector<double>> mat, std::string classes )
-{
-    return "todo"; //TODO
-}*/
+#include "ctcbeam.hpp"
 
 static PyObject *
 ctcBeamWrapper(PyObject *dummy, PyObject *args)
 {
-    PyArrayObject *arg1=NULL;
+    PyObject *lst=NULL;
+    const char *file;
 
-    if (!PyArg_ParseTuple(args, "O", &arg1)) return NULL;
+    if (!PyArg_ParseTuple(args, "Os", &lst, &file)) return NULL;
 
-    printf("c++ here:\n");
-    int nd = PyArray_NDIM(arg1);
-    npy_intp *lol = PyArray_DIMS(arg1);
-    double *dptr = (double *)PyArray_DATA(arg1);
-    printf("ndim: %d dims: %d %d\n", nd, (int)lol[0], (int)lol[1]);
-    for (int i = 0; i < lol[0]; i++)
+    if (!PyList_Check(lst)) return NULL;
+    int len = PyList_Size(lst);
+    std::vector<std::vector<double>> vec;
+    
+    for (int i = 0; i < len; i++)
     {
-        for (int j = 0; j < lol[1]; j++)
+    	vec.push_back(std::vector<double>{});
+    	PyObject* row = PyList_GetItem(lst, i);
+    	int rowL = PyList_Size(row);
+        for (int j = 0; j < rowL; j++)
         {
-            printf("%lf ", dptr[i * lol[1] + j]);
+            PyObject *elem = PyList_GetItem(row, j);
+            vec[i].push_back(PyFloat_AS_DOUBLE(elem));
         }
-        printf("\n");
     }
-    //here we count ctcbeam
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    std::string result = ctcBeamSearch(vec, 100, globalClasses, languageModelFromFile(file));
+    return PyUnicode_FromString(result.c_str());
 }
 
 static PyMethodDef ctcBeamMethods[] =
@@ -52,7 +49,6 @@ static struct PyModuleDef ctcBeamModule =
 
 PyMODINIT_FUNC PyInit_ctcbeam(void)
 {
-    import_array();
     return PyModule_Create(&ctcBeamModule);
 }
 
@@ -60,7 +56,8 @@ PyMODINIT_FUNC PyInit_ctcbeam(void)
 int main(int argc, char **argv)
 {
     wchar_t *program = Py_DecodeLocale(argv[0], NULL);
-    if (program == NULL) {
+    if (program == NULL)
+    {
         fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
         exit(1);
     }

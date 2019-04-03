@@ -1,0 +1,14 @@
+ctcwrapper.cpp to połączenie między pythonem a c++-em
+ctcbeam.hpp to kod ctcbeama
+c++ udostępnia pythonowi funkcję, która dostaje listę list - output sieci i nazwę pliku z language
+modelem.
+aby skompilować odpalamy
+$ python setup.py install
+w example.py jest przykład użycia (trzeba mieć zapisany torch tensor z outputem sieci)
+
+TODO:
+1. Dołączyć całość do reszty
+2. Później można zmienić, żeby dawać c++-owi mapę literek i więcej niż 1 output (żeby tylko
+   raz czytać czytać langugage model z pliku)
+3. Pobawić się parametrami
+4. Dodać faworyzowanie długich słów, zakaz spacji na końcach itp.
