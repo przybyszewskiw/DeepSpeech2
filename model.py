@@ -20,7 +20,7 @@ class Convolutions(nn.Module):
            different frequencies and T is lenght of time-series.
     Output: Tensor of the same shape as input
     """
-    def __init__(self, conv_number=2, frequencies=700, context=5):
+    def __init__(self, conv_number=2, frequencies=700, context=5, batch_norm=False):
         super(Convolutions, self).__init__()
         self.frequencies = frequencies
         self.conv_number = conv_number
@@ -29,13 +29,18 @@ class Convolutions(nn.Module):
         self.layers = nn.ModuleList()
         # TODO Is that what we really want? (namely are those the convolutions
         # over the time dimension that the paper tells us about)
+
         for _ in range(self.conv_number):
             new_layer = nn.Sequential(
-              nn.Conv1d(in_channels=self.frequencies, out_channels=self.frequencies,
+                nn.Conv1d(in_channels=self.frequencies, out_channels=self.frequencies,
                         kernel_size=2*self.context+1, padding=self.context,
                         groups=self.frequencies),
               nn.Hardtanh(min_val=0, max_val=20, inplace=True)
             )
+            if batch_norm:
+                new_layer = nn.Sequential(nn.BatchNorm1d(self.frequencies, momentum=0.95,
+          eps=1e-4), new_layer)
+            print(new_layer)
             self.layers.append(new_layer)
 
     def forward(self, x):
@@ -173,15 +178,14 @@ class DeepSpeech(nn.Module):
         self.conv_number = conv_number
         self.frequencies = frequencies
 
-        d = OrderedDict([('conv', Convolutions(conv_number=self.conv_number, frequencies=self.frequencies,
-                         context=self.context))])
-        if batch_norm:
-            d.update({'bn': nn.BatchNorm1d(self.frequencies)})
-        d.update({'rnn': Recurrent(rec_number=self.rec_number, frequencies=self.frequencies)})
-        d.update({'fc': FullyConnected(full_number=self.full_number, frequencies=self.frequencies)})
-        d.update({'probs': Probabilities(characters=self.characters, frequencies=self.frequencies)})
-        print(d)
-        self.layer = nn.Sequential(d)
+        self.layer = nn.Sequential(
+           Convolutions(conv_number=self.conv_number, frequencies=self.frequencies,
+                         context=self.context, batch_norm=batch_norm),
+           Recurrent(rec_number=self.rec_number, frequencies=self.frequencies),
+           FullyConnected(full_number=self.full_number, frequencies=self.frequencies),
+           Probabilities(characters=self.characters, frequencies=self.frequencies)
+        )
+
 
     def forward(self, x):
         x, y = self.layer(x)
