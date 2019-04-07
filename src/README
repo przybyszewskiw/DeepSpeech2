@@ -7,8 +7,7 @@ $ python setup.py install
 w example.py jest przykład użycia (trzeba mieć zapisany torch tensor z outputem sieci)
 
 TODO:
-1. Dołączyć całość do reszty
-2. Później można zmienić, żeby dawać c++-owi mapę literek i więcej niż 1 output (żeby tylko
+1. Później można zmienić, żeby dawać c++-owi mapę literek i więcej niż 1 output (żeby tylko
    raz czytać czytać langugage model z pliku)
-3. Pobawić się parametrami
-4. Dodać faworyzowanie długich słów, zakaz spacji na końcach itp.
+2. Pobawić się parametrami
+3. Dodać faworyzowanie długich słów, zakaz spacji na końcach itp.

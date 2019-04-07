@@ -4,7 +4,7 @@ import numpy as np
 from decoder import ctcBeamSearch
 from jiwer import wer
 import torch
-
+import ctcbeam
 
 def eval_model(model, dataset, loader):
     error = 0
@@ -19,7 +19,7 @@ def eval_model(model, dataset, loader):
         list_aux = torch.split(probs, [1, 28], 1)
         probs = torch.cat((list_aux[1], list_aux[0]), 1)
 
-        answer = ctcBeamSearch(probs)
+        answer = ctcbeam.ctcbeam(probs.tolist(), "ngrams.txt")
         word_error_rate = wer(transcript, answer)
         error += word_error_rate
         print('answer = "{}" WER = {}'.format(answer, word_error_rate))
