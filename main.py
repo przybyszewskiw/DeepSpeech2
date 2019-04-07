@@ -31,11 +31,13 @@ def main():
         run = Runner(pretrained_model_path=args.model,
                      device=args.device,
                      batch_norm=args.batch_norm,
-                     dropout=args.dropout)
+                     dropout=args.dropout,
+                     conv_numebr=3)
     else:
         run = Runner(device=args.device,
                      batch_norm=args.batch_norm,
-                     dropout=args.dropout)
+                     dropout=args.dropout,
+                     conv_number=3)
 
     if args.task == 'train':
         if args.dataset is None:
