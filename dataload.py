@@ -4,13 +4,17 @@ import numpy as np
 import torch
 import soundfile as sf
 import scipy.signal as signal
+import math
+
+def normalize_signal(signal):
+    return signal / (np.max(np.abs(signal)) + 1e-5)
 
 
 class Loader:
-    def __init__(self, bucket_size, time_length, time_overlap, eps=1e-10):
-        self.bucket_size = bucket_size
+    def __init__(self, num_audio_features, time_length, time_overlap, eps=1e-10):
         self.time_length = time_length
         self.time_overlap = time_overlap
+        self.num_audio_features = num_audio_features
         self.eps = eps
 
     # arguments: file_path - path to music file (must be mono)
@@ -18,27 +22,37 @@ class Loader:
     #            time_overlap - overlap of time intervals in ms
     def load_track(self, file_path, debug=False):
         data, sample_rate = sf.read(file_path)
+        data = normalize_signal(data)
 
         if debug: print("length of data: {}".format(len(data)))
         if debug: print("sample rate: {}".format(sample_rate))
         nperseg = int(round(sample_rate * self.time_length / 1e3))
         noverlap = int(round(sample_rate * self.time_overlap / 1e3))
-        nfft = int(round(sample_rate / self.bucket_size))
 
         freqs, times, spec = signal.spectrogram(data, fs=sample_rate,
                                                 window=signal.get_window('hann', nperseg),
                                                 nperseg=nperseg,
                                                 noverlap=noverlap,
-                                                nfft=nfft,
                                                 detrend=False)
 
+        spec = np.square(np.abs(spec))
+        spec[spec <= 1e-30] = 1e-30
+        spec = 10 * np.log10(spec)
+
+        assert self.num_audio_features <= spec.shape[0]
+        spec = spec[:self.num_audio_features, :]
+
+        mean = np.mean(spec, axis=0)
+        std_dev = np.std(spec, axis=0)
+        spec = (spec - mean) / std_dev
+
         if debug: print("spectrogram done")
-        if debug: print("number of frequency bins: {}".format(len(freqs)))
+        if debug: print("number of frequency bins: {}".format(spec.shape[0]))
         if debug: print("size of frequency bin: {} Hz".format(freqs[1] - freqs[0]))
         if debug: print("number of time samples: {}".format(len(times)))
         if debug: print("step between time samples: {} ms".format((times[1] - times[0]) * 1e3))
 
-        return np.log(spec + self.eps)
+        return spec
         #return spec
 
     def load_transcript(self, file_path):
@@ -95,7 +109,7 @@ def test():
         print("give name of file")
     else:
         # spectrogram with 5Hz frequency bins ans 20ms time bins overlapping 10ms
-        loader = Loader(5, 20, 10)
+        loader = Loader(100, 20, 10)
         print(loader.load_track(sys.argv[1], True))
 
 

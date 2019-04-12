@@ -30,8 +30,8 @@ def eval_model(model, dataset, loader):
     print("Word Error Rate after evaluation {}.".format(error / len(dataset)))
 
 
-def eval_single(model, track_path, transcript_path, sound_bucket_size, sound_time_overlap):
-    track = load_track(track_path, sound_bucket_size, sound_time_overlap)
+def eval_single(model, track_path, transcript_path, sound_features_size, sound_time_overlap):
+    track = load_track(track_path, sound_features_size, sound_time_overlap)
     track = torch.from_numpy(track[np.newaxis, :]).float()
     with open(transcript_path, 'r') as ground_truth:
         transcript = ground_truth.read().replace('\n', '')
