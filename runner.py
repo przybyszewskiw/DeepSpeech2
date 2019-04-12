@@ -116,26 +116,27 @@ class Runner:
         tracks_to_merge = []
         total_loss = 0.
         iterations = 0
-        for (i, (track_path, transcript_string)) in enumerate(dataset):
-            tracks_to_merge.append(self.loader.load_tensors(
-                track_path,
-                transcript_string
-            ))
+        with torch.no_grad():
+            for (i, (track_path, transcript_string)) in enumerate(dataset):
+                tracks_to_merge.append(self.loader.load_tensors(
+                    track_path,
+                    transcript_string
+                ))
 
-            if (i + 1) % batch_size == 0:
-                (audio, transs, lengths) = self.loader.merge_into_batch(tracks_to_merge)
-                tracks_to_merge = []
+                if (i + 1) % batch_size == 0:
+                    (audio, transs, lengths) = self.loader.merge_into_batch(tracks_to_merge)
+                    tracks_to_merge = []
 
-                audio = audio.to(self.device)
-                output, _ = self.net(audio)
+                    audio = audio.to(self.device)
+                    output, _ = self.net(audio)
 
-                if self.device != torch.device("cpu"):
-                    output = output.to("cpu")
+                    if self.device != torch.device("cpu"):
+                        output = output.to("cpu")
 
-                loss = DeepSpeech.criterion(output, transs, lengths)
+                    loss = DeepSpeech.criterion(output, transs, lengths)
 
-                total_loss += loss.item()
-                iterations += 1
+                    total_loss += loss.item()
+                    iterations += 1
 
         print('Validation loss is {}'.format(total_loss / iterations))
 
