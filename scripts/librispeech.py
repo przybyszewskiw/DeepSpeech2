@@ -61,6 +61,8 @@ class LibriSpeech:
         print('Done!')
 
     def get_dataset(self, name, sort=True):
+        if name == 'all-train':
+            return self.get_all_train_datasets()
 
         dataset_root = abspath(pjoin('./datasets/LibriSpeech', name))
         if not os.path.isdir(dataset_root):
@@ -68,18 +70,20 @@ class LibriSpeech:
         dataset = self._parse_librispeech_root(dataset_root)
         return self._sort_dataset(dataset) if sort else dataset
 
-    def get_all_datasets(self):
+    def _get_datasets(self, names, sort=True):
         res = []
-        for k in DATASETS.keys():
-            res += self.get_dataset(k, sort=False)
-        return self._sort_dataset(res)
+        for name in names:
+            res += self.get_dataset(name, sort=False)
+        return self._sort_dataset(res) if sort else res
+
+    def get_all_datasets(self):
+        return self._get_datasets(DATASETS.keys())
+
+    def get_all_train_datasets(self):
+        return self._get_datasets(['train-clean-100', 'train-clean-360', 'train-other-500'])
 
     def get_clean_datasets(self):
-        res = []
-        for k in DATASETS.keys():
-            if 'clean' in k:
-                res += self.get_dataset(k, sort=False)
-        return self._sort_dataset(res)
+        return self._get_datasets([name for name in DATASETS.keys() if 'clean' in name])
 
 
 if __name__ == '__main__':
