@@ -19,7 +19,7 @@ class Runner:
                  rec_number=3,
                  full_layers=[2048],
                  characters=29,
-                 sound_bucket_size=50,
+                 sound_features_size=100,
                  sound_time_overlap=5,
                  sound_time_length=20,
                  lr=0.001,
@@ -45,7 +45,7 @@ class Runner:
         if pretrained_model_path is not None:
             self.net.load_state_dict(torch.load(pretrained_model_path))
 
-        self.loader = Loader(bucket_size=sound_bucket_size,
+        self.loader = Loader(num_audio_features=sound_features_size,
                              time_overlap=sound_time_overlap,
                              time_length=sound_time_length)
 

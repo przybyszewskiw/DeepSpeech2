@@ -6,6 +6,6 @@ ctcbeam_module = Extension('ctcbeam', sources=['ctcwrapper.cpp'], extra_compile_
 setup(name='deep speech2',
       version='1.0',
       description='ctc beam in c++',
-      install_requires = ["numpy==1.16.1"],
-      include_dirs = [np.get_include()],
+      install_requires = [],
+      include_dirs = [],
       ext_modules=[ctcbeam_module])
