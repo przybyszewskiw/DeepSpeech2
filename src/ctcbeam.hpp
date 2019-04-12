@@ -40,6 +40,10 @@ public:
     
     double getProb(std::string ngram) const
     {
+        if (length == 0)
+        {
+	        return 1;
+        }
         int len = ngram.size();
         if (probs.count(ngram) && sizes.count(len) && sizes.at(len) != 0)
         {

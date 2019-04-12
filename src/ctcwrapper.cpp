@@ -9,8 +9,9 @@ ctcBeamWrapper(PyObject *dummy, PyObject *args)
 {
     PyObject *lst=NULL;
     const char *file;
+    int beamWidth;
 
-    if (!PyArg_ParseTuple(args, "Os", &lst, &file)) return NULL;
+    if (!PyArg_ParseTuple(args, "Osi", &lst, &file, &beamWidth)) return NULL;
 
     if (!PyList_Check(lst)) return NULL;
     int len = PyList_Size(lst);
@@ -28,7 +29,7 @@ ctcBeamWrapper(PyObject *dummy, PyObject *args)
         }
     }
 
-    std::string result = ctcBeamSearch(vec, 100, globalClasses, languageModelFromFile(file));
+    std::string result = ctcBeamSearch(vec, beamWidth, globalClasses, languageModelFromFile(file));
     return PyUnicode_FromString(result.c_str());
 }
 

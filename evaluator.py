@@ -19,8 +19,9 @@ def eval_model(model, dataset, loader):
             probs = probs.squeeze()
             list_aux = torch.split(probs, [1, 28], 1)
             probs = torch.cat((list_aux[1], list_aux[0]), 1)
+            beamWidth = 200
 
-            answer = ctcbeam.ctcbeam(probs.tolist(), "ngrams.txt")
+            answer = ctcbeam.ctcbeam(probs.tolist(), "ngrams.txt", beamWidth)
             #answer = ctcBeamSearch(probs)
 
             word_error_rate = wer(transcript, answer)
