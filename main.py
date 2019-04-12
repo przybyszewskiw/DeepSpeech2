@@ -19,6 +19,7 @@ def main():
     parser.add_argument('--batch-size', type=int, default=8)
     parser.add_argument('--batch-norm', dest='batch_norm', action='store_true')
     parser.add_argument('--dropout', type=float, default=0, help="float number between 0 and 1")
+    parser.add_argument('--shuffle', action='store_true', help='shuffle dataset while training')
     parser.set_defaults(batch_norm=False)
 
     args = parser.parse_args()
@@ -43,7 +44,8 @@ def main():
         run.train(dataset=LibriSpeech().get_dataset(args.dataset),
                   epochs=args.epochs,
                   starting_epoch=args.starting_epoch,
-                  batch_size=args.batch_size)
+                  batch_size=args.batch_size,
+                  shuffle=args.shuffle)
 
     elif args.task == 'eval':
         if args.model is None:

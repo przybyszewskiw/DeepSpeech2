@@ -60,7 +60,7 @@ class LibriSpeech:
         shutil.rmtree(tmpdir)
         print('Done!')
 
-    def get_dataset(self, name, sort=True):
+    def _get_dataset(self, name):
         if name == 'all-train':
             return self.get_all_train_datasets()
 
@@ -68,12 +68,15 @@ class LibriSpeech:
         if not os.path.isdir(dataset_root):
             self._download_dataset(DATASETS[name])
         dataset = self._parse_librispeech_root(dataset_root)
-        return self._sort_dataset(dataset) if sort else dataset
+        return dataset
+
+    def get_dataset(self, name, sort=True):
+        return self._get_datasets([name], sort)
 
     def _get_datasets(self, names, sort=True):
         res = []
         for name in names:
-            res += self.get_dataset(name, sort=False)
+            res += self._get_dataset(name)
         return self._sort_dataset(res) if sort else res
 
     def get_all_datasets(self):

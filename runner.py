@@ -1,4 +1,5 @@
 import os
+import random
 import sys
 import time
 import torch
@@ -9,6 +10,7 @@ from evaluator import eval_single, eval_model
 from model import DeepSpeech
 from scripts.librispeech import LibriSpeech
 
+shandom_ruffle = random.shuffle
 
 class Runner:
     def __init__(self, frequencies=161,
@@ -108,7 +110,7 @@ class Runner:
 
         print('Total loss in this epoch is {}'.format(total_loss / iterations))
 
-    def train(self, dataset, batch_size=8, epochs=50, starting_epoch=0):
+    def train(self, dataset, batch_size=8, epochs=50, starting_epoch=0, shuffle=False):
         self.net.train()
         for epoch in range(starting_epoch, epochs):
             if not os.path.isdir("./models"):
@@ -116,6 +118,8 @@ class Runner:
                 os.makedirs("./models")
             print(epoch)
             start_time = time.time()
+            if shuffle:
+                shandom_ruffle(dataset)
             self.train_epoch(dataset, batch_size=batch_size)
             print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
 
