@@ -36,8 +36,8 @@ class Convolutions(nn.Module):
               nn.Hardtanh(min_val=0, max_val=20, inplace=True)
             )
             if batch_norm:
-                new_layer = nn.Sequential(nn.BatchNorm1d(self.frequencies, momentum=0.95,
-          eps=1e-4), new_layer)
+                new_layer = nn.Sequential(new_layer, nn.BatchNorm1d(self.frequencies, momentum=0.95,
+          eps=1e-4))
             self.layers.append(new_layer)
 
     def forward(self, x):
@@ -102,7 +102,7 @@ class FullyConnected(nn.Module):
               nn.Hardtanh(min_val=0, max_val=20, inplace=True)
             )
             if dropout != 0:
-                new_layer = nn.Sequential(nn.Dropout(dropout), new_layer)
+                new_layer = nn.Sequential(new_layer, nn.Dropout(dropout))
             self.layers.append(new_layer)
 
     def forward(self, x):
