@@ -11,6 +11,7 @@ def main():
     parser = argparse.ArgumentParser(description='DeepSpeech2!')
     parser.add_argument('task', action='store', choices=['train', 'eval'])
     parser.add_argument('--dataset', type=str, required=False)
+    parser.add_argument('--test-dataset', type=str, default='test_clean')
     parser.add_argument('--track', type=str, required=False)
     parser.add_argument('--model', type=str, required=False)
     parser.add_argument('--epochs', type=int, default=100)
@@ -41,11 +42,13 @@ def main():
     if args.task == 'train':
         if args.dataset is None:
             raise Exception("Specify dataset to train on!")
-        run.train(dataset=LibriSpeech().get_dataset(args.dataset),
+        ls = LibriSpeech()
+        run.train(dataset=ls.get_dataset(args.dataset),
                   epochs=args.epochs,
                   starting_epoch=args.starting_epoch,
                   batch_size=args.batch_size,
-                  shuffle=args.shuffle)
+                  shuffle=args.shuffle,
+                  testing_dataset=ls.get_dataset(args.test_dataset))
 
     elif args.task == 'eval':
         if args.model is None:

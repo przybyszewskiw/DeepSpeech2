@@ -71,6 +71,7 @@ class Runner:
     """
 
     def train_epoch(self, dataset, batch_size=8):
+        self.net.train()
         tracks_to_merge = []
         total_loss = 0.
         iterations = 0
@@ -110,7 +111,35 @@ class Runner:
 
         print('Total loss in this epoch is {}'.format(total_loss / iterations))
 
-    def train(self, dataset, batch_size=8, epochs=50, starting_epoch=0, shuffle=False):
+    def test_dataset(self, dataset, batch_size=8):
+        self.net.eval()
+        tracks_to_merge = []
+        total_loss = 0.
+        iterations = 0
+        for (i, (track_path, transcript_string)) in enumerate(dataset):
+            tracks_to_merge.append(self.loader.load_tensors(
+                track_path,
+                transcript_string
+            ))
+
+            if (i + 1) % batch_size == 0:
+                (audio, transs, lengths) = self.loader.merge_into_batch(tracks_to_merge)
+                tracks_to_merge = []
+
+                audio = audio.to(self.device)
+                output, _ = self.net(audio)
+
+                if self.device != torch.device("cpu"):
+                    output = output.to("cpu")
+
+                loss = DeepSpeech.criterion(output, transs, lengths)
+
+                total_loss += loss.item()
+                iterations += 1
+
+        print('Validation loss is {}'.format(total_loss / iterations))
+
+    def train(self, dataset, batch_size=8, epochs=50, starting_epoch=0, shuffle=False, testing_dataset=None):
         self.net.train()
         for epoch in range(starting_epoch, epochs):
             if not os.path.isdir("./models"):
@@ -122,6 +151,9 @@ class Runner:
                 shandom_ruffle(dataset)
             self.train_epoch(dataset, batch_size=batch_size)
             print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
+
+            if testing_dataset is not None:
+                self.test_dataset(testing_dataset)
 
             if epoch % 5 == 4:
                 print('Saving model')
