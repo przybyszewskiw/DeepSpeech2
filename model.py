@@ -2,43 +2,64 @@ from __future__ import print_function
 
 import torch
 import torch.nn as nn
+import math
 
 
 class Convolutions(nn.Module):
     """
-    First part of DeepSpeech net. Consists of one or more 1d convolutions.
+    First part of DeepSpeech net. Consists of one or more 2d convolutions.
 
     Constructor parameters:
-        convolutions = number of convolutional layers
-        frequencies = number of different frequencies per time stamp
-        context = number of neighbouring time stamps we should care about
-        (implies kernel size)
-
-    Input: Tensor of shape NxFxT where N is batch size, F is the number of
+        frequencies = number of frequencies in input tensor
+        conv_list = list of dicts des
+        initial_channels = number of channels in input tensor
+        batch_norm = whether or not use batch normalization after each convolution
+    Input: Tensor of shape NxCxFxT where N is batch size, F is the number of
            different frequencies and T is lenght of time-series.
-    Output: Tensor of the same shape as input
+    Output: Tensor of the shape NxC'xF'xT'. Parameters C' and F' can be found as
+            self.newC and self.newF respectively
     """
-    def __init__(self, conv_number=2, frequencies=700, context=5, batch_norm=False):
+    def __init__(self, frequencies, initial_channels=1, conv_list=None, batch_norm=False):
         super(Convolutions, self).__init__()
         self.frequencies = frequencies
-        self.conv_number = conv_number
-        self.context = context
+        default_conv_list = [{"kernel": (11, 41), "stride": (2, 2), "num_chan": 32, "padding": "SAME"},
+                             {"kernel": (11, 21), "stride": (1, 2), "num_chan": 64, "padding": "SAME"},
+                             {"kernel": (11, 21), "stride": (1, 2), "num_chan": 96, "padding": "SAME"}]
+        self.conv_list = default_conv_list if conv_list is None else conv_list
 
         self.layers = nn.ModuleList()
-        # TODO Is that what we really want? (namely are those the convolutions
-        # over the time dimension that the paper tells us about)
+        self.newF = self.count_out_freqs()
 
-        for _ in range(self.conv_number):
+        self.newC = initial_channels
+
+        for layer in self.conv_list:
+            pad = self.get_padding(layer)
+
             new_layer = nn.Sequential(
-                nn.Conv1d(in_channels=self.frequencies, out_channels=self.frequencies,
-                        kernel_size=2*self.context+1, padding=self.context,
-                        groups=self.frequencies),
-              nn.Hardtanh(min_val=0, max_val=20, inplace=True)
+                nn.Conv2d(in_channels=self.newC, out_channels=layer["num_chan"],
+                          kernel_size=layer["kernel"], stride=layer["stride"], padding=pad),
+                nn.Hardtanh(min_val=0, max_val=20, inplace=True)
             )
+
             if batch_norm:
-                new_layer = nn.Sequential(new_layer, nn.BatchNorm1d(self.frequencies, momentum=0.95,
-          eps=1e-4))
+                new_layer = nn.Sequential(new_layer, nn.BatchNorm2d(layer["num_chan"], momentum=0.95, eps=1e-4))
+
+            self.newC = layer["num_chan"]
             self.layers.append(new_layer)
+
+    def count_out_freqs(self):
+        curr_f = self.frequencies
+        for layer in self.conv_list:
+            curr_f = math.floor((curr_f + 2 * self.get_padding(layer)[0] - layer["kernel"][0])
+                                 / layer["stride"][0] + 1)
+        return curr_f
+
+    @staticmethod
+    def get_padding(layer):
+        if layer["padding"] == "SAME":
+            return layer["kernel"]
+        else:
+            return layer["padding"]
 
     def forward(self, x):
         for layer in self.layers:
@@ -177,19 +198,21 @@ class DeepSpeech(nn.Module):
         self.conv_number = conv_number
         self.frequencies = frequencies
 
-        self.layer = nn.Sequential(
-           Convolutions(conv_number=self.conv_number, frequencies=self.frequencies,
-                         context=self.context, batch_norm=batch_norm),
-           Recurrent(rec_number=self.rec_number, frequencies=self.frequencies),
-           FullyConnected(layers_sizes=full_layers, frequencies=self.frequencies, dropout=fc_dropout),
-           Probabilities(characters=self.characters, frequencies=full_layers[-1])
-        )
-        print(self.layer)
+        self.convs = Convolutions(frequencies=self.frequencies, batch_norm=batch_norm)
+        self.rec = Recurrent(rec_number=self.rec_number, frequencies=self.convs.newF * self.convs.newC)
+        self.fc = FullyConnected(layers_sizes=self.full_layers, frequencies=self.convs.newF * self.convs.newC, dropout=fc_dropout)
+        self.probs = Probabilities(characters=self.characters, frequencies=full_layers[-1])
 
+        print(self.convs, self.rec, self.fc, self.probs)
 
     def forward(self, x):
-        x, y = self.layer(x)
-        return x, y
+        x = torch.unsqueeze(x, dim=1)
+        x = self.convs(x)
+        (n, c, f, t) = x.shape
+        x = x.view(n, c * f, t)
+        x = self.rec(x)
+        x = self.fc(x)
+        return self.probs(x)
 
     """
         Calculate loss using CTC loss function.
@@ -229,7 +252,7 @@ def test():
         x = torch.rand(N, F, T)
 
         net = DeepSpeech(frequencies=F, context=1, conv_number=1, characters=C)
-        x = net(x)
+        x, _ = net(x)
 
         labels = torch.randint(1, C, (N, T))
         loss = DeepSpeech.criterion(x, labels)
