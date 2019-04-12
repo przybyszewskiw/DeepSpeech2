@@ -36,8 +36,8 @@ class Convolutions(nn.Module):
               nn.Hardtanh(min_val=0, max_val=20, inplace=True)
             )
             if batch_norm:
-                new_layer = nn.Sequential(nn.BatchNorm1d(self.frequencies, momentum=0.95,
-          eps=1e-4), new_layer)
+                new_layer = nn.Sequential(new_layer, nn.BatchNorm1d(self.frequencies, momentum=0.95,
+          eps=1e-4))
             self.layers.append(new_layer)
 
     def forward(self, x):
@@ -91,18 +91,18 @@ class FullyConnected(nn.Module):
            different frequencies and T is lenght of time-series.
     Output: Tensor of the same shape as input
     """
-    def __init__(self, full_number=2, frequencies=700, dropout=0):
+    def __init__(self, layers_sizes=[2048], frequencies=700, dropout=0):
         super(FullyConnected, self).__init__()
-        self.full_number = full_number
+        self.layers_sizes = list(zip([frequencies] + layers_sizes, layers_sizes))
         self.frequencies = frequencies
         self.layers = nn.ModuleList()
-        for _ in range(self.full_number):
+        for inner, outer in self.layers_sizes:
             new_layer = nn.Sequential(
-              nn.Linear(self.frequencies, self.frequencies),
+              nn.Linear(inner, outer),
               nn.Hardtanh(min_val=0, max_val=20, inplace=True)
             )
             if dropout != 0:
-                new_layer = nn.Sequential(nn.Dropout(dropout), new_layer)
+                new_layer = nn.Sequential(new_layer, nn.Dropout(dropout))
             self.layers.append(new_layer)
 
     def forward(self, x):
@@ -167,11 +167,11 @@ class DeepSpeech(nn.Module):
 
     """
     def __init__(self, frequencies=700, conv_number=2, context=5,
-                 rec_number=3, full_number=2, characters=29, batch_norm=False, fc_dropout=0):
+                 rec_number=3, full_layers=[2048], characters=29, batch_norm=False, fc_dropout=0):
         super(DeepSpeech, self).__init__()
         self.characters = characters
         # TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
-        self.full_number = full_number
+        self.full_layers = full_layers
         self.rec_number = rec_number
         self.context = context
         self.conv_number = conv_number
@@ -181,8 +181,8 @@ class DeepSpeech(nn.Module):
            Convolutions(conv_number=self.conv_number, frequencies=self.frequencies,
                          context=self.context, batch_norm=batch_norm),
            Recurrent(rec_number=self.rec_number, frequencies=self.frequencies),
-           FullyConnected(full_number=self.full_number, frequencies=self.frequencies, dropout=fc_dropout),
-           Probabilities(characters=self.characters, frequencies=self.frequencies)
+           FullyConnected(layers_sizes=full_layers, frequencies=self.frequencies, dropout=fc_dropout),
+           Probabilities(characters=self.characters, frequencies=full_layers[-1])
         )
         print(self.layer)
 

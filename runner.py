@@ -15,7 +15,7 @@ class Runner:
                  conv_number=2,
                  context=5,
                  rec_number=3,
-                 full_number=2,
+                 full_layers=[2048],
                  characters=29,
                  sound_bucket_size=50,
                  sound_time_overlap=5,
@@ -29,7 +29,7 @@ class Runner:
                               conv_number=conv_number,
                               context=context,
                               rec_number=rec_number,
-                              full_number=full_number,
+                              full_layers=full_layers,
                               characters=characters,
                               batch_norm=batch_norm,
                               fc_dropout=dropout)
