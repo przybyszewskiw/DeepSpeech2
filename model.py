@@ -102,7 +102,7 @@ class FullyConnected(nn.Module):
               nn.Hardtanh(min_val=0, max_val=20, inplace=True)
             )
             if dropout != 0:
-                new_layer = nn.Sequential(nn.Dropout(dropout), new_layer)
+                new_layer = nn.Sequential(new_layer, nn.Dropout(dropout))
             self.layers.append(new_layer)
 
     def forward(self, x):

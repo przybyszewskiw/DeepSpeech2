@@ -20,6 +20,8 @@ def eval_model(model, dataset, loader):
         probs = torch.cat((list_aux[1], list_aux[0]), 1)
 
         answer = ctcbeam.ctcbeam(probs.tolist(), "ngrams.txt")
+        #answer = ctcBeamSearch(probs)
+
         word_error_rate = wer(transcript, answer)
         error += word_error_rate
         print('answer = "{}" WER = {}'.format(answer, word_error_rate))
