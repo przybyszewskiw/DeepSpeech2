@@ -19,47 +19,36 @@ class Convolutions(nn.Module):
     Output: Tensor of the shape NxC'xF'xT'. Parameters C' and F' can be found as
             self.newC and self.newF respectively
     """
+
     def __init__(self, frequencies, initial_channels=1, conv_list=None, batch_norm=False):
         super(Convolutions, self).__init__()
         self.frequencies = frequencies
-        default_conv_list = [{"kernel": (11, 41), "stride": (2, 2), "num_chan": 32, "padding": "SAME"},
-                             {"kernel": (11, 21), "stride": (1, 2), "num_chan": 64, "padding": "SAME"},
-                             {"kernel": (11, 21), "stride": (1, 2), "num_chan": 96, "padding": "SAME"}]
+        default_conv_list = [{"kernel": (11, 41), "stride": (2, 2), "num_chan": 32},
+                             {"kernel": (11, 21), "stride": (1, 2), "num_chan": 64},
+        #                      {"kernel": (11, 21), "stride": (1, 2), "num_chan": 96}
+                             ]
         self.conv_list = default_conv_list if conv_list is None else conv_list
 
         self.layers = nn.ModuleList()
-        self.newF = self.count_out_freqs()
 
         self.newC = initial_channels
+        self.newF = frequencies
 
         for layer in self.conv_list:
-            pad = self.get_padding(layer)
-
             new_layer = nn.Sequential(
-                nn.Conv2d(in_channels=self.newC, out_channels=layer["num_chan"],
-                          kernel_size=layer["kernel"], stride=layer["stride"], padding=pad),
+                Conv2dSame(in_channels=self.newC, out_channels=layer["num_chan"],
+                           kernel_size=layer["kernel"], stride=layer["stride"]),
                 nn.Hardtanh(min_val=0, max_val=20, inplace=True)
             )
 
             if batch_norm:
-                new_layer = nn.Sequential(new_layer, nn.BatchNorm2d(layer["num_chan"], momentum=0.95, eps=1e-4))
+                new_layer = nn.Sequential(new_layer,
+                                          nn.BatchNorm2d(layer["num_chan"], momentum=0.95,
+                                                         eps=1e-4))
 
             self.newC = layer["num_chan"]
+            self.newF = math.ceil(float(self.newF) / layer["stride"][0])
             self.layers.append(new_layer)
-
-    def count_out_freqs(self):
-        curr_f = self.frequencies
-        for layer in self.conv_list:
-            curr_f = math.floor((curr_f + 2 * self.get_padding(layer)[0] - layer["kernel"][0])
-                                 / layer["stride"][0] + 1)
-        return curr_f
-
-    @staticmethod
-    def get_padding(layer):
-        if layer["padding"] == "SAME":
-            return layer["kernel"]
-        else:
-            return layer["padding"]
 
     def forward(self, x):
         for layer in self.layers:
@@ -79,6 +68,7 @@ class Recurrent(nn.Module):
            different frequencies and T is length of time-series.
     Output: Tensor of the shape NxTxF where N, T and F as in input
     """
+
     def __init__(self, rec_number=3, frequencies=700):
         super(Recurrent, self).__init__()
         self.frequencies = frequencies
@@ -112,6 +102,7 @@ class FullyConnected(nn.Module):
            different frequencies and T is lenght of time-series.
     Output: Tensor of the same shape as input
     """
+
     def __init__(self, layers_sizes=[2048], frequencies=700, dropout=0):
         super(FullyConnected, self).__init__()
         self.layers_sizes = list(zip([frequencies] + layers_sizes, layers_sizes))
@@ -119,8 +110,8 @@ class FullyConnected(nn.Module):
         self.layers = nn.ModuleList()
         for inner, outer in self.layers_sizes:
             new_layer = nn.Sequential(
-              nn.Linear(inner, outer),
-              nn.Hardtanh(min_val=0, max_val=20, inplace=True)
+                nn.Linear(inner, outer),
+                nn.Hardtanh(min_val=0, max_val=20, inplace=True)
             )
             if dropout != 0:
                 new_layer = nn.Sequential(new_layer, nn.Dropout(dropout))
@@ -148,6 +139,7 @@ class Probabilities(nn.Module):
     Output: Tensor of shape NxTxC where N and T are the same as in the input and
             C is the number of character which we make predictions about.
     """
+
     def __init__(self, characters=29, frequencies=700):
         super(Probabilities, self).__init__()
         self.characters = characters
@@ -187,6 +179,7 @@ class DeepSpeech(nn.Module):
             C is the number of character which we make predictions about.
 
     """
+
     def __init__(self, frequencies=700, conv_number=2, context=5,
                  rec_number=3, full_layers=[2048], characters=29, batch_norm=False, fc_dropout=0):
         super(DeepSpeech, self).__init__()
@@ -199,8 +192,10 @@ class DeepSpeech(nn.Module):
         self.frequencies = frequencies
 
         self.convs = Convolutions(frequencies=self.frequencies, batch_norm=batch_norm)
-        self.rec = Recurrent(rec_number=self.rec_number, frequencies=self.convs.newF * self.convs.newC)
-        self.fc = FullyConnected(layers_sizes=self.full_layers, frequencies=self.convs.newF * self.convs.newC, dropout=fc_dropout)
+        self.rec = Recurrent(rec_number=self.rec_number,
+                             frequencies=self.convs.newF * self.convs.newC)
+        self.fc = FullyConnected(layers_sizes=self.full_layers,
+                                 frequencies=self.convs.newF * self.convs.newC, dropout=fc_dropout)
         self.probs = Probabilities(characters=self.characters, frequencies=full_layers[-1])
 
         print(self.convs, self.rec, self.fc, self.probs)
@@ -228,7 +223,8 @@ class DeepSpeech(nn.Module):
              -target has to be a positive integer tensor #https://discuss.pytorch.org/t/ctcloss-dont-work-in-pytorch/13859/3
         Output: loss tensor
     """
-    #TODO move to GPU (works only on CPU)
+
+    # TODO move to GPU (works only on CPU)
     @staticmethod
     def criterion(output, target, target_length=None):
         ctc_loss = nn.CTCLoss(reduction='mean')
@@ -261,6 +257,25 @@ def test():
             print("Bad:" + str(labels))
         else:
             print("Ok:" + str(labels))
+
+
+class Conv2dSame(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=(1, 1), dilation=(1, 1)):
+        super(Conv2dSame, self).__init__()
+        self.F = kernel_size
+        self.S = stride
+        self.D = dilation
+        self.layer = nn.Conv2d(in_channels, out_channels, kernel_size, stride, dilation=dilation)
+
+    def forward(self, x_in):
+        n, c, h, w = x_in.shape
+        h2 = math.ceil(h / self.S[0])
+        w2 = math.ceil(w / self.S[1])
+        pr = max(0, (h2 - 1) * self.S[0] + (self.F[0] - 1) * self.D[0] + 1 - h)
+        pc = max(0, (w2 - 1) * self.S[1] + (self.F[1] - 1) * self.D[1] + 1 - w)
+        x_pad = nn.ZeroPad2d((pc // 2, pc - pc // 2, pr // 2, pr - pr // 2))(x_in)
+        x_out = self.layer(x_pad)
+        return x_out
 
 
 if __name__ == "__main__":
