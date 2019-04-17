@@ -13,11 +13,11 @@ from scripts.librispeech import LibriSpeech
 shandom_ruffle = random.shuffle
 
 class Runner:
-    def __init__(self, frequencies=161,
+    def __init__(self, frequencies=100,
                  conv_number=2,
                  context=5,
-                 rec_number=3,
-                 full_layers=[2048],
+                 rec_number=2,
+                 full_layers=[1024],
                  characters=29,
                  sound_features_size=100,
                  sound_time_overlap=5,
