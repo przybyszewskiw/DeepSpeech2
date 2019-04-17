@@ -22,7 +22,7 @@ class Runner:
                  sound_features_size=100,
                  sound_time_overlap=5,
                  sound_time_length=20,
-                 lr=0.001,
+                 lr=0.0001,
                  pretrained_model_path=None,
                  device='cpu',
                  batch_norm=False,
@@ -50,6 +50,7 @@ class Runner:
                              time_length=sound_time_length)
 
         self.optimizer = optim.Adam(self.net.parameters(), lr=lr, betas=(0.9, 0.999))
+        self.optimizer_steps = 0
 
     def train_single(self, track_path, transcript_path):
         transcript = self.loader.load_transcript(transcript_path)
@@ -98,6 +99,15 @@ class Runner:
                 loss = DeepSpeech.criterion(output, transs, lengths)
                 loss.backward()
                 self.optimizer.step()
+                self.optimizer_steps += 1
+
+                # for batch_size around 32 in total
+                if self.optimize_step % 5000 == 4999:
+                    for param_group in self.optimizer.param_groups:
+                        param_group['lr'] *= 0.9
+                        if param_group['lr'] < 0:
+                            param_group['lr'] = 0
+
                 print("loss in {}th iteration is {}, it took {} seconds".format(
                     i,
                     loss.item(),
