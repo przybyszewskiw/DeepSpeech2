@@ -102,7 +102,7 @@ class Runner:
                 self.optimizer_steps += 1
 
                 # for batch_size around 32 in total
-                if self.optimize_step % 5000 == 4999:
+                if self.optimizer_steps % 5000 == 4999:
                     for param_group in self.optimizer.param_groups:
                         param_group['lr'] *= 0.9
                         if param_group['lr'] < 0:
