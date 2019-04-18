@@ -24,7 +24,7 @@ class Convolutions(nn.Module):
         super(Convolutions, self).__init__()
         self.frequencies = frequencies
         default_conv_list = [{"kernel": (11, 41), "stride": (1, 1), "num_chan": 32},
-                             {"kernel": (11, 21), "stride": (1, 1), "num_chan": 64},
+                             {"kernel": (11, 21), "stride": (1, 1), "num_chan": 32},
         #                      {"kernel": (11, 21), "stride": (1, 2), "num_chan": 96}
                              ]
         self.conv_list = default_conv_list if conv_list is None else conv_list
