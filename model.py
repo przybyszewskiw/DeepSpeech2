@@ -47,7 +47,7 @@ class Convolutions(nn.Module):
                                                          eps=1e-4))
 
             self.newC = layer["num_chan"]
-            self.newF = math.ceil(float(self.newF) / layer["stride"][0])
+            self.newF = math.ceil(float(self.newF) / float(layer["stride"][0]))
             self.layers.append(new_layer)
 
     def forward(self, x):

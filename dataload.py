@@ -20,7 +20,7 @@ class Loader:
     # arguments: file_path - path to music file (must be mono)
     #            bucket_size - size of frequency bucket in hz
     #            time_overlap - overlap of time intervals in ms
-    def load_track(self, file_path, debug=False):
+    def load_track(self, file_path, debug=False, eps=0.0001):
         data, sample_rate = sf.read(file_path)
         data = normalize_signal(data)
 
@@ -44,7 +44,7 @@ class Loader:
 
         mean = np.mean(spec, axis=0)
         std_dev = np.std(spec, axis=0)
-        spec = (spec - mean) / std_dev
+        spec = (spec - mean) / np.sqrt(std_dev ** 2 + eps)
 
         if debug: print("spectrogram done")
         if debug: print("number of frequency bins: {}".format(spec.shape[0]))
