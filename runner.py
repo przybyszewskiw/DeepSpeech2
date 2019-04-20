@@ -51,8 +51,9 @@ class Runner:
                              time_overlap=self.adv_params["sound_time_overlap"],
                              time_length=self.adv_params["sound_time_length"])
 
+        self.lr = self.base_params["lr_policy_params"]["lr"]
         self.optimizer = optim.Adam(self.net.parameters(),
-                                    lr=self.base_params["lr_policy_params"]["lr"],
+                                    lr=self.lr,
                                     betas=(0.9, 0.999))
         self.optimizer_steps = 0
 

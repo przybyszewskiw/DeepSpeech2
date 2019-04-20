@@ -7,13 +7,25 @@ class LrPolicy(str, Enum):
     NO_DECAY = "NO_DECAY"
 
 
-def apply_policy(optimizer, policy_type, policy_params, optimizer_steps=None):
+def apply_policy(optimizer, optimizer_steps, policy_type, policy_params):
     if policy_type == LrPolicy.POLY_DECAY:
-        return  # TODO
+        ds = max(policy_params["decay_steps"], 1)
+        power = policy_params["power"]
+        min_lr = max(policy_params["min_lr"], 0)
+        max_iter = policy_params["max_iter"]
+        init_lr = policy_params["lr"]
+
+        if optimizer_steps % ds == ds - 1:
+            for param_group in optimizer.param_groups:
+                param_group['lr'] = init_lr * (1 - optimizer_steps / max_iter) ** power
+                if param_group['lr'] < min_lr:
+                    param_group['lr'] = min_lr
+
+
     elif policy_type == LrPolicy.EXP_DECAY:
         ds = max(policy_params["decay_steps"], 1)
         dr = policy_params["decay_rate"]
-        min_lr = policy_params["min_lr"]
+        min_lr = max(policy_params["min_lr"])
 
         if optimizer_steps % ds == ds - 1:
             for param_group in optimizer.param_groups:
