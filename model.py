@@ -191,7 +191,7 @@ class DeepSpeech(nn.Module):
                                  frequencies=self.convs.newF * self.convs.newC, dropout=fc_dropout)
         self.probs = Probabilities(characters=self.characters, frequencies=fc_layers_sizes[-1])
 
-        print(self.convs, self.rec, self.fc, self.probs)
+        print("Net structure:", self.convs, self.rec, self.fc, self.probs)
 
     def forward(self, x):
         x = torch.unsqueeze(x, dim=1)

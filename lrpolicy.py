@@ -1,10 +1,10 @@
 from enum import Enum
 
 
-class LrPolicy(Enum):
-    POLY_DECAY = 1,
-    EXP_DECAY = 2,
-    NO_DECAY = 3
+class LrPolicy(str, Enum):
+    POLY_DECAY = "POLY_DECAY",
+    EXP_DECAY = "EXP_DECAY",
+    NO_DECAY = "NO_DECAY"
 
 
 def apply_policy(optimizer, policy_type, policy_params, optimizer_steps=None):

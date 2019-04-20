@@ -11,6 +11,7 @@ from model import DeepSpeech
 from scripts.librispeech import LibriSpeech
 import lrpolicy as lrp
 import runpy
+import json  # TODO delete -- only for dict printing
 
 shandom_ruffle = random.shuffle
 
@@ -23,6 +24,10 @@ class Runner:
         config_module = runpy.run_path(config_path)
         self.base_params = config_module.get('base_params')
         self.adv_params = config_module.get('adv_params')
+
+        print("Loaded config file from {}".format(config_path))
+        print("base_params:", json.dumps(self.base_params, indent=4))
+        print("adv_params:", json.dumps(self.adv_params, indent=4))
 
         self.net = DeepSpeech(conv_initial_channels=self.base_params["frequencies"],
                               conv_layers=self.base_params["conv_layers"],
@@ -177,4 +182,3 @@ class Runner:
     def eval_on_dataset(self, dataset):
         self.net.eval()
         eval_model(self.net, dataset, self.loader)
-
