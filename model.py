@@ -20,21 +20,15 @@ class Convolutions(nn.Module):
             self.newC and self.newF respectively
     """
 
-    def __init__(self, frequencies=160, initial_channels=1, conv_list=None, batch_norm=False):
+    def __init__(self, conv_layers, frequencies=160, initial_channels=1, conv_list=None, batch_norm=False):
         super(Convolutions, self).__init__()
         self.frequencies = frequencies
-        default_conv_list = [{"kernel": (11, 41), "stride": (1, 1), "num_chan": 32},
-                             {"kernel": (11, 21), "stride": (1, 1), "num_chan": 32},
-                             {"kernel": (11, 21), "stride": (1, 2), "num_chan": 32}
-                             ]
-        self.conv_list = default_conv_list if conv_list is None else conv_list
-
+        self.conv_layers = conv_layers
         self.layers = nn.ModuleList()
-
         self.newC = initial_channels
         self.newF = frequencies
 
-        for layer in self.conv_list:
+        for layer in self.conv_layers:
             new_layer = nn.Sequential(
                 Conv2dSame(in_channels=self.newC, out_channels=layer["num_chan"],
                            kernel_size=layer["kernel"], stride=layer["stride"]),
@@ -175,20 +169,27 @@ class DeepSpeech(nn.Module):
 
     """
 
-    def __init__(self, frequencies=160, rec_number=3, full_layers=[2048], characters=29, batch_norm=False, fc_dropout=0):
+    def __init__(self, conv_layers,
+                 conv_initial_channels=160,
+                 rec_number=3,
+                 fc_layers_sizes=[2048],
+                 characters=29,
+                 batch_norm=False,
+                 fc_dropout=0):
         super(DeepSpeech, self).__init__()
         self.characters = characters
         # TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
-        self.full_layers = full_layers
+        self.full_layers = fc_layers_sizes
         self.rec_number = rec_number
-        self.frequencies = frequencies
+        self.frequencies = conv_initial_channels
+        self.conv_layers = conv_layers
 
-        self.convs = Convolutions(frequencies=self.frequencies, batch_norm=batch_norm)
+        self.convs = Convolutions(frequencies=self.frequencies, conv_layers=self.conv_layers, batch_norm=batch_norm)
         self.rec = Recurrent(rec_number=self.rec_number,
                              frequencies=self.convs.newF * self.convs.newC)
         self.fc = FullyConnected(layers_sizes=self.full_layers,
                                  frequencies=self.convs.newF * self.convs.newC, dropout=fc_dropout)
-        self.probs = Probabilities(characters=self.characters, frequencies=full_layers[-1])
+        self.probs = Probabilities(characters=self.characters, frequencies=fc_layers_sizes[-1])
 
         print(self.convs, self.rec, self.fc, self.probs)
 
@@ -239,7 +240,7 @@ def test():
     for _ in range(100):
         x = torch.rand(N, F, T)
 
-        net = DeepSpeech(frequencies=F, context=1, conv_number=1, characters=C)
+        net = DeepSpeech(conv_initial_channels=F, context=1, conv_number=1, characters=C)
         x, _ = net(x)
 
         labels = torch.randint(1, C, (N, T))

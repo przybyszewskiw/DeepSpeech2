@@ -9,28 +9,29 @@ from dataload import Loader
 from evaluator import eval_single, eval_model
 from model import DeepSpeech
 from scripts.librispeech import LibriSpeech
+import lrpolicy as lrp
+import runpy
 
 shandom_ruffle = random.shuffle
 
+
 class Runner:
-    def __init__(self, frequencies=100,
-                 rec_number=2,
-                 full_layers=[1024],
-                 characters=29,
-                 sound_features_size=100,
-                 sound_time_overlap=5,
-                 sound_time_length=20,
-                 lr=0.0001,
+    def __init__(self, config_path,
                  pretrained_model_path=None,
-                 device='cpu',
-                 batch_norm=False,
-                 dropout=0):
-        self.net = DeepSpeech(frequencies=frequencies,
-                              rec_number=rec_number,
-                              full_layers=full_layers,
-                              characters=characters,
-                              batch_norm=batch_norm,
-                              fc_dropout=dropout)
+                 device='cpu'
+                 ):
+        config_module = runpy.run_path(config_path)
+        self.base_params = config_module.get('base_params')
+        self.adv_params = config_module.get('adv_params')
+
+        self.net = DeepSpeech(conv_initial_channels=self.base_params["frequencies"],
+                              conv_layers=self.base_params["conv_layers"],
+                              rec_number=self.base_params["rec_number"],
+                              fc_layers_sizes=self.base_params["fc_layers_sizes"],
+                              characters=self.adv_params["characters"],
+                              batch_norm=self.base_params["batch_norm"],
+                              fc_dropout=self.base_params["dropout"])
+
         if device == 'gpu':
             device = 'cuda:0'
             self.net = nn.DataParallel(self.net)
@@ -41,11 +42,13 @@ class Runner:
         if pretrained_model_path is not None:
             self.net.load_state_dict(torch.load(pretrained_model_path))
 
-        self.loader = Loader(num_audio_features=sound_features_size,
-                             time_overlap=sound_time_overlap,
-                             time_length=sound_time_length)
+        self.loader = Loader(num_audio_features=self.adv_params["sound_features_size"],
+                             time_overlap=self.adv_params["sound_time_overlap"],
+                             time_length=self.adv_params["sound_time_length"])
 
-        self.optimizer = optim.Adam(self.net.parameters(), lr=lr, betas=(0.9, 0.999))
+        self.optimizer = optim.Adam(self.net.parameters(),
+                                    lr=self.base_params["lr_policy_params"]["lr"],
+                                    betas=(0.9, 0.999))
         self.optimizer_steps = 0
 
     def train_single(self, track_path, transcript_path):
@@ -98,11 +101,10 @@ class Runner:
                 self.optimizer_steps += 1
 
                 # for batch_size around 32 in total
-                if self.optimizer_steps % 5000 == 4999:
-                    for param_group in self.optimizer.param_groups:
-                        param_group['lr'] *= 0.9
-                        if param_group['lr'] < 0:
-                            param_group['lr'] = 0
+                lr_policy = self.base_params["lr_policy"]
+                lr_policy_params = self.base_params["lr_policy_params"]
+
+                lrp.apply_policy(self.optimizer, self.optimizer_steps, lr_policy, lr_policy_params)
 
                 print("loss in {}th iteration is {}, it took {} seconds".format(
                     i,
@@ -146,7 +148,13 @@ class Runner:
 
         print('Validation loss is {}'.format(total_loss / iterations))
 
-    def train(self, dataset, batch_size=8, epochs=50, starting_epoch=0, shuffle=False, testing_dataset=None):
+    def train(self, dataset, testing_dataset=None):
+        starting_epoch = self.adv_params["starting_epoch"]
+        epochs = self.base_params["epochs"]
+        batch_size = self.base_params["batch_size"]
+        model_saving_epoch = self.base_params["model_saving_epoch"]
+        shuffle_dataset = self.base_params["shuffle_dataset"]
+
         self.net.train()
         for epoch in range(starting_epoch, epochs):
             if not os.path.isdir("./models"):
@@ -154,7 +162,7 @@ class Runner:
                 os.makedirs("./models")
             print(epoch)
             start_time = time.time()
-            if shuffle:
+            if shuffle_dataset:
                 shandom_ruffle(dataset)
             self.train_epoch(dataset, batch_size=batch_size)
             print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
@@ -162,10 +170,9 @@ class Runner:
             if testing_dataset is not None:
                 self.test_dataset(testing_dataset)
 
-            if epoch % 5 == 4:
+            if epoch % model_saving_epoch == model_saving_epoch - 1:
                 print('Saving model')
                 torch.save(self.net.state_dict(), "./models/{}-iters.pt".format(epoch))
-
 
     def eval_on_dataset(self, dataset):
         self.net.eval()
@@ -176,8 +183,6 @@ def test_training():
     r = Runner(pretrained_model_path='models/4-iters.pt')
     r.train(
         dataset=LibriSpeech().get_dataset('test-clean'),
-        epochs=100,
-        starting_epoch=5
     )
 
 
