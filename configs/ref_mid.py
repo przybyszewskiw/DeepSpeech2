@@ -35,7 +35,7 @@ base_params = {
 
     'epochs': 50,
 
-    'shuffle_dataset': False,
+    'shuffle_dataset': True,
 
     'model_saving_epoch': 2
 }
