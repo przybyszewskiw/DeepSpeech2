@@ -178,29 +178,3 @@ class Runner:
         self.net.eval()
         eval_model(self.net, dataset, self.loader)
 
-
-def test_training():
-    r = Runner(pretrained_model_path='models/4-iters.pt')
-    r.train(
-        dataset=LibriSpeech().get_dataset('test-clean'),
-    )
-
-
-def test_eval():
-    r = Runner(pretrained_model_path='models/4-iters.pt')
-    r.eval_on_dataset(LibriSpeech().get_dataset('test-clean', sort=False))
-
-
-def test():
-    r = Runner()
-    tracks = LibriSpeech().get_dataset('test-clean')[:16]
-    track_tens = [r.loader.load_tensors(ph, ts) for ph, ts in tracks]
-    (audio, transs, lengths) = r.loader.merge_into_batch(track_tens)
-    print(tracks)
-    print(audio.shape)
-    print(transs)
-    print(lengths)
-
-
-if __name__ == "__main__":
-    torch.set_printoptions(edgeitems=5)
