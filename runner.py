@@ -174,9 +174,6 @@ class Runner:
         self.net.eval()
         eval_model(self.net, dataset, self.loader)
 
-    def _work_on_gpu(self):
-        return self.device != torch.device('cpu')
-
 
 def test_training():
     r = Runner(pretrained_model_path='models/4-iters.pt')
@@ -205,6 +202,3 @@ def test():
 
 if __name__ == "__main__":
     torch.set_printoptions(edgeitems=5)
-    # test_eval()
-    # test_training()
-    # test2()
