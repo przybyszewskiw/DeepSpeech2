@@ -144,16 +144,11 @@ class Probabilities(nn.Module):
         super(Probabilities, self).__init__()
         self.characters = characters
         self.frequencies = frequencies
-        # self.layer = nn.Sequential(
-        #  nn.Linear(frequencies, characters),
-        #  nn.LogSoftmax(dim=2)
-        # )
         self.linear = nn.Linear(frequencies, characters)
         self.logsoft = nn.LogSoftmax(dim=2)
         self.soft = nn.Softmax(dim=2)
 
     def forward(self, x):
-        # return self.layer(x)
         x = self.linear(x)
         return self.logsoft(x), self.soft(x)
 

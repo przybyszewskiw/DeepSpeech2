@@ -165,10 +165,7 @@ class Runner:
             if epoch % 5 == 4:
                 print('Saving model')
                 torch.save(self.net.state_dict(), "./models/{}-iters.pt".format(epoch))
-                # Takes too much time!
-                # self.net.eval()
-                # eval_model(self.net, dataset, self.sound_bucket_size, self.sound_time_overlap)
-                # self.net.train()
+
 
     def eval_on_dataset(self, dataset):
         self.net.eval()
