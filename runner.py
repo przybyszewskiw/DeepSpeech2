@@ -14,8 +14,6 @@ shandom_ruffle = random.shuffle
 
 class Runner:
     def __init__(self, frequencies=100,
-                 conv_number=2,
-                 context=5,
                  rec_number=2,
                  full_layers=[1024],
                  characters=29,
@@ -28,8 +26,6 @@ class Runner:
                  batch_norm=False,
                  dropout=0):
         self.net = DeepSpeech(frequencies=frequencies,
-                              conv_number=conv_number,
-                              context=context,
                               rec_number=rec_number,
                               full_layers=full_layers,
                               characters=characters,

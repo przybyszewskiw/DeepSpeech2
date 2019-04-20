@@ -20,12 +20,12 @@ class Convolutions(nn.Module):
             self.newC and self.newF respectively
     """
 
-    def __init__(self, frequencies, initial_channels=1, conv_list=None, batch_norm=False):
+    def __init__(self, frequencies=160, initial_channels=1, conv_list=None, batch_norm=False):
         super(Convolutions, self).__init__()
         self.frequencies = frequencies
         default_conv_list = [{"kernel": (11, 41), "stride": (1, 1), "num_chan": 32},
                              {"kernel": (11, 21), "stride": (1, 1), "num_chan": 32},
-        #                      {"kernel": (11, 21), "stride": (1, 2), "num_chan": 96}
+                             {"kernel": (11, 21), "stride": (1, 2), "num_chan": 32}
                              ]
         self.conv_list = default_conv_list if conv_list is None else conv_list
 
@@ -69,7 +69,7 @@ class Recurrent(nn.Module):
     Output: Tensor of the shape NxTxF where N, T and F as in input
     """
 
-    def __init__(self, rec_number=3, frequencies=700):
+    def __init__(self, frequencies, rec_number=3):
         super(Recurrent, self).__init__()
         self.frequencies = frequencies
         self.rec_number = rec_number
@@ -103,7 +103,7 @@ class FullyConnected(nn.Module):
     Output: Tensor of the same shape as input
     """
 
-    def __init__(self, layers_sizes=[2048], frequencies=700, dropout=0):
+    def __init__(self, frequencies, layers_sizes=[2048], dropout=0):
         super(FullyConnected, self).__init__()
         self.layers_sizes = list(zip([frequencies] + layers_sizes, layers_sizes))
         self.frequencies = frequencies
@@ -140,7 +140,7 @@ class Probabilities(nn.Module):
             C is the number of character which we make predictions about.
     """
 
-    def __init__(self, characters=29, frequencies=700):
+    def __init__(self, frequencies, characters=29):
         super(Probabilities, self).__init__()
         self.characters = characters
         self.frequencies = frequencies
@@ -180,15 +180,12 @@ class DeepSpeech(nn.Module):
 
     """
 
-    def __init__(self, frequencies=700, conv_number=2, context=5,
-                 rec_number=3, full_layers=[2048], characters=29, batch_norm=False, fc_dropout=0):
+    def __init__(self, frequencies=160, rec_number=3, full_layers=[2048], characters=29, batch_norm=False, fc_dropout=0):
         super(DeepSpeech, self).__init__()
         self.characters = characters
         # TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
         self.full_layers = full_layers
         self.rec_number = rec_number
-        self.context = context
-        self.conv_number = conv_number
         self.frequencies = frequencies
 
         self.convs = Convolutions(frequencies=self.frequencies, batch_norm=batch_norm)
