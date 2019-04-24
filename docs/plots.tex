@@ -65,16 +65,16 @@
 		%\includegraphics[width=\columnwidth]{plot_tf}
 		\begin{tikzpicture}
 		\begin{axis}[
-            ymin = 0.5, ymax = 2.5,
+            ymin = 0, ymax = 2.5,
             xmin = 0, xmax = 19,
-            minor y tick num = 5,
+            minor y tick num = 4,
             minor x tick num = 1,
             ymajorgrids = true,
             grid style = dashed,
             %area style,
             scaled x ticks = false,
             xlabel = Epochs,
-            ylabel = WER,
+            ylabel = CTC Loss,
             legend pos=outer north east,
             no markers            
           ]
@@ -85,7 +85,7 @@
           	  
 		\end{axis}
 		\end{tikzpicture}
-		\caption{Best model performance in World Error Rate metric with respect to training time in epochs.}
+		\caption{Best model performance in CTC Loss function with respect to training time in epochs.}
 		\label{diag:time}
 		\end{center}
 	\end{figure}
@@ -98,16 +98,16 @@
 		%\includegraphics[width=\columnwidth]{plot_tf}
 		\begin{tikzpicture}
 		\begin{axis}[
-            ymin = 0.5, ymax = 5,
+            ymin = 0, ymax = 5,
             xmin = 0, xmax = 600,
-            minor y tick num = 5,
+            minor y tick num = 4,
             minor x tick num = 1,
             ymajorgrids = true,
             grid style = dashed,
             %area style,
             scaled x ticks = false,
             xlabel = Epochs,
-            ylabel = WER,
+            ylabel = CTC Loss,
             legend pos=outer north east,
             no markers            
           ]
