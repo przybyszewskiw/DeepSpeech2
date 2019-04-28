@@ -57,20 +57,6 @@ class Runner:
                                     betas=(0.9, 0.999))
         self.optimizer_steps = 0
 
-    def train_single(self, track_path, transcript_path):
-        transcript = self.loader.load_transcript(transcript_path)
-        track, transcript = self.loader.load_tensors(track_path, transcript)
-
-        for epoch in range(100):
-            self.optimizer.zero_grad()
-            output, probs = self.net(track)
-            loss = DeepSpeech.criterion(output, transcript)
-            print("loss={}".format(loss))
-            if epoch % 20 == 19:
-                eval_single(self.net, track_path, transcript_path,
-                            self.loader)
-            loss.backward()
-            self.optimizer.step()
 
     """
         dataset - list of pairs (track_path, transcript_string)
