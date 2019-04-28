@@ -57,7 +57,6 @@ class Runner:
                                     betas=(0.9, 0.999))
         self.optimizer_steps = 0
 
-
     """
         dataset - list of pairs (track_path, transcript_string)
     """
@@ -88,6 +87,11 @@ class Runner:
 
                 print("Starting criterion calculation")
                 loss = DeepSpeech.criterion(output, transs, lengths)
+                if loss == float('inf'):
+                    print(
+                        "WARNING: loss is inf in {}th iteration, track_path:{}, omitting track".format(
+                            i, track_path), file=sys.stderr)
+                    continue
                 loss.backward()
                 self.optimizer.step()
                 self.optimizer_steps += 1
