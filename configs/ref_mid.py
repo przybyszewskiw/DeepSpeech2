@@ -37,7 +37,9 @@ base_params = {
 
     'shuffle_dataset': True,
 
-    'model_saving_epoch': 2
+    'model_saving_epoch': 2,
+
+    'sorta_grad': False
 }
 
 adv_params = {

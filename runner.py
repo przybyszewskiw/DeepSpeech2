@@ -150,6 +150,7 @@ class Runner:
         batch_size = self.base_params["batch_size"]
         model_saving_epoch = self.base_params["model_saving_epoch"]
         shuffle_dataset = self.base_params["shuffle_dataset"]
+        sorta_grad = self.base_params['sorta_grad']
 
         self.net.train()
         for epoch in range(starting_epoch, epochs):
@@ -158,8 +159,9 @@ class Runner:
                 os.makedirs("./models")
             print(epoch)
             start_time = time.time()
-            if shuffle_dataset:
+            if shuffle_dataset or (sorta_grad and epoch == starting_epoch):
                 shandom_ruffle(dataset)
+
             self.train_epoch(dataset, batch_size=batch_size)
             print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
 
