@@ -3,9 +3,9 @@ from lrpolicy import LrPolicy as LrP
 base_params = {
     # ----- Convolutions -----
     'conv_layers': [
-        {'kernel': (11, 41), 'stride': (1, 1), 'num_chan': 32},
-        {'kernel': (11, 21), 'stride': (1, 1), 'num_chan': 32},
-        {'kernel': (11, 21), 'stride': (1, 1), 'num_chan': 32}
+        {'kernel': (41, 11), 'stride': (2, 2), 'num_chan': 32},
+        {'kernel': (21, 11), 'stride': (2, 1), 'num_chan': 32},
+        {'kernel': (21, 11), 'stride': (2, 1), 'num_chan': 92},
     ],
 
     'frequencies': 100,
@@ -23,7 +23,7 @@ base_params = {
         'decay_steps': 1000,
         'power': 0.5,
         'min_lr': 0,
-        'max_iter': int(281215 * 50 / 32)  # TODO add correct numbers of iterations
+        'max_iter': int(281215 * 70 / 32)  # TODO add correct numbers of iterations
         # right now {~number of iterations on all-train} * {epochs} / {batch_size}
     },
 
@@ -33,14 +33,14 @@ base_params = {
 
     'dropout': 0.5,
 
-    'epochs': 50,
+    'epochs': 70,
 
     'shuffle_dataset': True,
 
-    'model_saving_epoch': 2,
+    'model_saving_epoch': 3,
 
     # starting epoch will be sorted regardless of shuffle_dataset value
-    'sorta_grad': False
+    'sorta_grad': True
 }
 
 adv_params = {
