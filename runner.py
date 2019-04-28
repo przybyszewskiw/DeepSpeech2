@@ -159,7 +159,7 @@ class Runner:
                 os.makedirs("./models")
             print(epoch)
             start_time = time.time()
-            if shuffle_dataset or (sorta_grad and epoch == starting_epoch):
+            if shuffle_dataset and not (sorta_grad and epoch == starting_epoch):
                 shandom_ruffle(dataset)
 
             self.train_epoch(dataset, batch_size=batch_size)
