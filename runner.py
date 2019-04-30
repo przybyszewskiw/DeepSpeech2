@@ -24,6 +24,7 @@ class Runner:
         config_module = runpy.run_path(config_path)
         self.base_params = config_module.get('base_params')
         self.adv_params = config_module.get('adv_params')
+        self.non_json_params = config_module.get('non_json_params')
 
         print("Loaded config file from {}".format(config_path))
         print("base_params:", json.dumps(self.base_params, indent=4))
@@ -35,7 +36,9 @@ class Runner:
                               fc_layers_sizes=self.base_params["fc_layers_sizes"],
                               characters=self.adv_params["characters"],
                               batch_norm=self.base_params["batch_norm"],
-                              fc_dropout=self.base_params["dropout"])
+                              fc_dropout=self.base_params["dropout"],
+                              initializer=self.non_json_params[
+                                  self.base_params["weights_initializer"]])
 
         if device == 'gpu':
             device = 'cuda:0'

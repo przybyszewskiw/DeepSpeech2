@@ -161,6 +161,7 @@ class DeepSpeech(nn.Module):
             full_number = number of fully connected layers
             characters = number of characters which we are predicting
             batch_norm = whether to use batch normalization before RNN
+            initializer = function to initialize weights with
 
         Input: Tensor of shape NxFxT where N is batch size, F is the number of
            different frequencies and T is length of time-series.
@@ -175,7 +176,8 @@ class DeepSpeech(nn.Module):
                  fc_layers_sizes=[2048],
                  characters=29,
                  batch_norm=False,
-                 fc_dropout=0):
+                 fc_dropout=0,
+                 initializer=None):
         super(DeepSpeech, self).__init__()
         self.characters = characters
         # TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
@@ -183,6 +185,7 @@ class DeepSpeech(nn.Module):
         self.rec_number = rec_number
         self.frequencies = conv_initial_channels
         self.conv_layers = conv_layers
+        self.initializer = initializer
 
         self.convs = Convolutions(frequencies=self.frequencies, conv_layers=self.conv_layers, batch_norm=batch_norm)
         self.rec = Recurrent(rec_number=self.rec_number,
@@ -190,8 +193,14 @@ class DeepSpeech(nn.Module):
         self.fc = FullyConnected(layers_sizes=self.full_layers,
                                  frequencies=self.convs.newF * self.convs.newC, dropout=fc_dropout)
         self.probs = Probabilities(characters=self.characters, frequencies=fc_layers_sizes[-1])
+        if initializer:
+            self.apply(self.weights_init)
 
         print("Net structure:", self.convs, self.rec, self.fc, self.probs)
+
+    def weights_init(self, m):
+        if hasattr(m, "weight"):
+            self.initializer(m.weight)
 
     def forward(self, x):
         x = torch.unsqueeze(x, dim=1)
