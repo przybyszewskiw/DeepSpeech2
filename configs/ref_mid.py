@@ -8,7 +8,7 @@ base_params = {
         {'kernel': (11, 21), 'stride': (1, 1), 'num_chan': 32}
     ],
 
-    'frequencies': 100,
+    'frequencies': 160,
 
     # ----- Recurrent -----
     'rec_number': 3,
@@ -45,7 +45,7 @@ base_params = {
 
 adv_params = {
     # ----- Spectogram ------
-    'sound_features_size': 100,
+    'sound_features_size': 160,
     'sound_time_overlap': 5,
     'sound_time_length': 20,
 

@@ -101,7 +101,6 @@ class LibriDataset(Dataset):
                 return 28
             else:
                 raise Exception("Transcript unknown character:" + str(c))
-
         return [convert_char(c) for c in trans.lower()]
 
     def load_tensors(self, track_path, transcript):
