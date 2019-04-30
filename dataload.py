@@ -29,8 +29,8 @@ def normalize_signal(signal):
     return signal / (np.max(np.abs(signal)) + 1e-5)
 
 
-def get_libri_dataloader(dataset, batch_size, shuffle):
-    return DataLoader(dataset, batch_size, shuffle, collate_fn=ctc_collate_fn)
+def get_libri_dataloader(dataset, batch_size, shuffle, num_workers):
+    return DataLoader(dataset, batch_size, shuffle, num_workers=num_workers, collate_fn=ctc_collate_fn)
 
 
 class LibriDataset(Dataset):

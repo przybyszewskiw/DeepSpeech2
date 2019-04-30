@@ -133,18 +133,17 @@ class Runner:
         model_saving_epoch = self.base_params["model_saving_epoch"]
         shuffle_dataset = self.base_params["shuffle_dataset"]
         sorta_grad = self.base_params['sorta_grad']
+        workers = self.adv_params["workers"]
 
         libri_dataset = dl.LibriDataset(dataset,
                                   num_audio_features=self.adv_params["sound_features_size"],
                                   time_overlap=self.adv_params["sound_time_overlap"],
-                                  time_length=self.adv_params["sound_time_length"],
-                                  num_workers=self.adv_params["workers"])
+                                  time_length=self.adv_params["sound_time_length"])
 
         libri_testing_dataset = dl.LibriDataset(testing_dataset,
                                   num_audio_features=self.adv_params["sound_features_size"],
                                   time_overlap=self.adv_params["sound_time_overlap"],
-                                  time_length=self.adv_params["sound_time_length"],
-                                  num_workers=self.adv_params["workers"])
+                                  time_length=self.adv_params["sound_time_length"])
 
         self.net.train()
         for epoch in range(starting_epoch, epochs):
@@ -154,9 +153,15 @@ class Runner:
             print(epoch)
             start_time = time.time()
 
-            libri_dataloader = dl.get_libri_dataloader(libri_dataset, batch_size=batch_size, shuffle=False)
+            libri_dataloader = dl.get_libri_dataloader(libri_dataset,
+                                                       batch_size=batch_size,
+                                                       shuffle=False,
+                                                       num_workers=workers)
             if shuffle_dataset and not (sorta_grad and epoch == starting_epoch):
-                libri_dataloader = dl.get_libri_dataloader(libri_dataset, batch_size=batch_size, shuffle=True)
+                libri_dataloader = dl.get_libri_dataloader(libri_dataset,
+                                                           batch_size=batch_size,
+                                                           shuffle=True,
+                                                           num_workers=workers)
 
             self.train_epoch(libri_dataloader)
             print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
@@ -164,7 +169,8 @@ class Runner:
             if testing_dataset is not None:
                 libri_testing_dataloader = dl.get_libri_dataloader(libri_testing_dataset,
                                                                    batch_size=batch_size,
-                                                                   shuffle=False)
+                                                                   shuffle=False,
+                                                                   num_workers=workers)
                 self.test_dataset(libri_testing_dataloader)
 
             if epoch % model_saving_epoch == model_saving_epoch - 1:
