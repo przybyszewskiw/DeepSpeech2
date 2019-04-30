@@ -199,7 +199,7 @@ class DeepSpeech(nn.Module):
         print("Net structure:", self.convs, self.rec, self.fc, self.probs)
 
     def weights_init(self, m):
-        if hasattr(m, "weight"):
+        if hasattr(m, "weight") and m.weight.dim() > 1:
             self.initializer(m.weight)
 
     def forward(self, x):
