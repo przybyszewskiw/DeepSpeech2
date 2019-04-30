@@ -5,17 +5,48 @@ import torch
 import soundfile as sf
 import scipy.signal as signal
 import math
+from torch.utils.data.dataset import Dataset
+from torch.utils.data.dataloader import DataLoader
+
+
+def ctc_collate_fn(tracks):
+    dim1 = tracks[0][0].shape[1]
+    dim2 = max([tensor.shape[2] for tensor, _ in tracks])
+    extended_audio_tensors = [
+        torch.cat(
+            [tensor, torch.zeros(1, dim1, dim2 - tensor.shape[2])],
+            dim=2
+        ) for tensor, _ in tracks
+    ]
+
+    lengths_tensor = torch.FloatTensor([trans.shape[1] for _, trans in tracks]).int()
+    transs_tensor = torch.cat([trans for _, trans in tracks], dim=1).squeeze()
+    audio_tensor = torch.cat(extended_audio_tensors, dim=0)
+    return audio_tensor, transs_tensor, lengths_tensor
+
 
 def normalize_signal(signal):
     return signal / (np.max(np.abs(signal)) + 1e-5)
 
 
-class Loader:
-    def __init__(self, num_audio_features, time_length, time_overlap, eps=1e-10):
+def get_libri_dataloader(dataset, batch_size, shuffle):
+    return DataLoader(dataset, batch_size, shuffle, collate_fn=ctc_collate_fn)
+
+
+class LibriDataset(Dataset):
+    def __init__(self, ls_dataset, num_audio_features, time_length, time_overlap, eps=1e-10):
+        super(Dataset, self)
         self.time_length = time_length
         self.time_overlap = time_overlap
         self.num_audio_features = num_audio_features
         self.eps = eps
+        self.ls_dataset = ls_dataset
+
+    def __len__(self):
+        return len(self.ls_dataset)
+
+    def __getitem__(self, idx):
+        return self.load_tensors(*self.ls_dataset[idx])
 
     # arguments: file_path - path to music file (must be mono)
     #            bucket_size - size of frequency bucket in hz
@@ -53,7 +84,6 @@ class Loader:
         if debug: print("step between time samples: {} ms".format((times[1] - times[0]) * 1e3))
 
         return spec
-        #return spec
 
     def load_transcript(self, file_path):
         with open(file_path, 'r') as f:
@@ -87,30 +117,6 @@ class Loader:
             torch.save(track_ten, tensor_path)
 
         return track_ten, trans_ten
-
-    def merge_into_batch(self, tracks):
-        dim1 = tracks[0][0].shape[1]
-        dim2 = max([tensor.shape[2] for tensor, _ in tracks])
-        extended_audio_tensors = [
-            torch.cat(
-                [tensor, torch.zeros(1, dim1, dim2 - tensor.shape[2])],
-                dim=2
-            ) for tensor, _ in tracks
-        ]
-
-        lengths_tensor = torch.FloatTensor([trans.shape[1] for _, trans in tracks]).int()
-        transs_tensor = torch.cat([trans for _, trans in tracks], dim=1).squeeze()
-        audio_tensor = torch.cat(extended_audio_tensors, dim=0)
-        return audio_tensor, transs_tensor, lengths_tensor
-
-
-def test():
-    if len(sys.argv) < 2:
-        print("give name of file")
-    else:
-        # spectrogram with 5Hz frequency bins ans 20ms time bins overlapping 10ms
-        loader = Loader(160, 20, 10)
-        print(loader.load_track(sys.argv[1], True))
 
 
 if __name__ == '__main__':

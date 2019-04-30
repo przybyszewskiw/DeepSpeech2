@@ -58,5 +58,7 @@ adv_params = {
 
     'characters': 29,
 
-    'starting_epoch': 0
+    'starting_epoch': 0,
+
+    'workers': 0,
 }
