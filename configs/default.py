@@ -4,7 +4,7 @@ base_params = {
     # ----- Convolutions -----
     'conv_layers': [{'kernel': (11, 41), 'stride': (1, 1), 'num_chan': 1}],
 
-    'frequencies': 100,
+    'frequencies': 160,
 
     # ----- Recurrent -----
     'rec_number': 2,
@@ -36,7 +36,7 @@ base_params = {
 
 adv_params = {
     # ----- Spectogram ------
-    'sound_features_size': 100,
+    'sound_features_size': 160,
     'sound_time_overlap': 5,
     'sound_time_length': 20,
 

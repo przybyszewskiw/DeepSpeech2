@@ -109,7 +109,7 @@ def test():
         print("give name of file")
     else:
         # spectrogram with 5Hz frequency bins ans 20ms time bins overlapping 10ms
-        loader = Loader(100, 20, 10)
+        loader = Loader(160, 20, 10)
         print(loader.load_track(sys.argv[1], True))
 
 
