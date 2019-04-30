@@ -134,12 +134,14 @@ class Runner:
         libri_dataset = dl.LibriDataset(dataset,
                                   num_audio_features=self.adv_params["sound_features_size"],
                                   time_overlap=self.adv_params["sound_time_overlap"],
-                                  time_length=self.adv_params["sound_time_length"])
+                                  time_length=self.adv_params["sound_time_length"],
+                                  num_workers=self.adv_params["workers"])
 
         libri_testing_dataset = dl.LibriDataset(testing_dataset,
                                   num_audio_features=self.adv_params["sound_features_size"],
                                   time_overlap=self.adv_params["sound_time_overlap"],
-                                  time_length=self.adv_params["sound_time_length"])
+                                  time_length=self.adv_params["sound_time_length"],
+                                  num_workers=self.adv_params["workers"])
 
         self.net.train()
         for epoch in range(starting_epoch, epochs):

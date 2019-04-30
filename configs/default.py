@@ -32,6 +32,7 @@ base_params = {
 
     # starting epoch will be sorted regardless of shuffle_dataset value
     'sorta_grad': False,
+
 }
 
 adv_params = {
@@ -42,5 +43,7 @@ adv_params = {
 
     'characters': 29,
 
-    'starting_epoch': 0
+    'starting_epoch': 0,
+
+    'workers': 0,
 }

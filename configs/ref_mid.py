@@ -44,6 +44,7 @@ base_params = {
 }
 
 adv_params = {
+
     # ----- Spectogram ------
     'sound_features_size': 160,
     'sound_time_overlap': 5,
@@ -51,5 +52,7 @@ adv_params = {
 
     'characters': 29,
 
-    'starting_epoch': 0
+    'starting_epoch': 0,
+
+    'workers': 0,
 }
