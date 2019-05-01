@@ -71,7 +71,9 @@ class Recurrent(nn.Module):
         # which are default for torch.nn.RNN
         self.layers = nn.ModuleList()
         for _ in range(self.rec_number):
-            new_layer = nn.RNN(input_size=self.frequencies, hidden_size=self.frequencies,
+            new_layer = nn.RNN(input_size=self.frequencies,
+                               hidden_size=self.frequencies,
+                               nonlinearity='relu',
                                bidirectional=True)
             self.layers.append(new_layer)
 
