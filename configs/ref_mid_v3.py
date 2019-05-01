@@ -60,5 +60,5 @@ adv_params = {
 
     'starting_epoch': 0,
 
-    'workers': 0,
+    'workers': 20,
 }
