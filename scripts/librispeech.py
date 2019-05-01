@@ -6,7 +6,6 @@ import tempfile
 import soundfile as sf
 import urllib.request
 
-
 DATASETS = {
     'test-clean': 'http://www.openslr.org/resources/12/test-clean.tar.gz',
     'test-other': 'http://www.openslr.org/resources/12/test-other.tar.gz',
@@ -63,6 +62,8 @@ class LibriSpeech:
     def _get_dataset(self, name):
         if name == 'all-train':
             return self.get_all_train_datasets()
+        if name == 'all-train-clean':
+            return self.get_all_train_clean_datasets()
 
         dataset_root = abspath(pjoin('./datasets/LibriSpeech', name))
         if not os.path.isdir(dataset_root):
@@ -84,6 +85,9 @@ class LibriSpeech:
 
     def get_all_train_datasets(self):
         return self._get_datasets(['train-clean-100', 'train-clean-360', 'train-other-500'])
+
+    def get_all_train_clean_datasets(self):
+        return self._get_datasets(['train-clean-100', 'train-clean-360'])
 
     def get_clean_datasets(self):
         return self._get_datasets([name for name in DATASETS.keys() if 'clean' in name])
