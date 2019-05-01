@@ -164,7 +164,7 @@ class Runner:
 
             if epoch % model_saving_epoch == model_saving_epoch - 1:
                 print('Saving model')
-                torch.save(self.net.state_dict(), "./models/{}-iters.pt".format(epoch))
+                torch.save(self.net.state_dict(), "./models/{}-epoch.pt".format(epoch))
 
     def eval_on_dataset(self, dataset):
         self.net.eval()
