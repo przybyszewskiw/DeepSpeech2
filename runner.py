@@ -6,7 +6,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 import dataload as dl
-from evaluator import eval_single, eval_model
+from evaluator import eval_model
 from model import DeepSpeech
 from scripts.librispeech import LibriSpeech
 import lrpolicy as lrp
@@ -47,8 +47,6 @@ class Runner:
 
         if pretrained_model_path is not None:
             self.net.load_state_dict(torch.load(pretrained_model_path))
-
-
 
         self.lr = self.base_params["lr_policy_params"]["lr"]
         self.optimizer = optim.Adam(self.net.parameters(),
@@ -108,7 +106,6 @@ class Runner:
 
     def test_dataset(self, dataloader):
         self.net.eval()
-        tracks_to_merge = []
         total_loss = 0.
         iterations = 0
         with torch.no_grad():
@@ -135,15 +132,9 @@ class Runner:
         sorta_grad = self.base_params['sorta_grad']
         workers = self.adv_params["workers"]
 
-        libri_dataset = dl.LibriDataset(dataset,
-                                  num_audio_features=self.adv_params["sound_features_size"],
-                                  time_overlap=self.adv_params["sound_time_overlap"],
-                                  time_length=self.adv_params["sound_time_length"])
+        libri_dataset = self._get_libri_dataset(dataset)
 
-        libri_testing_dataset = dl.LibriDataset(testing_dataset,
-                                  num_audio_features=self.adv_params["sound_features_size"],
-                                  time_overlap=self.adv_params["sound_time_overlap"],
-                                  time_length=self.adv_params["sound_time_length"])
+        libri_testing_dataset = self._get_libri_dataset(testing_dataset)
 
         self.net.train()
         for epoch in range(starting_epoch, epochs):
@@ -168,9 +159,7 @@ class Runner:
 
             if testing_dataset is not None:
                 libri_testing_dataloader = dl.get_libri_dataloader(libri_testing_dataset,
-                                                                   batch_size=batch_size,
-                                                                   shuffle=False,
-                                                                   num_workers=workers)
+                                                                   batch_size=batch_size)
                 self.test_dataset(libri_testing_dataloader)
 
             if epoch % model_saving_epoch == model_saving_epoch - 1:
@@ -179,4 +168,10 @@ class Runner:
 
     def eval_on_dataset(self, dataset):
         self.net.eval()
-        eval_model(self.net, dataset, self.loader)
+        libri_dataset = self._get_libri_dataset(dataset)
+        eval_model(self.net, dataset, libri_dataset)
+
+    def _get_libri_dataset(self, dataset):
+        return dl.LibriDataset(dataset, num_audio_features=self.adv_params["sound_features_size"],
+                               time_overlap=self.adv_params["sound_time_overlap"],
+                               time_length=self.adv_params["sound_time_length"])

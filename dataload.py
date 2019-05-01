@@ -29,8 +29,9 @@ def normalize_signal(signal):
     return signal / (np.max(np.abs(signal)) + 1e-5)
 
 
-def get_libri_dataloader(dataset, batch_size, shuffle, num_workers):
-    return DataLoader(dataset, batch_size, shuffle, num_workers=num_workers, collate_fn=ctc_collate_fn)
+def get_libri_dataloader(dataset, batch_size=1, shuffle=False, num_workers=0):
+    return DataLoader(dataset, batch_size, shuffle, num_workers=num_workers,
+                      collate_fn=ctc_collate_fn)
 
 
 class LibriDataset(Dataset):
@@ -46,12 +47,12 @@ class LibriDataset(Dataset):
         return len(self.ls_dataset)
 
     def __getitem__(self, idx):
-        return self.load_tensors(*self.ls_dataset[idx])
+        return self._load_tensors(*self.ls_dataset[idx])
 
     # arguments: file_path - path to music file (must be mono)
     #            bucket_size - size of frequency bucket in hz
     #            time_overlap - overlap of time intervals in ms
-    def load_track(self, file_path, debug=False, eps=0.0001):
+    def _load_track(self, file_path, debug=False, eps=0.0001):
         data, sample_rate = sf.read(file_path)
         data = normalize_signal(data)
 
@@ -101,9 +102,10 @@ class LibriDataset(Dataset):
                 return 28
             else:
                 raise Exception("Transcript unknown character:" + str(c))
+
         return [convert_char(c) for c in trans.lower()]
 
-    def load_tensors(self, track_path, transcript):
+    def _load_tensors(self, track_path, transcript):
         transcript = self.convert_transcript(transcript)
         trans_ten = torch.FloatTensor([transcript]).int()
         tensor_path = track_path.replace('flac', 'pth')
@@ -112,12 +114,10 @@ class LibriDataset(Dataset):
             track_ten = torch.load(tensor_path)
         else:
             print('Converting {} to tensor and saving...'.format(track_path))
-            track = self.load_track(track_path)
+            track = self._load_track(track_path)
             track_ten = torch.from_numpy(track[np.newaxis, :]).float()
             torch.save(track_ten, tensor_path)
 
         return track_ten, trans_ten
 
 
-if __name__ == '__main__':
-    test()
