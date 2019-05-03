@@ -108,15 +108,9 @@ class LibriDataset(Dataset):
     def _load_tensors(self, track_path, transcript):
         transcript = self.convert_transcript(transcript)
         trans_ten = torch.FloatTensor([transcript]).int()
-        tensor_path = track_path.replace('flac', 'pth')
 
-        if os.path.isfile(tensor_path):
-            track_ten = torch.load(tensor_path)
-        else:
-            print('Converting {} to tensor and saving...'.format(track_path))
-            track = self._load_track(track_path)
-            track_ten = torch.from_numpy(track[np.newaxis, :]).float()
-            torch.save(track_ten, tensor_path)
+        track = self._load_track(track_path)
+        track_ten = torch.from_numpy(track[np.newaxis, :]).float()
 
         return track_ten, trans_ten
 
