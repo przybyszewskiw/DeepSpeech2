@@ -38,7 +38,7 @@ base_params = {
 
     'shuffle_dataset': True,
 
-    'model_saving_epoch': 3,
+    'model_saving_epoch': 1,
 
     # starting epoch will be sorted regardless of shuffle_dataset value
     'sorta_grad': True,
