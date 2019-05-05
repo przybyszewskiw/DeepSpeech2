@@ -49,9 +49,10 @@ class Runner:
             self.net.load_state_dict(torch.load(pretrained_model_path))
 
         self.lr = self.base_params["lr_policy_params"]["lr"]
+        self.l2_regularization_scale = self.base_params["l2_regularization_scale"]
         self.optimizer = optim.Adam(self.net.parameters(),
                                     lr=self.lr,
-                                    betas=(0.9, 0.999))
+                                    weight_decay=self.l2_regularization_scale)
         self.optimizer_steps = 0
 
     """

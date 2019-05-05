@@ -34,7 +34,9 @@ base_params = {
     # starting epoch will be sorted regardless of shuffle_dataset value
     'sorta_grad': False,
 
-    'weights_initializer': 'xavier_normal'
+    'weights_initializer': 'xavier_normal',
+
+    'l2_regularization_scale': 0
 }
 
 non_json_params = {
