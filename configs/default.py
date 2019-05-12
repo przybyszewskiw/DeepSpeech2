@@ -9,6 +9,8 @@ base_params = {
 
     # ----- Recurrent -----
     'rec_number': 2,
+    'rec_type': 'rnn',
+    'rec_bidirectional': True,
 
     # ----- FullyConnected -----
     'fc_layers_sizes': [2048],

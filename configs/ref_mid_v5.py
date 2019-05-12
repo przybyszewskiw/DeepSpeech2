@@ -1,5 +1,6 @@
 from lrpolicy import LrPolicy as LrP
 from torch.nn.init import xavier_normal_
+import torch.nn as nn
 
 base_params = {
     # ----- Convolutions -----
@@ -13,6 +14,8 @@ base_params = {
 
     # ----- Recurrent -----
     'rec_number': 3,
+    'rec_type': 'rnn',
+    'rec_bidirectional': True,
 
     # ----- FullyConnected -----
     'fc_layers_sizes': [2048],
@@ -41,13 +44,14 @@ base_params = {
     # starting epoch will be sorted regardless of shuffle_dataset value
     'sorta_grad': True,
 
-    'weights_initializer': 'xavier_normal',
 
-    'l2_regularization_scale': 0
+    'l2_regularization_scale': 0,
+
+    'weights_initializer': 'xavier_normal',
 }
 
 non_json_params = {
-    'xavier_normal': xavier_normal_
+    'xavier_normal': xavier_normal_,
 }
 
 adv_params = {
