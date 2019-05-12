@@ -31,6 +31,8 @@ class Runner:
         self.net = DeepSpeech(conv_initial_channels=self.base_params["frequencies"],
                               conv_layers=self.base_params["conv_layers"],
                               rec_number=self.base_params["rec_number"],
+                              rec_type=self.base_params["rec_type"],
+                              rec_bidirectional=self.base_params["rec_bidirectional"],
                               fc_layers_sizes=self.base_params["fc_layers_sizes"],
                               characters=self.adv_params["characters"],
                               batch_norm=self.base_params["batch_norm"],

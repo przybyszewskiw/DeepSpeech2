@@ -20,7 +20,8 @@ class Convolutions(nn.Module):
             self.newC and self.newF respectively
     """
 
-    def __init__(self, conv_layers, frequencies=160, initial_channels=1, conv_list=None, batch_norm=False):
+    def __init__(self, conv_layers, frequencies=160, initial_channels=1, conv_list=None,
+                 batch_norm=False):
         super(Convolutions, self).__init__()
         self.frequencies = frequencies
         self.conv_layers = conv_layers
@@ -63,18 +64,32 @@ class Recurrent(nn.Module):
     Output: Tensor of the shape NxTxF where N, T and F as in input
     """
 
-    def __init__(self, frequencies, rec_number=3):
+    def __init__(self, frequencies, rec_number=3, rec_type='rnn', rec_bidirectional=True):
         super(Recurrent, self).__init__()
         self.frequencies = frequencies
         self.rec_number = rec_number
+        self.rec_type = rec_type
+        self.rec_bidirectional = rec_bidirectional
+
         # TODO Use Hardtanh(0, 20) from paper instead of tanh or simple ReLU
         # which are default for torch.nn.RNN
         self.layers = nn.ModuleList()
         for _ in range(self.rec_number):
-            new_layer = nn.RNN(input_size=self.frequencies,
-                               hidden_size=self.frequencies,
-                               nonlinearity='relu',
-                               bidirectional=True)
+            if self.rec_type == 'rnn':
+                new_layer = nn.RNN(input_size=self.frequencies,
+                                   hidden_size=self.frequencies,
+                                   nonlinearity='relu',
+                                   bidirectional=self.rec_bidirectional)
+            elif self.rec_type == 'lstm':
+                new_layer = nn.LSTM(input_size=self.frequencies,
+                                    hidden_size=self.frequencies,
+                                    bidirectional=self.rec_bidirectional)
+            elif self.rec_type == 'gru':
+                new_layer = nn.GRU(input_size=self.frequencies,
+                                   hidden_size=self.frequencies,
+                                   bidirectional=self.rec_bidirectional)
+            else:
+                raise Exception("Cannot find recurrent layer type")
             self.layers.append(new_layer)
 
     def forward(self, x):
@@ -175,6 +190,8 @@ class DeepSpeech(nn.Module):
     def __init__(self, conv_layers,
                  conv_initial_channels=160,
                  rec_number=3,
+                 rec_type='rnn',
+                 rec_bidirectional=True,
                  fc_layers_sizes=[2048],
                  characters=29,
                  batch_norm=False,
@@ -188,10 +205,15 @@ class DeepSpeech(nn.Module):
         self.frequencies = conv_initial_channels
         self.conv_layers = conv_layers
         self.initializer = initializer
+        self.rec_type = rec_type
+        self.rec_bidirectional = rec_bidirectional
 
-        self.convs = Convolutions(frequencies=self.frequencies, conv_layers=self.conv_layers, batch_norm=batch_norm)
+        self.convs = Convolutions(frequencies=self.frequencies, conv_layers=self.conv_layers,
+                                  batch_norm=batch_norm)
         self.rec = Recurrent(rec_number=self.rec_number,
-                             frequencies=self.convs.newF * self.convs.newC)
+                             frequencies=self.convs.newF * self.convs.newC,
+                             rec_type=self.rec_type,
+                             rec_bidirectional=self.rec_bidirectional)
         self.fc = FullyConnected(layers_sizes=self.full_layers,
                                  frequencies=self.convs.newF * self.convs.newC, dropout=fc_dropout)
         self.probs = Probabilities(characters=self.characters, frequencies=fc_layers_sizes[-1])
@@ -284,4 +306,3 @@ class Conv2dSame(nn.Module):
 
 if __name__ == "__main__":
     test()
-
