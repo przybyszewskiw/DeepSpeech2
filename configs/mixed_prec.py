@@ -3,16 +3,12 @@ from torch.nn.init import xavier_normal_
 
 base_params = {
     # ----- Convolutions -----
-    'conv_layers': [
-        {'kernel': (11, 41), 'stride': (1, 1), 'num_chan': 32},
-        {'kernel': (11, 21), 'stride': (1, 1), 'num_chan': 32},
-        {'kernel': (11, 21), 'stride': (1, 1), 'num_chan': 32}
-    ],
+    'conv_layers': [{'kernel': (11, 41), 'stride': (1, 1), 'num_chan': 1}],
 
     'frequencies': 160,
 
     # ----- Recurrent -----
-    'rec_number': 3,
+    'rec_number': 2,
     'rec_type': 'rnn',
     'rec_bidirectional': True,
 
@@ -20,27 +16,22 @@ base_params = {
     'fc_layers_sizes': [2048],
 
     # ----- Others -----
-    'lr_policy': LrP.POLY_DECAY,
+    'lr_policy': LrP.NO_DECAY,
     'lr_policy_params': {
-        'lr': 0.0002,
-        'decay_steps': 1000,
-        'power': 0.5,
-        'min_lr': 0,
-        'max_iter': int(281215 * 50 / 32)  # TODO add correct numbers of iterations
-        # right now {~number of iterations on all-train} * {epochs} / {batch_size}
+        'lr': 0.0001,
     },
 
     'batch_size': 32,
 
-    'batch_norm': True,
+    'batch_norm': False,
 
-    'dropout': 0.5,
+    'dropout': 0,
 
-    'epochs': 50,
+    'epochs': 1,
 
     'shuffle_dataset': True,
 
-    'model_saving_epoch': 2,
+    'model_saving_epoch': 5,
 
     # starting epoch will be sorted regardless of shuffle_dataset value
     'sorta_grad': False,
@@ -49,8 +40,7 @@ base_params = {
 
     'l2_regularization_scale': 0,
 
-    'mixed_precision_opt_level': None
-
+    'mixed_precision_opt_level': 'O1'
 }
 
 non_json_params = {
@@ -58,7 +48,6 @@ non_json_params = {
 }
 
 adv_params = {
-
     # ----- Spectogram ------
     'sound_features_size': 160,
     'sound_time_overlap': 5,

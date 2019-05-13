@@ -48,6 +48,8 @@ base_params = {
     'l2_regularization_scale': 0,
 
     'weights_initializer': 'xavier_normal',
+
+    'mixed_precision_opt_level': None
 }
 
 non_json_params = {

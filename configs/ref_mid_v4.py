@@ -47,7 +47,9 @@ base_params = {
 
     'weights_initializer': 'xavier_normal',
 
-    'l2_regularization_scale': 0.0005
+    'l2_regularization_scale': 0.0005,
+
+    'mixed_precision_opt_level': None
 }
 
 non_json_params = {

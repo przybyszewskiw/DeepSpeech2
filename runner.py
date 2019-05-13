@@ -1,5 +1,4 @@
 import os
-import random
 import sys
 import time
 import torch
@@ -8,10 +7,12 @@ import torch.nn as nn
 import dataload as dl
 from evaluator import eval_model
 from model import DeepSpeech
-from scripts.librispeech import LibriSpeech
 import lrpolicy as lrp
 import runpy
 import json  # TODO delete -- only for dict printing
+
+if torch.cuda.is_available():
+    from apex import amp
 
 
 class Runner:
@@ -57,6 +58,11 @@ class Runner:
                                     weight_decay=self.l2_regularization_scale)
         self.optimizer_steps = 0
 
+        if self.base_params['mixed_precision_opt_level'] is not None:
+            self.net, self.optimizer = amp.initialize(
+                self.net, self.optimizer,
+                opt_level=self.base_params['mixed_precision_opt_level'])
+
     """
         dataset - list of pairs (track_path, transcript_string)
     """
@@ -84,7 +90,11 @@ class Runner:
                     "WARNING: loss is inf in {}th iteration, omitting track".format(
                         i), file=sys.stderr)
                 continue
-            loss.backward()
+            if self.base_params['mixed_precision_opt_level'] is not None:
+                with amp.scale_loss(loss, self.optimizer) as scaled_loss:
+                    scaled_loss.backward()
+            else:
+                loss.backward()
             self.optimizer.step()
             self.optimizer_steps += 1
 
