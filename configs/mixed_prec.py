@@ -40,6 +40,10 @@ base_params = {
 
     'l2_regularization_scale': 0,
 
+    # possibilities: 'O0', 'O1', 'O2', 'O3'
+    # more detailed description of each level
+    # of optimization can be found here:
+    # https://nvidia.github.io/apex/amp.html
     'mixed_precision_opt_level': 'O1'
 }
 
