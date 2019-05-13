@@ -41,16 +41,6 @@ class Runner:
                               initializer=self.non_json_params[
                                   self.base_params["weights_initializer"]])
 
-        if device == 'gpu':
-            device = 'cuda:0'
-            self.net = nn.DataParallel(self.net)
-
-        self.device = torch.device(device)
-        self.net = self.net.to(self.device)
-
-        if pretrained_model_path is not None:
-            self.net.load_state_dict(torch.load(pretrained_model_path))
-
         self.lr = self.base_params["lr_policy_params"]["lr"]
         self.l2_regularization_scale = self.base_params["l2_regularization_scale"]
         self.optimizer = optim.Adam(self.net.parameters(),
@@ -62,6 +52,19 @@ class Runner:
             self.net, self.optimizer = amp.initialize(
                 self.net, self.optimizer,
                 opt_level=self.base_params['mixed_precision_opt_level'])
+
+        if device == 'gpu':
+            device = 'cuda:0'
+            self.net = nn.DataParallel(self.net)
+
+        self.device = torch.device(device)
+        self.net = self.net.to(self.device)
+
+        if pretrained_model_path is not None:
+            self.net.load_state_dict(torch.load(pretrained_model_path))
+
+
+
 
     """
         dataset - list of pairs (track_path, transcript_string)
