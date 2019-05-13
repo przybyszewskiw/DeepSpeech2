@@ -95,6 +95,7 @@ class Recurrent(nn.Module):
     def forward(self, x):
         x = x.transpose(1, 2)
         for layer in self.layers:
+            layer.flatten_parameters()
             x, _ = layer(x)
             (x1, x2) = torch.chunk(x, 2, dim=2)
             x = x1 + x2
