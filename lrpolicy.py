@@ -21,7 +21,6 @@ def apply_policy(optimizer, optimizer_steps, policy_type, policy_params):
                 if param_group['lr'] < min_lr:
                     param_group['lr'] = min_lr
 
-
     elif policy_type == LrPolicy.EXP_DECAY:
         ds = max(policy_params["decay_steps"], 1)
         dr = policy_params["decay_rate"]

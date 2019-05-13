@@ -65,9 +65,6 @@ class Runner:
         if pretrained_model_path is not None:
             self.net.load_state_dict(torch.load(pretrained_model_path))
 
-
-
-
     """
         dataset - list of pairs (track_path, transcript_string)
     """
@@ -75,7 +72,6 @@ class Runner:
     def train_epoch(self, dataloader):
         self.net.train()
         total_loss = 0.
-        iterations = 0
 
         for i, (audio, transs, lengths) in enumerate(dataloader):
             start_time = time.time()
@@ -115,12 +111,11 @@ class Runner:
                 time.time() - start_time
             ))
             total_loss += loss.item()
-            iterations += 1
             # for some reason output is in the buffer until termination while redirecting to file,
             # so we have to manually flush
             sys.stdout.flush()
 
-        print('Total loss in this epoch is {}'.format(total_loss / iterations))
+        print('Total loss in this epoch is {}'.format(total_loss / len(dataloader)))
 
     def test_dataset(self, dataloader):
         self.net.eval()
