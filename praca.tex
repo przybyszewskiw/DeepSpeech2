@@ -202,16 +202,21 @@ To sum up workflow in DS2 is quite standard as for neural network. We preapre so
 \subsection{L2 regularization}
 
 \section{Mixed precision training}
-In order to speed up training, we decided to try to reduce precision of floating point calculations, where full precision is not really needed to achieve comparable performance.
+In order to speed up training, we decided to try to reduce precision of floating point calculations, where full precision is not really needed to achieve comparable accuracy.
 
-Standard deep learning frameworks use 32 bit floating points variables (FP32) to keep model parameters, and perform both forward and backward propagations.
-Massivily parallel architecture of modern GPUs (chodzi o tensorcory TODO) allows to, in the same time, perform much more arithmetic operations on 16 bit floating point variables (FP16) than on 32 bit variables. So reducing precision could not only reduce memory consumption but also measurably improve time needed for model convergence.
+Standard deep learning frameworks, such as PyTorch, use 32 bit floating points variables (FP32) to keep model parameters, and perform all operation. Massivily parallel architecture of modern GPUs allows to, in the same time, perform much more arithmetic operations on 16 bit floating point variables (FP16) than on 32 bit variables. 
+Specifically, performance can be boosted by using Tensor Cores: hardware units prepared to accelerate matrix multiplications, introduced by Nvidia in Volta GPU architucture. \cite{MPT}
+So reducing precision could not only reduce memory consumption but also measurably improve time needed for model convergence.
 
-Common practice, used to improve speed, but not to break performance, is to keep model weights in two copies. One in FP32 and one in FP16. In each iteration we would use FP16 one to perform forward, backward propagations, and then to calculate gradients of every weight. Then we would use these gradients to update weights of original, FP32 model weights. Finally we would make a new instance of FP16 model weight by cutting off precision of updated FP32 model.
+Common technique, used to improve speed, but not to break performance, is to keep model weights in two copies. One in FP32 and one in FP16. In each iteration we would use FP16 one to perform forward, backward propagations, and then to calculate gradients of every weight. Then we would use these gradients to update weights of original, FP32 model weights. Finally we would make a new instance of FP16 model weight by cutting off precision of updated FP32 model. \cite{APEX}
 
-Another heuristic is to port to FP16 only operations, which performance would benefit most significantly (for instace transitions through fully connected and convolutional layers) and keep in FP32 operations, where precision might be an issue (softmax and batchnorm are here to mention).
+Another heuristic is to port to FP16 only operations, which performance would benefit most significantly (for instace transitions through fully connected and convolutional layers) and keep in FP32 operations, where precision might be an issue (softmax and batchnorm are here to mention). \cite{APEX}
 
-Speaking of software engineering site, we used APEX. (TODO opis leveli optymalizacji)
+There is one more thing, we need to care about, while reducing precision. FP16 only 5 bits for exponent, and its representable range is quite narrow, so that in some cases gradients are small enough to be eventually rounded to 0. To prevent that one may multiply loss by a power of two, then perform backward propagation algotrithm, and then scale back obtained gradients. This solution works pretty well in practice. However now we have to deal with another problem. Gradients calculated in the process may overflow. And even one overflow unables us to calculate gradients for parameters depended on that particular weight. So the scaling factor, rather then being one fixed power of two, need to be adjusted during training. Decreased after detection of overflow and increased if too many gradients are zeroed as a result of rounding.\cite{LOSS_SCALING}
+
+Speaking from more practical side, we used Apex AMP, which is a PyTorch Extension developed to ease mixed precision training. It supports automatic dynamic loss scaling, and both described above ways of performing mixed precision training.
+
+Futher description of this tool can be found in \cite{APEX_DOCS}.
 \section{Language model and decoding predictions}
 
 \section{Recurrent unit type}
@@ -268,6 +273,14 @@ Labelling unsegmented sequence data with recurrent neural networks. In ICML, pag
 \bibitem{DS8} Bohouta, Gamal \& Këpuska, Veton. (2017). \textit{Comparing Speech Recognition Systems (Microsoft API, Google API And CMU Sphinx).} Int. Journal of Engineering Research and Application. 2248-9622. 20-24. 10.9790/9622-0703022024.
 
 \bibitem{DS9} https://web.stanford.edu/~jurafsky/slp3/3.pdf
+
+\bibitem{MPT} https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/
+
+\bibitem{APEX} https://devblogs.nvidia.com/apex-pytorch-easy-mixed-precision-training/
+
+\bibitem{APEX_DOCS} https://nvidia.github.io/apex/amp.html
+
+\bibitem{LOSS_SCALING} https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/index.html
 
 \bibitem{RNN} M. Schuster \& K. K. Paliwal. \textit{Bidirectional recurrent neural networks. IEEE Transactions on Signal Processing, 45(11):2673–2681, 1997} \href{https://pdfs.semanticscholar.org/4b80/89bc9b49f84de43acc2eb8900035f7d492b2.pdf}{https://pdfs.semanticscholar.org/4b80/89bc9b49f84de43acc2eb8900035f7d492b2.pdf}
 
