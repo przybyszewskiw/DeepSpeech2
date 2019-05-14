@@ -201,8 +201,17 @@ To sum up workflow in DS2 is quite standard as for neural network. We preapre so
 \subsection{Dropout}
 \subsection{L2 regularization}
 
-\section{Automatic mixed precision}
+\section{Mixed precision training}
+In order to speed up training, we decided to try to reduce precision of floating point calculations, where full precision is not really needed to achieve comparable performance.
 
+Standard deep learning frameworks use 32 bit floating points variables (FP32) to keep model parameters, and perform both forward and backward propagations.
+Massivily parallel architecture of modern GPUs (chodzi o tensorcory TODO) allows to, in the same time, perform much more arithmetic operations on 16 bit floating point variables (FP16) than on 32 bit variables. So reducing precision could not only reduce memory consumption but also measurably improve time needed for model convergence.
+
+Common practice, used to improve speed, but not to break performance, is to keep model weights in two copies. One in FP32 and one in FP16. In each iteration we would use FP16 one to perform forward, backward propagations, and then to calculate gradients of every weight. Then we would use these gradients to update weights of original, FP32 model weights. Finally we would make a new instance of FP16 model weight by cutting off precision of updated FP32 model.
+
+Another heuristic is to port to FP16 only operations, which performance would benefit most significantly (for instace transitions through fully connected and convolutional layers) and keep in FP32 operations, where precision might be an issue (softmax and batchnorm are here to mention).
+
+Speaking of software engineering site, we used APEX. (TODO opis leveli optymalizacji)
 \section{Language model and decoding predictions}
 
 \section{Recurrent unit type}
