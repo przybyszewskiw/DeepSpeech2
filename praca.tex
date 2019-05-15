@@ -218,6 +218,16 @@ Speaking from more practical side, we used Apex AMP, which is a PyTorch Extensio
 
 Futher description of this tool can be found in \cite{APEX_DOCS}.
 \section{Language model and decoding predictions}
+N-gram language model is a model of a language in which we assign probabilities of occurrence to sequences of N words based on some large unlabelled text data. Incorporating model to prediction decoding helps avoid typos which are usually phonetically plausible and often occur on words that rarely or never occur in training set. We use ................ language model.
+
+Beam size in beam search used in our model is ..... This size practically scales time of decoding linearly so we used such size that increasing it further wouldn't give any decrease in WER.
+
+Performances with the language model in comparison to no language model are:
+\begin{itemize}
+  \item ....\% WER with LM; ...\% WER without LM (model ....)
+\end{itemize}
+
+In the beginning we also experimented with an easier language model that assigned probabilities to sequences of letters as it was much smaller and simpler. Unfortunately WER was increasing after applying such LM so we abandoned this idea for the bigger and more reliable N-gram LM.
 
 \section{Recurrent unit type}
 In the section \ref{sec:layers} we mentioned bidirectional recurrent layers. Three most commonly used ones are vanilla Recurrent Neural Networks (RNN) \cite{RNN}, Long Short Term Memory Unit (LSTM) \cite{LSTM} and Gated Recurrent Unit (GRU) \cite{GRU}. We will deliver a brief description of these units based on \cite{DS2}. \\
