@@ -198,9 +198,28 @@ To sum up workflow in DS2 is quite standard as for neural network. We preapre so
 
 \section{Regularization}
 \subsection{Batch normalization}
+Batch normalization is a technique for improving the speed, performance, and stability of artificial neural networks, primarily introduced to reduce internal covariate shift \cite{BN}. Method bases on the idea of normalizing data within each mini-batch using stochastic optimizations for mean and variance.
+
+Denote by $B$ mini-batch of a training set, by $m$ size of $B$. If input is $d$--dimensional: $x = (x^{(1)}, x^{(2)}, \ldots, x^{(d)})$, we calculate mean and variance as follows:
+
+$$\mu^{(k)} = \frac{1}{m}\sum_{i=1}^m x^{(k)}_i$$
+
+$$ \sigma^{{(k)}^2} = \frac{1}{m} \sum_{i = 1}^{m} \left(x^{(k)}_i - \mu^{(k)}\right) ^ 2.$$
+Next step is normalization:
+
+$$
+\hat{x} ^ {(k)} _ i = \frac{x^{(k)}_i - \mu^{(k)}} {\sqrt{ \sigma^{{(k)}^2} + \epsilon}}
+$$
+where $\epsilon$ is small constant added for numerical stability. Finally we scale and shift normalized data:
+
+$$ y^{(k)}_i = \gamma^{(k)} \hat{x}^{(k)}_i + \beta^{(k)}$$
+where $\gamma^{(k)}$ and $\beta^{(k)}$ are learnable parameters.
+
+
 \subsection{Dropout}
 \subsection{L2 regularization}
-
+$L2$ regularization is a technique designed to prevent neural network from overfitting training dataset. The key idea behind this method is keeping network weights from growing too large unless it is really necessary. It can be realized by adding a term $\lambda ||W||^2_F $ to the cost function that penalizes large weights, where $||W||_F $ is
+a Frobenius norm, and $\lambda$ is parameter governing how strongly large weights are penalized \cite{L2}.
 \section{Mixed precision training}
 In order to speed up training, we decided to try to reduce precision of floating point calculations, where full precision is not really needed to achieve comparable accuracy.
 
@@ -282,15 +301,16 @@ Labelling unsegmented sequence data with recurrent neural networks. In ICML, pag
 
 \bibitem{DS8} Bohouta, Gamal \& Këpuska, Veton. (2017). \textit{Comparing Speech Recognition Systems (Microsoft API, Google API And CMU Sphinx).} Int. Journal of Engineering Research and Application. 2248-9622. 20-24. 10.9790/9622-0703022024.
 
-\bibitem{DS9} https://web.stanford.edu/~jurafsky/slp3/3.pdf
+\bibitem{DS9} \href{https://web.stanford.edu/~jurafsky/slp3/3.pdf}{https://web.stanford.edu/~jurafsky/slp3/3.pdf}
 
-\bibitem{MPT} https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/
+\bibitem{MPT} \href{https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/}
+{https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/}
 
-\bibitem{APEX} https://devblogs.nvidia.com/apex-pytorch-easy-mixed-precision-training/
+\bibitem{APEX} \href{https://devblogs.nvidia.com/apex-pytorch-easy-mixed-precision-training/}{https://devblogs.nvidia.com/apex-pytorch-easy-mixed-precision-training/}
 
-\bibitem{APEX_DOCS} https://nvidia.github.io/apex/amp.html
+\bibitem{APEX_DOCS} \href{https://nvidia.github.io/apex/amp.html}{https://nvidia.github.io/apex/amp.html}
 
-\bibitem{LOSS_SCALING} https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/index.html
+\bibitem{LOSS_SCALING} \href{https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/index.html}{https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/index.html}
 
 \bibitem{RNN} M. Schuster \& K. K. Paliwal. \textit{Bidirectional recurrent neural networks. IEEE Transactions on Signal Processing, 45(11):2673–2681, 1997} \href{https://pdfs.semanticscholar.org/4b80/89bc9b49f84de43acc2eb8900035f7d492b2.pdf}{https://pdfs.semanticscholar.org/4b80/89bc9b49f84de43acc2eb8900035f7d492b2.pdf}
 
@@ -298,6 +318,9 @@ Labelling unsegmented sequence data with recurrent neural networks. In ICML, pag
 
 \bibitem{GRU} Kyunghyun Cho, Bart van Merrienboer, Dzmitry Bahdanau, Yoshua Bengio \textit{On the Properties of Neural Machine Translation: Encoder-Decoder Approaches} \href{https://arxiv.org/pdf/1409.1259.pdf}{https://arxiv.org/pdf/1409.1259.pdf}
 
+\bibitem{L2} Anders Krogh, John A. Hertz \textit{A Simple Weight Decay Can Improve Generalization} \href{https://papers.nips.cc/paper/563-a-simple-weight-decay-can-improve-generalization.pdf}{https://papers.nips.cc/paper/563-a-simple-weight-decay-can-improve-generalization.pdf}
+
+\bibitem{BN} Sergey Ioffe, Christian Szegedy \textit{Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift} \href{https://arxiv.org/pdf/1502.03167.pdf}{https://arxiv.org/pdf/1502.03167.pdf}
 \end{thebibliography}
 All the files were downloaded on \bibDownloadDate
 
