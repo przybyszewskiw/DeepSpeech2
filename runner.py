@@ -42,7 +42,7 @@ class Runner:
                                   self.base_params["weights_initializer"]])
 
         if device == 'gpu':
-            device = 'cuda:0'
+            device = 'cuda'
 
         self.device = torch.device(device)
         self.net = self.net.to(self.device)
@@ -59,7 +59,7 @@ class Runner:
                 self.net, self.optimizer,
                 opt_level=self.base_params['mixed_precision_opt_level'])
 
-        if device == 'cuda:0':
+        if device == 'cuda':
             self.net = nn.DataParallel(self.net)
 
         if pretrained_model_path is not None:
@@ -121,18 +121,17 @@ class Runner:
         self.net.eval()
         total_loss = 0.
         iterations = 0
-        with torch.no_grad():
-            for i, (audio, transs, lengths) in enumerate(dataloader):
-                audio = audio.to(self.device)
-                output, _ = self.net(audio)
+        for i, (audio, transs, lengths) in enumerate(dataloader):
+            audio = audio.to(self.device)
+            output, _ = self.net(audio)
 
-                if self.device != torch.device("cpu"):
-                    output = output.to("cpu")
+            if self.device != torch.device("cpu"):
+                output = output.to("cpu")
 
-                loss = DeepSpeech.criterion(output, transs, lengths)
+            loss = DeepSpeech.criterion(output, transs, lengths)
 
-                total_loss += loss.item()
-                iterations += 1
+            total_loss += loss.item()
+            iterations += 1
 
         print('Validation loss is {}'.format(total_loss / iterations))
 
@@ -173,7 +172,11 @@ class Runner:
             if testing_dataset is not None:
                 libri_testing_dataloader = dl.get_libri_dataloader(libri_testing_dataset,
                                                                    batch_size=batch_size)
-                self.test_dataset(libri_testing_dataloader)
+                if self.base_params['mixed_precision_opt_level'] is None:
+                    with torch.no_grad():
+                        self.test_dataset(libri_testing_dataloader)
+                else:
+                    self.test_dataset(libri_testing_dataloader)
 
             if epoch % model_saving_epoch == model_saving_epoch - 1:
                 print('Saving model')
