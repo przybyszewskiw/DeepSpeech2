@@ -19,7 +19,61 @@
 \usepackage{mathtools}
 \usepackage{amssymb}
 \newcommand{\bibDownloadDate}{\today}
+\usepackage{tikz}
+\usepackage{pgfplots}
 
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training \\
+1   &  4.79 \\
+30   &  2.91 \\
+60   &  2.90 \\
+90   &  2.87 \\
+120  &  2.87 \\
+150  &  2.87 \\
+180  &  2.87 \\
+210  &  2.86 \\
+240  &  2.35 \\
+270 &  1.95 \\
+300 &  1.84 \\
+330 &  1.77 \\
+360 &  1.72 \\
+390 &  1.69 \\
+420 &  1.66 \\
+450 &  1.65 \\
+480 &  1.62 \\
+510 &  1.61 \\
+540 &  1.59 \\
+570 &  1.64 \\
+600 &  1.60 \\
+    }\first
+    
+\newcommand{\todoplot}{
+\begin{figure}[!hbt]
+		\begin{center}
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 0, ymax = 5,
+            xmin = 0, xmax = 600,
+            minor y tick num = 4,
+            minor x tick num = 1,
+            ymajorgrids = true,
+            grid style = dashed,
+            scaled x ticks = false,
+            xlabel = TODO,
+            ylabel = TODO,
+            legend pos=outer north east,
+            no markers            
+          ]
+		  \addplot table[x=epochs,y=training]{\first};
+		  \addlegendentry{TODO}
+          	  
+		\end{axis}
+		\end{tikzpicture}
+		\caption{Best model performance in CTC Loss function with respect to training time in epochs.}
+		\label{diag:time}
+		\end{center}
+	\end{figure}
+}
 
 % Dane magistrantów:
 \autor{Piotr Ambroszczyk}{385090}
@@ -117,7 +171,8 @@ Following description of the model architecture is pretty basic and it is based 
 \textbf{Czy coś takiego jak wyżej w pełni wystarcza, żebyśmy mogli cytować zdania z tej pracy bez uprzedzenia?}
 \section{Input and Output specification}
 Let $\{(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), ...\}$ be a training set. $x^{(i)}$ is a time-series of variable length where every time-slice is a spectrogram of power
-normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of the utterance $x^{(i)}$. One can see that $x^{(i)}$ is in fact a matrix of size depending on number of frequency bins and $i$'th audio clip length. We use the same number of power bins for all audio clips in dataset.\\\\
+normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of the utterance $x^{(i)}$. One can see that $x^{(i)}$ is in fact a matrix of size depending on number of frequency bins and $i$'th audio clip length. We use the same number of power bins for all audio clips in dataset.
+
 DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ for each output time-step. For English language possible values of $l_t$ are:
 
 \begin{itemize}
@@ -126,7 +181,6 @@ DS2 network's input is a time-series $x$ and the output is a prediction over cha
   \item apostrophe;
   \item blank.
 \end{itemize}
-
 Adding non-letter characters allows to find word boundaries. Special symbol blank is outputted each time, when the network is unable
 to tell which character is most likely to occur for the current input spectrogram.
 
@@ -140,7 +194,8 @@ $$
 		x & otherwise.
 	\end{cases*}
 $$
-The recurrent layers appear in a few different variants -- standard recurrent layers or Long Short-Term Memory (LSTM) \cite{DS5}, or Gated Recurrent Units (GRU) \cite{DS6}. After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.\\\\
+The recurrent layers appear in a few different variants -- standard recurrent layers or Long Short-Term Memory (LSTM) \cite{DS5}, or Gated Recurrent Units (GRU) \cite{DS6}. After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.
+
 Softmax function $f : \mathbb{R}^k \rightarrow \mathbb{R}^k$ is defined by the formula:
 $$
 f_i(v) = \frac{e^{v_i}}{\sum_{i=1}^{k} e^{v_j}},
@@ -152,12 +207,15 @@ $$
 We basically apply exponential function to each outputed value, and then normalize these values to make sure, that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
 
 \section{CTC Loss}
-To train a neural network we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing a value of the loss function is a main goal of the training. \\\\
-Loss function used in DS2 is Connectionist Temporal Classification (CTC) \cite{DS3}. To define this loss let us introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". Only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".\\
-For instance, possible encodings of \textit{"to"} are \textit{"-tttooo"} and \textit{"-tttoo-o"}, but only the latter could be an encoding of the word \textit{"too"}.\\
+To train a neural network we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing a value of the loss function is a main goal of the training.
+
+Loss function used in DS2 is Connectionist Temporal Classification (CTC) \cite{DS3}. To define this loss let us introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". Only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".
+
+For instance, possible encodings of \textit{"to"} are \textit{"-tttooo"} and \textit{"-tttoo-o"}, but only the latter could be an encoding of the word \textit{"too"}.
+
 Now we say that the probability of an actual transcription is the sum of probabilities of all possible encodings of the actual transcription, that have the same length as the output of the model. The loss function here is simply the negative logarithm of this probability. Having this we can count derivatives of this loss function with respect to model output and then apply \textit{backpropagation through time} algorithm to train the network, which is just a standard backpropagation algorithm modified for recurrent neural networks.
 \section{Training}
-During the training data sets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated through the network, and then weights on the layers are updated. The speed in which changes are applied to the model depends on some chosen constant -- \textbf{learning rate}. All data sets make up for an epoch of training and training lasts for many epochs -- until loss doesn't decrease anymore or decreases very slightly.\\\\
+During the training data sets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated through the network, and then weights on the layers are updated. The speed in which changes are applied to the model depends on some chosen constant -- \textbf{learning rate}. All data sets make up for an epoch of training and training lasts for many epochs -- until loss doesn't decrease anymore or decreases very slightly.
 Accuracy of the model is measured by Word Error Rate (WER). It is a common metric of the performance of speech recognition systems. Here \cite{DS8} many commercial ASR systems were compared using WER. To measure Word Error Rate, we compare the recognized word sequence with a reference word sequence by transforming the latter to the former and find:
 
 \begin{itemize}
@@ -178,9 +236,10 @@ In order to find Word Error Rate of the model, one has to generate some final tr
 $$
 Q(y) = \log \big(\mathbb{P}_{ctc}(y|x)\big) + \alpha \cdot \log \big( \mathbb{P}_{lm}(y) \big) + \beta \cdot word\_count(y).
 $$
+The term $\mathbb{P}_{ctc}(y|x)$ denotes the probability of $y$ being a transcription of the utterance $x$ as described in section 1.3 and the term $\mathbb{P}_{lm}(y)$ denotes the probability of the sequence $y$ according to the language model. The weight $\alpha$ controls the relative contributions of the language model and the CTC network. The weight $\beta$ encourages more words in the transcription. Both of those parameters are tunable. We use a beam search similar to one described in \cite{DS7} to find the optimal transcription \textit{y}.
 
-The term $\mathbb{P}_{ctc}(y|x)$ denotes the probability of $y$ being a transcription of the utterance $x$ as described in section 1.3 and the term $\mathbb{P}_{lm}(y)$ denotes the probability of the sequence $y$ according to the language model. The weight $\alpha$ controls the relative contributions of the language model and the CTC network. The weight $\beta$ encourages more words in the transcription. Both of those parameters are tunable. We use a beam search similar to one described in \cite{DS7} to find the optimal transcription \textit{y}.\\\\
-Beam search is an algorithm that iterates over each time-step in the output of DS2 model, while remembering some constant number (let this number be $BW$ -- \textit{Beam Width}) of the most probable transcriptions up to this point. When considering the next time-step, we create $BW \cdot C$ new transcriptions corresponding to appending every possible character (we denote number of them by $C$) to the end of each one of $BW$ remembered transcriptions. After merging identical transcriptions and recalculating their probabilites we again keep $BW$ best ones. In the end we have $BW$ \textit{most probable} transcriptions, so we just take the best one.\\
+Beam search is an algorithm that iterates over each time-step in the output of DS2 model, while remembering some constant number (let this number be $BW$ -- \textit{Beam Width}) of the most probable transcriptions up to this point. When considering the next time-step, we create $BW \cdot C$ new transcriptions corresponding to appending every possible character (we denote number of them by $C$) to the end of each one of $BW$ remembered transcriptions. After merging identical transcriptions and recalculating their probabilites we again keep $BW$ best ones. In the end we have $BW$ \textit{most probable} transcriptions, so we just take the best one.
+
 In order to efficiently merge transcriptions and recalculate new probabilities for them we must store probabilities $\mathbb{P}_{b}$, $\mathbb{P}_{nb}$, $\mathbb{P}_{lm}$ for all kept transcriptions, where:
 \begin{itemize}
   \item $\mathbb{P}_{b}(y, t)$ -- the probability of the given transcription $y$ at time-step $t$ if the encoding ends with \textit{blank},
@@ -217,6 +276,10 @@ where $\gamma^{(k)}$ and $\beta^{(k)}$ are learnable parameters.
 
 
 \subsection{Dropout}
+Dropout is regularization strategy patented by Google \cite{DROPG}, it is used to remove neural network overfitting. The basic idea of this technique is multiplying input and hidden units, during training process, by randomly generated bit mask. \cite{DROPW}. It follows that some nodes will be inactive, set to 0, and model is prevented from complex co-adaptations. 
+
+\todoplot
+
 \subsection{L2 regularization}
 $L2$ regularization is a technique designed to prevent neural network from overfitting training dataset. The key idea behind this method is keeping network weights from growing too large unless it is really necessary. It can be realized by adding a term $\lambda ||W||^2_F $ to the cost function that penalizes large weights, where $||W||_F $ is
 a Frobenius norm, and $\lambda$ is parameter governing how strongly large weights are penalized \cite{L2}.
@@ -249,11 +312,14 @@ Performances with the language model in comparison to no language model are:
 In the beginning we also experimented with an easier language model that assigned probabilities to sequences of letters as it was much smaller and simpler. Unfortunately WER was increasing after applying such LM so we abandoned this idea for the bigger and more reliable N-gram LM.
 
 \section{Recurrent unit type}
-In the section \ref{sec:layers} we mentioned bidirectional recurrent layers. Three most commonly used ones are vanilla Recurrent Neural Networks (RNN) \cite{RNN}, Long Short Term Memory Unit (LSTM) \cite{LSTM} and Gated Recurrent Unit (GRU) \cite{GRU}. We will deliver a brief description of these units based on \cite{DS2}. \\
-Let's denote by $l$ the layer number. A bidirectional recurrent layer $h^l$ consist of a forward recurrent layer $\overrightarrow{h^l}$ and a backward recurrent layer $\overleftarrow{h^l}$. The forward and backward recurrent layer activations for time $t$ are computed as $\overrightarrow{h^l_t} = g(\overrightarrow{h^l_{t - 1}}, h^{l-1}_t)$ and $\overleftarrow{h^l_t} = g(\overleftarrow{h^l_{t+1}}, h^{l-1}_t)$. In the end, we add both partial layers to get $h^l = \overrightarrow{h^l} + \overleftarrow{h^l}$.\\
+In the section \ref{sec:layers} we mentioned bidirectional recurrent layers. Three most commonly used ones are vanilla Recurrent Neural Networks (RNN) \cite{RNN}, Long Short Term Memory Unit (LSTM) \cite{LSTM} and Gated Recurrent Unit (GRU) \cite{GRU}. We will deliver a brief description of these units based on \cite{DS2}.
+
+Let's denote by $l$ the layer number. A bidirectional recurrent layer $h^l$ consist of a forward recurrent layer $\overrightarrow{h^l}$ and a backward recurrent layer $\overleftarrow{h^l}$. The forward and backward recurrent layer activations for time $t$ are computed as $\overrightarrow{h^l_t} = g(\overrightarrow{h^l_{t - 1}}, h^{l-1}_t)$ and $\overleftarrow{h^l_t} = g(\overleftarrow{h^l_{t+1}}, h^{l-1}_t)$. In the end, we add both partial layers to get $h^l = \overrightarrow{h^l} + \overleftarrow{h^l}$.
+
 Function $g$ mentioned before depends on specific recurrent unit type. For vanilla RNN it is just
 $$\overrightarrow{h^l_t} = f(W^l h^{l-1}_t + \overrightarrow{U^l} \overrightarrow{h^l_{t - 1}} + b^l)$$
-and analogically for the backward recurrent layer. Here $W^l$ and $\overrightarrow{U^l}$ are just weight matrices, $b^l$ is a bias vector and $f$ is an activation function (e.g. ReLU or tanh). For LSTM and GRU function $g$ is much more complex to simulate some kind of \textit{memory}.\\
+and analogically for the backward recurrent layer. Here $W^l$ and $\overrightarrow{U^l}$ are just weight matrices, $b^l$ is a bias vector and $f$ is an activation function (e.g. ReLU or tanh). For LSTM and GRU function $g$ is much more complex to simulate some kind of \textit{memory}.
+
 This is a short summary of our experiments:
 
 \section{Multi GPU scaling}
@@ -278,7 +344,7 @@ This is a short summary of our experiments:
 
 \chapter{Conclusions}\label{r:concls}
 
-To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also present already trained models for English and Polish as well as the results of our experiments justifying using specific hyperparameters and architecture solutions.\\
+To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also present already trained models for English and Polish as well as the results of our experiments justifying using specific hyperparameters and architecture solutions.
 
 \begin{thebibliography}{99}
 \addcontentsline{toc}{chapter}{Bibliography} 
@@ -321,6 +387,12 @@ Labelling unsegmented sequence data with recurrent neural networks. In ICML, pag
 \bibitem{L2} Anders Krogh, John A. Hertz \textit{A Simple Weight Decay Can Improve Generalization} \href{https://papers.nips.cc/paper/563-a-simple-weight-decay-can-improve-generalization.pdf}{https://papers.nips.cc/paper/563-a-simple-weight-decay-can-improve-generalization.pdf}
 
 \bibitem{BN} Sergey Ioffe, Christian Szegedy \textit{Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift} \href{https://arxiv.org/pdf/1502.03167.pdf}{https://arxiv.org/pdf/1502.03167.pdf}
+
+\bibitem{DROPW} David Warde-Farley, Ian J. Goodfellow, Aaron Courville, Yoshua Bengio \textit{An empirical analysis of dropout in piecewise linear networks
+} \href{https://arxiv.org/abs/1312.6197}{https://arxiv.org/abs/1312.6197}
+
+\bibitem{DROPG} System and method for addressing overfitting in a neural network \href{https://patents.google.com/patent/US9406017B2/en}{https://patents.google.com/patent/US9406017B2/en}
+
 \end{thebibliography}
 All the files were downloaded on \bibDownloadDate
 
