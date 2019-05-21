@@ -155,15 +155,15 @@
 
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
-Transcription of spoken language is a crucial problem for many areas of modern technology industry. Being able to communicate with electronic devices not only by touching them, but also by talking to them is an important goal for IT companies. Such devices are more user-friendly so it is for sure beneficial for everybody. To achieve this goal various solutions were proposed and many of then use complex algorithms (e.g. Hidden Markov Models) \cite{DS1}. However it has been shown that the best accuracy can be achieved with Automatic Speech Recognition (ASR) models based on neural networks \cite{DS2}.
+Transcription of spoken language is a crucial problem for many areas of modern technology industry. Being able to communicate with electronic devices not only by touching them, but also by talking to them is an important goal for IT companies. Such devices are more user-friendly so it is for sure beneficial for everybody. To achieve this goal various solutions were proposed and many of then use complex algorithms (e.g. Hidden Markov Models) \cite{DS1}. However, it has been shown that the best accuracy can be achieved with Automatic Speech Recognition (ASR) models based on neural networks \cite{DS2}.
 
-Our thesis concentrates on implementing state of the art ASR model DeepSpeech2 described in \cite{DS2} and we realize it with the support of NVIDIA Corporation. Authors of DeepSpeech2 prepared their model only for recognizing English and Mandarin, so we plan to experiment with applying it to Polish language as well. We think, it is the biggest challenge, since accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset. Therefore we have to find appropriate one (paying attention to licenses and copyrights) and prepare it adequately. Large size of the dataset creates another problem -- we need our model to be able to train on that data in reasonable time and then work in real time. Last but not least, in order to determine the best hyperparameters we have to run many experiments, collect their results, and finally analyze them.
+Our thesis concentrates on implementing state of the art ASR model DeepSpeech2 described in \cite{DS2} and we realize it with the support of NVIDIA Corporation. Authors of DeepSpeech2 prepared their model only for recognizing English and Mandarin, so we plan to experiment with applying it to Polish language as well. We think, it is the biggest challenge, since accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset. Therefore, we have to find appropriate one (paying attention to licenses and copyrights) and prepare it adequately. Large size of the dataset creates another problem -- we need our model to be able to train on that data in reasonable time and then work in real time. Last but not least, in order to determine the best hyperparameters we have to run many experiments, collect their results, and finally analyze them.
 
-In order to accomplish our goals we are going to implement DeepSpeech2 model using \texttt{PyTorch} deep learning framework, which is supported with CUDA, and is considered to be comfortable to work with. To achieve high performance system we plan to use open-source libraries prepared by NVIDIA which makes it possible to train one neural network over multiple GPUs. Another optimization which we expect to speed computations up is using half precision floating point numbers (also known as FP16) instead of single precision.  When it comes to collecting datasets we assume it should be relatively easy for English as there are lots of free English utterances with transcriptions. However, for spoken corpus of Polish it may be harder - we are going to search for Polish speech collected for university programs and from audiobooks.
+In order to accomplish our goals we are going to implement DeepSpeech2 model using \texttt{PyTorch} deep learning framework, which is supported with CUDA, and is considered to be comfortable to work with. To achieve high performance system we plan to use open-source libraries prepared by NVIDIA which makes it possible to train one neural network over multiple GPUs. Another optimization which we expect to speed computations up is using half precision floating-point numbers (also known as FP16) instead of single precision. When it comes to collecting datasets we assume it should be relatively easy for English as there are lots of free English utterances with transcriptions. However, for spoken corpus of Polish it may be harder - we are going to search for Polish speech collected for university programs and from audiobooks.
 
-Structure of our thesis is the following. In Chapter \ref{r:desc} we introduce architecture of DeepSpeech and DeepSpeech2 models in terms of, among others, used layers, data flow and functions. After that in Chapter \ref{r:extens} we present applied optimizations which increased network performance. Next in Chapter \ref{r:hypers} we describe the results of experiments on model hyperparameters. In Chapter \ref{r:polish} we describe how we modified and trained neural network to detect Polish language and compare obtained results with English model. Finally in Chapter \ref{r:concls} we summarize our experiments, show their results and present final version of the model.
+Structure of our thesis is the following. In Chapter \ref{r:desc} we introduce architecture of DeepSpeech and DeepSpeech2 models in terms of, among others, used layers, data flow and functions. After that in Chapter \ref{r:extens} we present applied optimizations which increased network performance. Next in Chapter \ref{r:hypers} we describe the results of experiments on model hyperparameters. In Chapter \ref{r:polish} we describe how we modified and trained neural network to detect Polish language and compare obtained results with English model. Finally, in Chapter \ref{r:concls} we summarize our experiments, show their results and present final version of the model.
 
-We divided our work on the model into two main parts. The first one consisted of preparing appropriate datasets (for both English and Polish) and processing them to fit the model -- Łukasz Kondraciuk and Jan Tabaszewski were in charge of this part. The second one consisted of implementing the model and applying GPU optimisations to it -- this was the task for Piotr Ambroszczyk and Wojciech Przybyszewski.
+We divided our work on the model into two main parts. The first one consisted of preparing appropriate datasets (for both English and Polish) and processing them to fit the model -- Łukasz Kondraciuk and Jan Tabaszewski were in charge of this part. The second one consisted of implementing the model and applying GPU optimizations to it -- this was the task for Piotr Ambroszczyk and Wojciech Przybyszewski.
 \chapter{Basic model description}\label{r:desc}
 
 DeepSpeech 2 (DS2) system is a recurrent neural network trained to ingest speech spectrograms and generate a text transcription.
@@ -238,18 +238,18 @@ Q(y) = \log \big(\mathbb{P}_{ctc}(y|x)\big) + \alpha \cdot \log \big( \mathbb{P}
 $$
 The term $\mathbb{P}_{ctc}(y|x)$ denotes the probability of $y$ being a transcription of the utterance $x$ as described in section 1.3 and the term $\mathbb{P}_{lm}(y)$ denotes the probability of the sequence $y$ according to the language model. The weight $\alpha$ controls the relative contributions of the language model and the CTC network. The weight $\beta$ encourages more words in the transcription. Both of those parameters are tunable. We use a beam search similar to one described in \cite{DS7} to find the optimal transcription \textit{y}.
 
-Beam search is an algorithm that iterates over each time-step in the output of DS2 model, while remembering some constant number (let this number be $BW$ -- \textit{Beam Width}) of the most probable transcriptions up to this point. When considering the next time-step, we create $BW \cdot C$ new transcriptions corresponding to appending every possible character (we denote number of them by $C$) to the end of each one of $BW$ remembered transcriptions. After merging identical transcriptions and recalculating their probabilites we again keep $BW$ best ones. In the end we have $BW$ \textit{most probable} transcriptions, so we just take the best one.
+Beam search is an algorithm that iterates over each time-step in the output of DS2 model, while remembering some constant number (let this number be $BW$ -- \textit{Beam Width}) of the most probable transcriptions up to this point. When considering the next time-step, we create $BW \cdot C$ new transcriptions corresponding to appending every possible character (we denote number of them by $C$) to the end of each one of $BW$ remembered transcriptions. After merging identical transcriptions and recalculating their probabilities we again keep $BW$ best ones. In the end we have $BW$ \textit{most probable} transcriptions, so we just take the best one.
 
 In order to efficiently merge transcriptions and recalculate new probabilities for them we must store probabilities $\mathbb{P}_{b}$, $\mathbb{P}_{nb}$, $\mathbb{P}_{lm}$ for all kept transcriptions, where:
 \begin{itemize}
-  \item $\mathbb{P}_{b}(y, t)$ -- the probability of the given transcription $y$ at time-step $t$ if the encoding ends with \textit{blank},
-  \item $\mathbb{P}_{nb}(y, t)$ -- the probability of the given transcription $y$ at time-step $t$ if the encoding doesn't end with \textit{blank},
-  \item $\mathbb{P}_{lm}(y)$ -- the probability of the given transcription $y$, according to the language model.\\
+\item $\mathbb{P}_{b}(y, t)$ -- the probability of the given transcription $y$ at time-step $t$ if the encoding ends with \textit{blank},
+\item $\mathbb{P}_{nb}(y, t)$ -- the probability of the given transcription $y$ at time-step $t$ if the encoding doesn't end with \textit{blank},
+\item $\mathbb{P}_{lm}(y)$ -- the probability of the given transcription $y$, according to the language model.\\
 \end{itemize}
 \textbf{Nie podoba mi się używanie mathbb P na oznaczenie tych prawdopodobieństw, bo to sugeruje, że ono jest jakąś miarą, a jest tylko zwykłą funkcją.}
 
 \section{Summary}
-To sum up workflow in DS2 is quite standard as for neural network. We preapre some data in the form described in 1.1. Next we forward propagate the data through the layers described in 1.2. After that we count CTC Loss (1.3.) and update model weights with specific learning rate (1.4.). To evaluate model we generate transcription from predictions given by the output layer using Beam search (1.5.) and count Word Error Rate metrics (1.4.).
+To sum up workflow in DS2 is quite standard as for neural network. We prepare some data in the form described in 1.1. Next we forward propagate the data through the layers described in 1.2. After that we count CTC Loss (1.3.) and update model weights with specific learning rate (1.4.). To evaluate model we generate transcription from predictions given by the output layer using Beam search (1.5.) and count Word Error Rate metrics (1.4.).
 \textbf{TODO Hiperłącza}
 
 
@@ -284,21 +284,21 @@ Dropout is regularization strategy patented by Google \cite{DROPG}, it is used t
 $L2$ regularization is a technique designed to prevent neural network from overfitting training dataset. The key idea behind this method is keeping network weights from growing too large unless it is really necessary. It can be realized by adding a term $\lambda ||W||^2_F $ to the cost function that penalizes large weights, where $||W||_F $ is
 a Frobenius norm, and $\lambda$ is parameter governing how strongly large weights are penalized \cite{L2}.
 \section{Mixed precision training}
-In order to speed up training, we decided to try to reduce precision of floating point calculations, where full precision is not really needed to achieve comparable accuracy.
+In order to speed up training, we decided to try to reduce precision of floating-point calculations, where full precision is not really needed to achieve comparable accuracy.
 
-Standard deep learning frameworks, such as PyTorch, use 32 bit floating points variables (FP32) to keep model parameters, and perform all operation. Massivily parallel architecture of modern GPUs allows to, in the same time, perform much more arithmetic operations on 16 bit floating point variables (FP16) than on 32 bit variables. 
-Specifically, performance can be boosted by using Tensor Cores: hardware units prepared to accelerate matrix multiplications, introduced by Nvidia in Volta GPU architucture. \cite{MPT}
+Standard deep learning frameworks, such as PyTorch, use 32 bit floating points variables (FP32) to keep model parameters, and perform all operation. Massively parallel architecture of modern GPUs allows to, in the same time, perform much more arithmetic operations on 16 bit floating-point variables (FP16) than on 32 bit variables.
+Specifically, performance can be boosted by using Tensor Cores: hardware units prepared to accelerate matrix multiplications, introduced by Nvidia in Volta GPU architecture. \cite{MPT}
 So reducing precision could not only reduce memory consumption but also measurably improve time needed for model convergence.
 
-Common technique, used to improve speed, but not to break performance, is to keep model weights in two copies. One in FP32 and one in FP16. In each iteration we would use FP16 one to perform forward, backward propagations, and then to calculate gradients of every weight. Then we would use these gradients to update weights of original, FP32 model weights. Finally we would make a new instance of FP16 model weight by cutting off precision of updated FP32 model. \cite{APEX}
+Common technique, used to improve speed, but not to break performance, is to keep model weights in two copies. One in FP32 and one in FP16. In each iteration we would use FP16 one to perform forward, backward propagation, and then to calculate gradients of every weight. Then we would use these gradients to update weights of original, FP32 model weights. Finally, we would make a new instance of FP16 model weight by cutting off precision of updated FP32 model. \cite{APEX}
 
-Another heuristic is to port to FP16 only operations, which performance would benefit most significantly (for instace transitions through fully connected and convolutional layers) and keep in FP32 operations, where precision might be an issue (softmax and batchnorm are here to mention). \cite{APEX}
+Another heuristic is to port to FP16 only operations, which performance would benefit most significantly (for instance transitions through fully connected and convolutional layers) and keep in FP32 operations, where precision might be an issue (softmax and batchnorm are here to mention). \cite{APEX}
 
-There is one more thing, we need to care about, while reducing precision. FP16 only 5 bits for exponent, and its representable range is quite narrow, so that in some cases gradients are small enough to be eventually rounded to 0. To prevent that one may multiply loss by a power of two, then perform backward propagation algotrithm, and then scale back obtained gradients. This solution works pretty well in practice. However now we have to deal with another problem. Gradients calculated in the process may overflow. And even one overflow unables us to calculate gradients for parameters depended on that particular weight. So the scaling factor, rather then being one fixed power of two, need to be adjusted during training. Decreased after detection of overflow and increased if too many gradients are zeroed as a result of rounding.\cite{LOSS_SCALING}
+There is one more thing, we need to care about, while reducing precision. FP16 only 5 bits for exponent, and its representable range is quite narrow, so that in some cases gradients are small enough to be eventually rounded to 0. To prevent that one may multiply loss by a power of two, then perform backward propagation algorithm, and then scale back obtained gradients. This solution works pretty well in practice. However now we have to deal with another problem. Gradients calculated in the process may overflow. And even one overflow unables us to calculate gradients for parameters depended on that particular weight. So the scaling factor, rather than being one fixed power of two, need to be adjusted during training. Decreased after detection of overflow and increased if too many gradients are zeroed as a result of rounding.\cite{LOSS_SCALING}
 
 Speaking from more practical side, we used Apex AMP, which is a PyTorch Extension developed to ease mixed precision training. It supports automatic dynamic loss scaling, and both described above ways of performing mixed precision training.
 
-Futher description of this tool can be found in \cite{APEX_DOCS}.
+Further description of this tool can be found in \cite{APEX_DOCS}.
 \section{Language model and decoding predictions}
 N-gram language model is a model of a language in which we assign probabilities of occurrence to sequences of N words based on some large unlabelled text data. Incorporating model to prediction decoding helps avoid typos which are usually phonetically plausible and often occur on words that rarely or never occur in training set. We use ................ language model.
 
@@ -322,7 +322,16 @@ and analogically for the backward recurrent layer. Here $W^l$ and $\overrightarr
 
 This is a short summary of our experiments:
 
-\section{Multi GPU scaling}
+\section{Performance and multi GPU scaling}
+For training, we used machine with Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz, (which has 20 physical cores), and 256 GB of RAM. Is was equipped with four Nvidia Tesla V100 GPGPUs (32 GB of global memory each), connected by NVlink.
+
+Figures below describe performance and scaling we achieved by utilizing more than one GPUs. Performance is measured by time in seconds it took for train for one epoch on full 1000h dataset.
+
+\todoplot
+
+And here is performance of mixed precision training.
+
+\todoplot
 
 \section{Sortagrad and dataset sorting}
 
