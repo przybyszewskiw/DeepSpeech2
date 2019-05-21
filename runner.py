@@ -96,16 +96,20 @@ class Runner:
                 skipped += 1
                 continue
 
+            if math.isnan(loss.item()):
+                print(
+                    "WARNING: loss is nan in {}th iteration, omitting track".format(
+                        i))
+                skipped += 1
+                continue
+
             print("loss in {}th iteration is {}, it took {} seconds".format(
                 i,
                 loss.item(),
                 time.time() - start_time
             ))
 
-            if math.isnan(loss.item()):
-                skipped += 1
-            else:
-                total_loss += loss.item()
+            total_loss += loss.item()
 
             if self.base_params['mixed_precision_opt_level'] is not None:
                 with amp.scale_loss(loss, self.optimizer) as scaled_loss:
