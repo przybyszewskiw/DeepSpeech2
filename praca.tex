@@ -8,7 +8,7 @@
 %
 % Copyright (c) 2001 by Marcin Woliński <M.Wolinski@gust.org.pl>
 % Poprawki spowodowane zmianami przepisów - Marcin Szczuka, 1.10.2004
-% Poprawki spowodowane zmianami przepisow i ujednolicenie 
+% Poprawki spowodowane zmianami przepisow i ujednolicenie
 % - Seweryn Karłowicz, 05.05.2006
 % Dodanie wielu autorów i tłumaczenia na angielski - Kuba Pochrybniak, 29.11.2016
 
@@ -46,7 +46,7 @@
 570 &  1.64 \\
 600 &  1.60 \\
     }\first
-    
+
 \newcommand{\todoplot}{
 \begin{figure}[!hbt]
 		\begin{center}
@@ -62,11 +62,11 @@
             xlabel = TODO,
             ylabel = TODO,
             legend pos=outer north east,
-            no markers            
+            no markers
           ]
 		  \addplot table[x=epochs,y=training]{\first};
 		  \addlegendentry{TODO}
-          	  
+
 		\end{axis}
 		\end{tikzpicture}
 		\caption{Best model performance in CTC Loss function with respect to training time in epochs.}
@@ -86,7 +86,7 @@
 
 %\tytulang{An implementation of a difference blabalizer based on the theory of $\sigma$ -- $\rho$ phetors}
 
-%kierunek: 
+%kierunek:
 % - matematyka, informacyka, ...
 % - Mathematics, Computer Science, ...
 \kierunek{Computer Science}
@@ -117,12 +117,12 @@
 \date{May 2019}
 
 %Podać dziedzinę wg klasyfikacji Socrates-Erasmus:
-\dziedzina{ 
-%11.0 Matematyka, Informatyka:\\ 
-%11.1 Matematyka\\ 
-%11.2 Statystyka\\ 
-11.3 Informatyka\\ 
-%11.4 Sztuczna inteligencja\\ 
+\dziedzina{
+%11.0 Matematyka, Informatyka:\\
+%11.1 Matematyka\\
+%11.2 Statystyka\\
+11.3 Informatyka\\
+%11.4 Sztuczna inteligencja\\
 %11.5 Nauki aktuarialne\\
 %11.9 Inne nauki matematyczne i informatyczne
 }
@@ -155,46 +155,41 @@
 
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
-Transcription of spoken language is a crucial problem for many areas of modern technology industry. Being able to communicate with electronic devices not only by touching them, but also by talking to them is an important goal for IT companies. Such devices are more user-friendly so it is for sure beneficial for everybody. To achieve this goal various solutions were proposed and many of then use complex algorithms (e.g. Hidden Markov Models) \cite{DS1}. However, it has been shown that the best accuracy can be achieved with Automatic Speech Recognition (ASR) models based on neural networks \cite{DS2}.
+Transcription of spoken language is a crucial problem for many areas of modern technology industry. Being able to communicate with electronic devices not only by touching them, but also by talking to them is an important goal for IT companies. Such devices are more user-friendly so it is undoubtedly beneficial for everybody. To achieve this goal, various solutions were proposed, and many of them use complex algorithms (e.g. Hidden Markov Models) \cite{DS1}. However, it has been shown that the best accuracy can be achieved with Automatic Speech Recognition (ASR) models based on neural networks \cite{DS2}.
 
-Our thesis concentrates on implementing state of the art ASR model DeepSpeech2 described in \cite{DS2} and we realize it with the support of NVIDIA Corporation. Authors of DeepSpeech2 prepared their model only for recognizing English and Mandarin, so we plan to experiment with applying it to Polish language as well. We think, it is the biggest challenge, since accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset. Therefore, we have to find appropriate one (paying attention to licenses and copyrights) and prepare it adequately. Large size of the dataset creates another problem -- we need our model to be able to train on that data in reasonable time and then work in real time. Last but not least, in order to determine the best hyperparameters we have to run many experiments, collect their results, and finally analyze them.
+Our thesis concentrates on implementing state of the art ASR model Deep Speech 2 (DS2) described in \cite{DS2} and we realize it with the support of NVIDIA Corporation. Authors of Deep Speech 2 prepared their model only for recognizing English and Mandarin, so we plan to experiment with applying it to Polish language as well. We think, it is the biggest challenge, since accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset (therefore, we have to find appropriate one and prepare it adequately). Large size of the dataset creates another problem -- we need our model to be able to train on that data in a reasonable time. We also want it to work in real time after training. Last but not least, in order to determine the best hyperparameters we have to run many experiments, collect their results, and finally analyze them.
 
-In order to accomplish our goals we are going to implement DeepSpeech2 model using \texttt{PyTorch} deep learning framework, which is supported with CUDA, and is considered to be comfortable to work with. To achieve high performance system we plan to use open-source libraries prepared by NVIDIA which makes it possible to train one neural network over multiple GPUs. Another optimization which we expect to speed computations up is using half precision floating-point numbers (also known as FP16) instead of single precision. When it comes to collecting datasets we assume it should be relatively easy for English as there are lots of free English utterances with transcriptions. However, for spoken corpus of Polish it may be harder - we are going to search for Polish speech collected for university programs and from audiobooks.
+In order to accomplish our goals we are going to implement DeepSpeech2 model using \texttt{PyTorch} deep learning framework, which supports parallel processing using GPUs. To achieve high performance system, we plan to use open-source libraries prepared by NVIDIA, which make it possible to train one neural network on multiple GPUs. Another optimization, which we expect to speed up computations, is using half precision floating-point numbers (also known as FP16) together with single precision. When it comes to collecting datasets, we assume it should be relatively easy for English as there are lots of free English utterances with transcriptions. However, for spoken corpus of Polish it may be harder -- we are going to search for Polish speech collected for university programs and from audiobooks.
 
-Structure of our thesis is the following. In Chapter \ref{r:desc} we introduce architecture of DeepSpeech and DeepSpeech2 models in terms of, among others, used layers, data flow and functions. After that in Chapter \ref{r:extens} we present applied optimizations which increased network performance. Next in Chapter \ref{r:hypers} we describe the results of experiments on model hyperparameters. In Chapter \ref{r:polish} we describe how we modified and trained neural network to detect Polish language and compare obtained results with English model. Finally, in Chapter \ref{r:concls} we summarize our experiments, show their results and present final version of the model.
+The structure of our thesis is as follows. In Chapter \ref{r:desc} we introduce architecture of Deep Speech 2 model in terms of, among others, used layers, data flow and functions. After that, in Chapter \ref{r:experiments}, we present applied optimizations which increased network performance together with experiments results. In Chapter \ref{r:polish} we describe how we modified and trained neural network to detect Polish language and compare obtained results with English model. Finally, in Chapter \ref{r:concls}, we summarize our experiments, show their results and present final version of the model.
 
-We divided our work on the model into two main parts. The first one consisted of preparing appropriate datasets (for both English and Polish) and processing them to fit the model -- Łukasz Kondraciuk and Jan Tabaszewski were in charge of this part. The second one consisted of implementing the model and applying GPU optimizations to it -- this was the task for Piotr Ambroszczyk and Wojciech Przybyszewski.
+\textbf{TODO - opisać podział pracy zgodnie z tym, jak to się rzeczywiście potoczyło}
+
 \chapter{Basic model description}\label{r:desc}
 
 DeepSpeech 2 (DS2) system is a recurrent neural network trained to ingest speech spectrograms and generate a text transcription.
 Following description of the model architecture is pretty basic and it is based on \cite{DS2}. More details can be find there.
-\textbf{Czy coś takiego jak wyżej w pełni wystarcza, żebyśmy mogli cytować zdania z tej pracy bez uprzedzenia?}
-\section{Input and Output specification}
+
+\section{Input and Output specification} \label{sec:input}
 Let $\{(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), ...\}$ be a training set. $x^{(i)}$ is a time-series of variable length where every time-slice is a spectrogram of power
-normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of the utterance $x^{(i)}$. One can see that $x^{(i)}$ is in fact a matrix of size depending on number of frequency bins and $i$'th audio clip length. We use the same number of power bins for all audio clips in dataset.
+normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of the utterance $x^{(i)}$. One can see that $x^{(i)}$ is in fact a matrix of size depending on number of frequency bins and $i$'th audio clip length. We use the same number of frequency bins for all audio clips in dataset.
 
-DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ for each output time-step. For English language possible values of $l_t$ are:
-
-\begin{itemize}
-  \item letters from 'a' to 'z';
-  \item space;
-  \item apostrophe;
-  \item blank.
-\end{itemize}
-Adding non-letter characters allows to find word boundaries. Special symbol blank is outputted each time, when the network is unable
+DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ for each output time-step. For English language possible values of $l_t$ are letters from 'a' to 'z', space, apostrophe and blank. Adding non-letter characters allows to find word boundaries. The special symbol blank is outputted each time when the network is unable
 to tell which character is most likely to occur for the current input spectrogram.
 
 \section{Layers} \label{sec:layers}
-The model of the network is composed of one or more convolutional layers, followed by one or more bidirectional recurrent layers \cite{DS4}, followed by one or more fully connected layers. Activation function used throughout the network is the Clipped Rectified Linear (ReLU) function, given by the formula:
+The model of the network is composed of one or more convolutional layers, followed in turn by one or more bidirectional recurrent layers \cite{RNN}, followed by one or more fully connected layers. Activation function used throughout the network is the Clipped Rectified Linear (ReLU) function, given by the formula:
 $$
-	\sigma(x) = 
+	\sigma(x) =
 	\begin{cases*}
 		0 & for $x < 0$, \\
 		20 & for $x > 20$, \\
 		x & otherwise.
 	\end{cases*}
 $$
-The recurrent layers appear in a few different variants -- standard recurrent layers or Long Short-Term Memory (LSTM) \cite{DS5}, or Gated Recurrent Units (GRU) \cite{DS6}. After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.
+The recurrent layers appear in a few different variants -- standard recurrent layers or Long Short-Term Memory (LSTM) \cite{LSTM}, or Gated Recurrent Units (GRU) \cite{GRU}. After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.
+
+\textbf{TODO - w tym miejscu rysunek z wykonanym obrazkiem sieci}
 
 Softmax function $f : \mathbb{R}^k \rightarrow \mathbb{R}^k$ is defined by the formula:
 $$
@@ -204,19 +199,20 @@ and
 $$
 f(v) = \big(f_1(v), f_2(v), \ldots, f_k(v) \big).
 $$
-We basically apply exponential function to each outputed value, and then normalize these values to make sure, that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
+We basically apply exponential function to each outputted value, and then normalize these values to make sure, that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
 
-\section{CTC Loss}
-To train a neural network we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing a value of the loss function is a main goal of the training.
+\section{CTC Loss} \label{sec:ctc}
+To train a neural network, we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing a value of the loss function is a main goal of the training.
 
-Loss function used in DS2 is Connectionist Temporal Classification (CTC) \cite{DS3}. To define this loss let us introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". Only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".
+Loss function used in DS2 is \textbf{Connectionist Temporal Classification} (CTC) \cite{DS3}. To define this loss, let us introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". Only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".
 
 For instance, possible encodings of \textit{"to"} are \textit{"-tttooo"} and \textit{"-tttoo-o"}, but only the latter could be an encoding of the word \textit{"too"}.
 
 Now we say that the probability of an actual transcription is the sum of probabilities of all possible encodings of the actual transcription, that have the same length as the output of the model. The loss function here is simply the negative logarithm of this probability. Having this we can count derivatives of this loss function with respect to model output and then apply \textit{backpropagation through time} algorithm to train the network, which is just a standard backpropagation algorithm modified for recurrent neural networks.
-\section{Training}
-During the training data sets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated through the network, and then weights on the layers are updated. The speed in which changes are applied to the model depends on some chosen constant -- \textbf{learning rate}. All data sets make up for an epoch of training and training lasts for many epochs -- until loss doesn't decrease anymore or decreases very slightly.
-Accuracy of the model is measured by Word Error Rate (WER). It is a common metric of the performance of speech recognition systems. Here \cite{DS8} many commercial ASR systems were compared using WER. To measure Word Error Rate, we compare the recognized word sequence with a reference word sequence by transforming the latter to the former and find:
+
+\section{Training} \label{sec:trainig}
+During the training, datasets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated through the network, and then weights on the layers are updated. The speed in which changes are applied to the model depends on some chosen constant -- \textbf{learning rate}. All batches make up for an epoch of training and training lasts for many epochs -- until loss does not decrease anymore or decreases very slightly.
+Accuracy of the model is measured by \textbf{Word Error Rate} (WER). It is a common metric of the performance of speech recognition systems. In \cite{DS8} many commercial ASR systems were compared using WER. To measure Word Error Rate, we compare the recognized word sequence with a reference word sequence by transforming the latter to the former and find:
 
 \begin{itemize}
   \item $S$ -- the number of substitutions,
@@ -230,30 +226,28 @@ $$
 WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
 $$
 
-\section{Generating transcription}
-In order to find Word Error Rate of the model, one has to generate some final transcription. It is generated based on both output of the model and a $n$-gram language model \cite{DS9}. To generate the final transcription we search for transcription \textit{y} that maximizes \textit{Q(y)}, where \textit{Q} is given as follows:
+\section{Generating transcription} \label{sec:transcription}
+In order to find Word Error Rate of the model, one has to generate some final transcription. It is generated based on both output of the model and a $n$-gram language model \cite{DS9}. To generate the final transcription, we search for transcription \textit{y} that maximizes \textit{Q(y)}, where \textit{Q} is given as follows:
 
 $$
 Q(y) = \log \big(\mathbb{P}_{ctc}(y|x)\big) + \alpha \cdot \log \big( \mathbb{P}_{lm}(y) \big) + \beta \cdot word\_count(y).
 $$
 The term $\mathbb{P}_{ctc}(y|x)$ denotes the probability of $y$ being a transcription of the utterance $x$ as described in section 1.3 and the term $\mathbb{P}_{lm}(y)$ denotes the probability of the sequence $y$ according to the language model. The weight $\alpha$ controls the relative contributions of the language model and the CTC network. The weight $\beta$ encourages more words in the transcription. Both of those parameters are tunable. We use a beam search similar to one described in \cite{DS7} to find the optimal transcription \textit{y}.
 
-Beam search is an algorithm that iterates over each time-step in the output of DS2 model, while remembering some constant number (let this number be $BW$ -- \textit{Beam Width}) of the most probable transcriptions up to this point. When considering the next time-step, we create $BW \cdot C$ new transcriptions corresponding to appending every possible character (we denote number of them by $C$) to the end of each one of $BW$ remembered transcriptions. After merging identical transcriptions and recalculating their probabilities we again keep $BW$ best ones. In the end we have $BW$ \textit{most probable} transcriptions, so we just take the best one.
+Beam search is an algorithm that iterates over each time-step in the output of DS2 model, while remembering some constant number (let this number be $BW$ -- \textit{Beam Width}) of the most probable transcriptions up to this point. When considering the next time-step, we create $BW \cdot C$ new transcriptions corresponding to appending every possible character (we denote number of them by $C$) to the end of each of $BW$ remembered transcriptions. After merging identical transcriptions and recalculating their probabilities we again keep $BW$ best ones. In the end we have $BW$ \textit{most probable} transcriptions, so we just take the best one.
 
-In order to efficiently merge transcriptions and recalculate new probabilities for them we must store probabilities $\mathbb{P}_{b}$, $\mathbb{P}_{nb}$, $\mathbb{P}_{lm}$ for all kept transcriptions, where:
+In order to efficiently merge transcriptions and recalculate new probabilities for them, we must store probabilities $\mathcal{P}_{b}$, $\mathcal{P}_{nb}$, $\mathcal{P}_{lm}$ for all kept transcriptions, where:
 \begin{itemize}
-\item $\mathbb{P}_{b}(y, t)$ -- the probability of the given transcription $y$ at time-step $t$ if the encoding ends with \textit{blank},
-\item $\mathbb{P}_{nb}(y, t)$ -- the probability of the given transcription $y$ at time-step $t$ if the encoding doesn't end with \textit{blank},
-\item $\mathbb{P}_{lm}(y)$ -- the probability of the given transcription $y$, according to the language model.\\
+\item $\mathcal{P}_{b}(y, t)$ -- probability of the given transcription $y$ at time-step $t$ if the encoding ends with \textit{blank},
+\item $\mathcal{P}_{nb}(y, t)$ -- probability of the given transcription $y$ at time-step $t$ if the encoding doesn't end with \textit{blank},
+\item $\mathcal{P}_{lm}(y)$ -- probability of the given transcription $y$, according to the language model.\\
 \end{itemize}
-\textbf{Nie podoba mi się używanie mathbb P na oznaczenie tych prawdopodobieństw, bo to sugeruje, że ono jest jakąś miarą, a jest tylko zwykłą funkcją.}
 
 \section{Summary}
-To sum up workflow in DS2 is quite standard as for neural network. We prepare some data in the form described in 1.1. Next we forward propagate the data through the layers described in 1.2. After that we count CTC Loss (1.3.) and update model weights with specific learning rate (1.4.). To evaluate model we generate transcription from predictions given by the output layer using Beam search (1.5.) and count Word Error Rate metrics (1.4.).
-\textbf{TODO Hiperłącza}
+To sum up, workflow in DS2 is quite standard as for neural network. We prepare some data in the form described in section \ref{sec:input}. Next we forward propagate the data through the layers described in section \ref{sec:layers}. After that we count CTC Loss (section \ref{sec:ctc}) and update model weights with specific learning rate (section \ref{sec:trainig}). To evaluate the model we generate transcription from predictions given by the output layer using Beam search (section \ref{sec:transcription}) and count Word Error Rate metrics (section \ref{sec:trainig}).
 
 
-\chapter{Experiments on architecture and hyperparameters}\label{r:hypers}
+\chapter{Experiments on architecture and hyperparameters}\label{r:experiments}
 
 \section{Regularization}
 \subsection{Batch normalization}
@@ -276,7 +270,7 @@ where $\gamma^{(k)}$ and $\beta^{(k)}$ are learnable parameters.
 
 
 \subsection{Dropout}
-Dropout is regularization strategy patented by Google \cite{DROPG}, it is used to remove neural network overfitting. The basic idea of this technique is multiplying input and hidden units, during training process, by randomly generated bit mask. \cite{DROPW}. It follows that some nodes will be inactive, set to 0, and model is prevented from complex co-adaptations. 
+Dropout is regularization strategy patented by Google \cite{DROPG}, it is used to remove neural network overfitting. The basic idea of this technique is multiplying input and hidden units, during training process, by randomly generated bit mask. \cite{DROPW}. It follows that some nodes will be inactive, set to 0, and model is prevented from complex co-adaptations.
 
 \todoplot
 
@@ -312,7 +306,7 @@ Performances with the language model in comparison to no language model are:
 In the beginning we also experimented with an easier language model that assigned probabilities to sequences of letters as it was much smaller and simpler. Unfortunately WER was increasing after applying such LM so we abandoned this idea for the bigger and more reliable N-gram LM.
 
 \section{Recurrent unit type}
-In the section \ref{sec:layers} we mentioned bidirectional recurrent layers. Three most commonly used ones are vanilla Recurrent Neural Networks (RNN) \cite{RNN}, Long Short Term Memory Unit (LSTM) \cite{LSTM} and Gated Recurrent Unit (GRU) \cite{GRU}. We will deliver a brief description of these units based on \cite{DS2}.
+In section \ref{sec:layers} we mentioned bidirectional recurrent layers. Three most commonly used ones are vanilla \textbf{Recurrent Neural Networks} (RNN) \cite{RNN}, \textbf{Long Short Term Memory Unit} (LSTM) \cite{LSTM} and \textbf{Gated Recurrent Unit} (GRU) \cite{GRU}. We will deliver a brief description of these units based on \cite{DS2}.
 
 Let's denote by $l$ the layer number. A bidirectional recurrent layer $h^l$ consist of a forward recurrent layer $\overrightarrow{h^l}$ and a backward recurrent layer $\overleftarrow{h^l}$. The forward and backward recurrent layer activations for time $t$ are computed as $\overrightarrow{h^l_t} = g(\overrightarrow{h^l_{t - 1}}, h^{l-1}_t)$ and $\overleftarrow{h^l_t} = g(\overleftarrow{h^l_{t+1}}, h^{l-1}_t)$. In the end, we add both partial layers to get $h^l = \overrightarrow{h^l} + \overleftarrow{h^l}$.
 
@@ -321,6 +315,10 @@ $$\overrightarrow{h^l_t} = f(W^l h^{l-1}_t + \overrightarrow{U^l} \overrightarro
 and analogically for the backward recurrent layer. Here $W^l$ and $\overrightarrow{U^l}$ are just weight matrices, $b^l$ is a bias vector and $f$ is an activation function (e.g. ReLU or tanh). For LSTM and GRU function $g$ is much more complex to simulate some kind of \textit{memory}.
 
 This is a short summary of our experiments:
+\todoplot
+
+
+And here is description of the plot above.
 
 \section{Performance and multi GPU scaling}
 For training, we used machine with Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz, (which has 20 physical cores), and 256 GB of RAM. Is was equipped with four Nvidia Tesla V100 GPGPUs (32 GB of global memory each), connected by NVlink.
@@ -342,9 +340,10 @@ And here is performance of mixed precision training.
 \section{Training dataset}
 
 \section{Hyperparameters}
+\textbf{TODO} Ta sekcja będzie mówiła o eksperymentach na hiperparametrach. Zakładamy, że nie trzeba będzie tutaj wyjaśniać pojęć, bo były one już wyjaśnione w rozdziale \ref{r:desc}, a tutaj będą tylko wykresy z opisami. Co dokładnie będzie na tych wykresach - jeszcze nie podjęliśmy decyzji, dlatego cały podrozdział jest jako TODO.
 
-
-%\chapter{Recognizing Polish language}\label{r:polish}
+\chapter{Recognizing Polish language}\label{r:polish}
+\textbf{TODO - we are going to do some experiments in case we have enough time}
 
 %\section{Preparing Polish dataset}
 %\section{Model’s architecture description}
@@ -356,21 +355,15 @@ And here is performance of mixed precision training.
 To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also present already trained models for English and Polish as well as the results of our experiments justifying using specific hyperparameters and architecture solutions.
 
 \begin{thebibliography}{99}
-\addcontentsline{toc}{chapter}{Bibliography} 
+\addcontentsline{toc}{chapter}{Bibliography}
 
-\bibitem{DS1} Hannun et al. 
+\bibitem{DS1} Hannun et al.
 \textit{Deep Speech: Scaling up end-to-end speech recognition}, Silicon Valley AI Lab 2014, \href{https://arxiv.org/abs/1412.5567}{https://arxiv.org/abs/1412.5567}
-  
+
 \bibitem{DS2} Baidu Research \textit{Deep Speech 2: End-to-End Speech Recognition in English and Mandarin}, Silicon Valley AI Lab 2015, \href{https://arxiv.org/abs/1512.02595}{https://arxiv.org/abs/1512.02595}
 
 \bibitem{DS3} A. Graves, S. Fernandez, F. Gomez, and J. Schmidhuber. \textit{Connectionist temporal classification:
 Labelling unsegmented sequence data with recurrent neural networks. In ICML, pages 369-376. ACM, 2006.}
-
-\bibitem{DS4} M. Schuster and K. K. Paliwal. \textit{Bidirectional recurrent neural networks.} IEEE Transactions on Signal Processing, 45(11):2673–2681, 1997.
-
-\bibitem{DS5} S. Hochreiter and J. Schmidhuber. \textit{Long short--term memory.} Neural Computation, 9(8):1735—1780, 1997.
-
-\bibitem{DS6} K. Cho, B. Van Merrienboer, C. Gulcehre, D. Bahdanau, F. Bougares, H. Schwenk, and Y. Bengio. \textit{Learning phrase representations using rnn encoder-decoder for statistical machine translation.} In EMNLP, 2014. \href{https://arxiv.org/pdf/1406.1078.pdf}{https://arxiv.org/pdf/1406.1078.pdf}
 
 \bibitem{DS7} A. Y. Hannun, A. L. Maas, D. Jurafsky, and A. Y. Ng. \textit{First-pass large vocabulary continuous speech recognition using bi-directional recurrent DNNs.} abs/1408.2873, 2014. \href{http://arxiv.org/abs/1408.2873}{http://arxiv.org/abs/1408.2873}
 
