@@ -72,6 +72,7 @@ class Runner:
     def train_epoch(self, dataloader):
         self.net.train()
         total_loss = 0.
+        skipped = 0
 
         for i, (audio, transs, lengths) in enumerate(dataloader):
             start_time = time.time()
@@ -81,16 +82,26 @@ class Runner:
             output, _ = self.net(audio)
 
             if self.device != torch.device("cpu"):
-                print("moving net output to CPU")
+                # print("moving net output to CPU")
                 output = output.to("cpu")
 
-            print("Starting criterion calculation")
+            # print("Starting criterion calculation")
             loss = DeepSpeech.criterion(output, transs, lengths)
+
             if loss == float('inf'):
                 print(
                     "WARNING: loss is inf in {}th iteration, omitting track".format(
                         i), file=sys.stderr)
+                skipped += 1
                 continue
+
+            print("loss in {}th iteration is {}, it took {} seconds".format(
+                i,
+                loss.item(),
+                time.time() - start_time
+            ))
+            total_loss += loss.item()
+
             if self.base_params['mixed_precision_opt_level'] is not None:
                 with amp.scale_loss(loss, self.optimizer) as scaled_loss:
                     scaled_loss.backward()
@@ -105,17 +116,11 @@ class Runner:
 
             lrp.apply_policy(self.optimizer, self.optimizer_steps, lr_policy, lr_policy_params)
 
-            print("loss in {}th iteration is {}, it took {} seconds".format(
-                i,
-                loss.item(),
-                time.time() - start_time
-            ))
-            total_loss += loss.item()
             # for some reason output is in the buffer until termination while redirecting to file,
             # so we have to manually flush
             sys.stdout.flush()
 
-        print('Total loss in this epoch is {}'.format(total_loss / len(dataloader)))
+        print('Total loss in this epoch is {}'.format(total_loss / (len(dataloader) - skipped)))
 
     def test_dataset(self, dataloader):
         self.net.eval()
