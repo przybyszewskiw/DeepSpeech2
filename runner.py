@@ -1,3 +1,4 @@
+import math
 import os
 import sys
 import time
@@ -100,7 +101,11 @@ class Runner:
                 loss.item(),
                 time.time() - start_time
             ))
-            total_loss += loss.item()
+
+            if math.isnan(loss.item()):
+                skipped += 1
+            else:
+                total_loss += loss.item()
 
             if self.base_params['mixed_precision_opt_level'] is not None:
                 with amp.scale_loss(loss, self.optimizer) as scaled_loss:
