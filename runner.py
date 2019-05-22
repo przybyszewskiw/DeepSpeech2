@@ -12,8 +12,10 @@ import lrpolicy as lrp
 import runpy
 import json  # TODO delete -- only for dict printing
 
-if torch.cuda.is_available():
+try:
     from apex import amp
+except ImportError:
+    print('APEX not found, install it if you want to train in mixed precision')
 
 
 class Runner:
@@ -83,10 +85,8 @@ class Runner:
             output, _ = self.net(audio)
 
             if self.device != torch.device("cpu"):
-                # print("moving net output to CPU")
                 output = output.to("cpu")
 
-            # print("Starting criterion calculation")
             loss = DeepSpeech.criterion(output, transs, lengths)
 
             if loss == float('inf'):
@@ -186,11 +186,7 @@ class Runner:
             if testing_dataset is not None:
                 libri_testing_dataloader = dl.get_libri_dataloader(libri_testing_dataset,
                                                                    batch_size=batch_size)
-                if self.base_params['mixed_precision_opt_level'] is None:
-                    with torch.no_grad():
-                        self.test_dataset(libri_testing_dataloader)
-                else:
-                    self.test_dataset(libri_testing_dataloader)
+                self.test_dataset(libri_testing_dataloader)
 
             if epoch % model_saving_epoch == model_saving_epoch - 1:
                 print('Saving model')
