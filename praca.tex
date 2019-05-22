@@ -227,7 +227,7 @@ WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
 $$
 
 \section{Generating transcription} \label{sec:transcription}
-In order to find Word Error Rate of the model, one has to generate some final transcription. It is generated based on both output of the model and a $n$-gram language model \cite{DS9}. To generate the final transcription, we search for transcription \textit{y} that maximizes \textit{Q(y)}, where \textit{Q} is given as follows:
+In order to find Word Error Rate of the model, one has to generate some final transcription. It is generated based on both output of the model and an $N$-gram language model \cite{DS9}. To generate the final transcription, we search for transcription \textit{y} that maximizes \textit{Q(y)}, where \textit{Q} is given as follows:
 
 $$
 Q(y) = \log \big(\mathbb{P}_{ctc}(y|x)\big) + \alpha \cdot \log \big( \mathbb{P}_{lm}(y) \big) + \beta \cdot word\_count(y).
@@ -294,11 +294,12 @@ Speaking from more practical side, we used Apex AMP, which is a PyTorch Extensio
 
 Further description of this tool can be found in \cite{APEX_DOCS}.
 \section{Language model and decoding predictions}
-N-gram language model is a model of a language in which we assign probabilities of occurrence to sequences of N words based on some large unlabelled text data. Incorporating model to prediction decoding helps avoid typos which are usually phonetically plausible and often occur on words that rarely or never occur in training set. We use ................ language model.
+\textbf{$N$-gram language model} is a model of a language in which we assign probabilities of occurrence to sequences of N words based on some large unlabelled text data. Incorporating model to prediction decoding helps avoid typos which are usually phonetically plausible and often occur on words that rarely or never occur in training set. We use ................ language model.
 
 Beam size in beam search used in our model is ..... This size practically scales time of decoding linearly so we used such size that increasing it further wouldn't give any decrease in WER.
 
 Performances with the language model in comparison to no language model are:
+\renewcommand{\labelitemi}{$\cdot$}
 \begin{itemize}
   \item ....\% WER with LM; ...\% WER without LM (model ....)
 \end{itemize}
@@ -332,12 +333,29 @@ And here is performance of mixed precision training.
 \todoplot
 
 \section{Sortagrad and dataset sorting}
+Training examples that we use vary in length. Longer examples may be described as more challenging. Additionally, as CTC cost function is a negative logarithm of probability, it is bigger for longer utterances. Authors of Deep Speech 2 also suspect that these longer utterances usually have bigger gradients. Their proposition for challenging varying lenght of examples is \textbf{SortaGrad}. Instead of training on minibatches in random order, in the first epoch we sort them in the increasing order of longest utterance of minibatch. From the second epoch they are shuffled again.
+
+This technique particularly helps models without BatchNorm but isn't without effect for the ones with. Moreover, it not only improves results, but sometimes prevents explosion of gradients in the early stages of training. Here are our results on models with and without SortaGrad/BatchNorm:
+
+\todoplot
 
 \section{Initialization}
 \subsection{Xavier initialization}
+We use Xavier initialization \cite{XAVIER} for weights in our model. It is a heuristic random initialization of trainable weights in a neural network that assigns values sampled from normal distribution $$\mathcal{N}(0, \sqrt{\frac{2}{N_{in} + N_{out}}})$$ where $N_{in}$ is number of inputs and $N_{out}$ is number of outputs of a certain layer. Parameters of the distribution are chosen in such a way that variances of input to Xavier - intialized layer and output of that layer differ slightly. This prevents exploding and diminishing values during both forward and backward pass through the network and thus speeds up learning.
+
+This is a comparison of training loss with and without Xavier initialization:
+
+\todoplot
+
 \subsection{Random seed}
+In order to rule out random chance from the results of our model we ran training on 20 random random seeds for \_ epochs. We then measuerd the mean and standard deviation of validation loss and compared it to validation loss of our best performance. The results are:
 
 \section{Training dataset}
+As our dataset we use ''LibriSpeech ASR corpus'' \cite{DATA} - public ASR dataset containing 960 hours of audiobook English speech for training together with test datasets. This dataset is much smaller than the dataset used in original Deep Speech 2 paper. Unfortunately original Deep Speech 2 dataset is not publicly available and almost impossible to reproduce with limited resources. \textbf{TODO:} Zacytować prace używające LibriSpeecha
+
+We report our results on model trained on 460 hours of ''clean'' speech and 960 hours of combined 460 hours of ''clean'' speech and 500 hours of ''other'' speech:
+
+\todoplot
 
 \section{Hyperparameters}
 \textbf{TODO} Ta sekcja będzie mówiła o eksperymentach na hiperparametrach. Zakładamy, że nie trzeba będzie tutaj wyjaśniać pojęć, bo były one już wyjaśnione w rozdziale \ref{r:desc}, a tutaj będą tylko wykresy z opisami. Co dokładnie będzie na tych wykresach - jeszcze nie podjęliśmy decyzji, dlatego cały podrozdział jest jako TODO.
@@ -394,6 +412,10 @@ Labelling unsegmented sequence data with recurrent neural networks. In ICML, pag
 } \href{https://arxiv.org/abs/1312.6197}{https://arxiv.org/abs/1312.6197}
 
 \bibitem{DROPG} System and method for addressing overfitting in a neural network \href{https://patents.google.com/patent/US9406017B2/en}{https://patents.google.com/patent/US9406017B2/en}
+
+\bibitem{XAVIER} Xavier Glorot, Yoshua Bengio \textit{Understanding the difficulty of training deep feedforward neural networks} \href{http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf}{http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf}
+
+\bibitem{DATA} LibriSpeech ASR corpus \href{http://www.openslr.org/12/}{http://www.openslr.org/12/}
 
 \end{thebibliography}
 All the files were downloaded on \bibDownloadDate
