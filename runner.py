@@ -190,7 +190,7 @@ class Runner:
 
             if self.base_params['mixed_precision_opt_level'] is not None:
                 train_sampler = torch.utils.data.distributed.DistributedSampler(libri_dataset)
-                test_sampler = torch.utils.data.distributed.DistributedSampler(libri_testing_dataloader)
+                test_sampler = torch.utils.data.distributed.DistributedSampler(libri_testing_dataset)
 
             if shuffle_dataset and not (sorta_grad and epoch == starting_epoch):
                 libri_dataloader = dl.get_libri_dataloader(
