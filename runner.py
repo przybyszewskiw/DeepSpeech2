@@ -23,8 +23,10 @@ except ImportError:
 class Runner:
     def __init__(self, config_path,
                  pretrained_model_path=None,
-                 device='cpu'
+                 device='cpu',
+                 my_rank=0
                  ):
+        self.my_rank = my_rank
         config_module = runpy.run_path(config_path)
         self.base_params = config_module.get('base_params')
         self.adv_params = config_module.get('adv_params')
@@ -220,7 +222,7 @@ class Runner:
                 )
                 self.test_dataset(libri_testing_dataloader)
 
-            if epoch % model_saving_epoch == model_saving_epoch - 1:
+            if epoch % model_saving_epoch == model_saving_epoch - 1 and self.my_rank == 0:
                 print('Saving model')
                 torch.save(self.net.state_dict(), "./models/{}-epoch.pt".format(epoch))
 

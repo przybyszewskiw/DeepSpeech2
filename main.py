@@ -28,15 +28,12 @@ def main():
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend='nccl',
                                              init_method='env://')
-
-    if args.model is not None:
-        run = Runner(config_path=args.config,
-                     pretrained_model_path=args.model,
-                     device=args.device)
     else:
-        run = Runner(
-            config_path=args.config,
-            device=args.device)
+        args.local_rank = 0
+    run = Runner(config_path=args.config,
+                 pretrained_model_path=args.model,
+                 device=args.device,
+                 my_rank=args.local_rank)
 
     if args.task == 'train':
         if args.dataset is None:
