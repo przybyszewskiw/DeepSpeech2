@@ -187,29 +187,34 @@ class Runner:
             print(epoch)
             start_time = time.time()
 
-            train_sampler = None
             test_sampler = None
 
             if self.base_params['mixed_precision_opt_level'] is not None:
                 train_sampler = torch.utils.data.distributed.DistributedSampler(libri_dataset)
                 test_sampler = torch.utils.data.distributed.DistributedSampler(libri_testing_dataset)
 
-            if shuffle_dataset and not (sorta_grad and epoch == starting_epoch):
                 libri_dataloader = dl.get_libri_dataloader(
                     libri_dataset,
                     batch_size=batch_size,
-                    shuffle=True,
                     num_workers=workers,
                     sampler=train_sampler
                 )
+
             else:
-                libri_dataloader = dl.get_libri_dataloader(
-                    libri_dataset,
-                    batch_size=batch_size,
-                    shuffle=False,
-                    num_workers=workers,
-                    sampler=train_sampler
-                )
+                if shuffle_dataset and not (sorta_grad and epoch == starting_epoch):
+                    libri_dataloader = dl.get_libri_dataloader(
+                        libri_dataset,
+                        batch_size=batch_size,
+                        shuffle=True,
+                        num_workers=workers
+                    )
+                else:
+                    libri_dataloader = dl.get_libri_dataloader(
+                        libri_dataset,
+                        batch_size=batch_size,
+                        shuffle=False,
+                        num_workers=workers
+                    )
 
             self.train_epoch(libri_dataloader)
             print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
