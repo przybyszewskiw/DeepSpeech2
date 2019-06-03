@@ -13,7 +13,9 @@ import runpy
 import json  # TODO delete -- only for dict printing
 
 try:
+    import apex
     from apex import amp
+    from apex.parallel import DistributedDataParallel as DDP
 except ImportError:
     print('APEX not found, install it if you want to train in mixed precision')
 
@@ -47,7 +49,17 @@ class Runner:
         if device == 'gpu':
             device = 'cuda'
 
-        self.device = torch.device(device)
+        if 'WORLD_SIZE' not in os.environ and self.base_params['mixed_precision_opt_level'] is not None:
+            raise Exception('Use distributed parallelism to train in mixed precision!')
+
+        if 'WORLD_SIZE' in os.environ and self.base_params['mixed_precision_opt_level'] is None:
+            raise Exception('Dont use distributed parallelism to train in normal precision!')
+
+        if self.base_params['mixed_precision_opt_level'] is not None:
+            print("using apex synced BN")
+            self.net = apex.parallel.convert_syncbn_model(self.net)
+
+        self.device = device
         self.net = self.net.to(self.device)
 
         self.lr = self.base_params["lr_policy_params"]["lr"]
@@ -170,22 +182,39 @@ class Runner:
             print(epoch)
             start_time = time.time()
 
-            libri_dataloader = dl.get_libri_dataloader(libri_dataset,
-                                                       batch_size=batch_size,
-                                                       shuffle=False,
-                                                       num_workers=workers)
+            train_sampler = None
+            test_sampler = None
+
+            if self.base_params['mixed_precision_opt_level'] is not None:
+                train_sampler = torch.utils.data.distributed.DistributedSampler(libri_dataset)
+                test_sampler = torch.utils.data.distributed.DistributedSampler(libri_testing_dataloader)
+
             if shuffle_dataset and not (sorta_grad and epoch == starting_epoch):
-                libri_dataloader = dl.get_libri_dataloader(libri_dataset,
-                                                           batch_size=batch_size,
-                                                           shuffle=True,
-                                                           num_workers=workers)
+                libri_dataloader = dl.get_libri_dataloader(
+                    libri_dataset,
+                    batch_size=batch_size,
+                    shuffle=True,
+                    num_workers=workers,
+                    sampler=train_sampler
+                )
+            else:
+                libri_dataloader = dl.get_libri_dataloader(
+                    libri_dataset,
+                    batch_size=batch_size,
+                    shuffle=False,
+                    num_workers=workers,
+                    sampler=train_sampler
+                )
 
             self.train_epoch(libri_dataloader)
             print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
 
             if testing_dataset is not None:
-                libri_testing_dataloader = dl.get_libri_dataloader(libri_testing_dataset,
-                                                                   batch_size=batch_size)
+                libri_testing_dataloader = dl.get_libri_dataloader(
+                    libri_testing_dataset,
+                    batch_size=batch_size,
+                    sampler=test_sampler
+                )
                 self.test_dataset(libri_testing_dataloader)
 
             if epoch % model_saving_epoch == model_saving_epoch - 1:
