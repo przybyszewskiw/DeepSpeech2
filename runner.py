@@ -75,7 +75,10 @@ class Runner:
                 opt_level=self.base_params['mixed_precision_opt_level'])
 
         if device == 'cuda':
-            self.net = nn.DataParallel(self.net)
+            if self.base_params['mixed_precision_opt_level'] is None:
+                self.net = nn.DataParallel(self.net)
+            else:
+                self.net = DDP(self.net, delay_allreduce=True)
 
         if pretrained_model_path is not None:
             self.net.load_state_dict(torch.load(pretrained_model_path))
