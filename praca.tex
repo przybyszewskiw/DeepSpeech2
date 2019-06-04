@@ -269,12 +269,108 @@ where $\epsilon$ is small constant added for numerical stability. Finally we sca
 $$ y^{(k)}_i = \gamma^{(k)} \hat{x}^{(k)}_i + \beta^{(k)}$$
 where $\gamma^{(k)}$ and $\beta^{(k)}$ are learnable parameters.
 
-\todoplot{TODO}
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 2.89 & 2.94 \\
+   2 & 3.10 & 3.09 \\
+   3 & 3.10 & 3.09 \\
+   4 & 3.10 & 3.07 \\
+   5 & 3.10 & 3.04 \\
+   6 & 3.10 & 3.09 \\
+   7 & 3.10 & 3.11 \\
+   8 & 3.10 & 3.09 \\
+   9 & 3.10 & 3.06 \\
+   10 & 3.10 & 3.07 \\
+   11 & 3.10 & 3.02 \\
+}\bn
+
+
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\makebox[\linewidth]{%        to center the image
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 2.75, ymax = 3.25,
+            xmin = 0, xmax = 12,
+            minor y tick num = 2,
+            minor x tick num = 1,
+            ymajorgrids = true,
+            grid style = dashed,
+            scaled x ticks = false,
+            xlabel = Epochs,
+            ylabel = CTC Loss,
+            legend pos=outer north east,
+            no markers
+          ]
+		  \addplot table[x=epochs,y=training]{\bn};
+			\addlegendentry{training}		  
+		  \addplot table[x=epochs,y=validation]{\bn};
+			\addlegendentry{validation}
+		  
+
+		\end{axis}
+		\end{tikzpicture}
+		}\captionof{figure}{Batch norm plot}\label{dsad}		     
+\end{minipage}
 
 \subsection{Dropout}
 Dropout is regularization strategy patented by Google \cite{DROPG}, it is used to remove neural network overfitting. The basic idea of this technique is multiplying input and hidden units, during training process, by randomly generated bit mask. \cite{DROPW}. It follows that some nodes will be inactive, set to 0, and model is prevented from complex co-adaptations.
 
-\todoplot{TODO}
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 1.38 & 0.83 \\
+   2 & 0.88 & 0.73 \\
+   3 & 0.79 & 0.66 \\
+   4 & 0.73 & 0.63 \\
+   5 & 0.69 & 0.60 \\
+   6 & 0.66 & 0.58 \\
+   7 & 0.63 & 0.57 \\
+   8 & 0.61 & 0.56 \\
+   9 & 0.60 & 0.55 \\
+   10 & 0.58 & 0.54 \\
+   11 & 0.57 & 0.53 \\
+   12 & 0.55 & 0.53 \\
+   13 & 0.54 & 0.52 \\
+   14 & 0.53 & 0.52 \\
+   15 & 0.52 & 0.51 \\
+   16 & 0.51 & 0.51 \\
+   17 & 0.50 & 0.50 \\
+   18 & 0.49 & 0.50 \\
+   19 & 0.49 & 0.50 \\
+   20 & 0.48 & 0.50 \\
+   21 & 0.47 & 0.50 \\
+   22 & 0.47 & 0.50 \\
+   23 & 0.46 & 0.50 \\
+}\dropout
+
+
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\makebox[\linewidth]{%        to center the image
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 0, ymax = 2,
+            xmin = 0, xmax = 24,
+            minor y tick num = 4,
+            minor x tick num = 1,
+            ymajorgrids = true,
+            grid style = dashed,
+            scaled x ticks = false,
+            xlabel = Epochs,
+            ylabel = CTC Loss,
+            legend pos=outer north east,
+            no markers
+          ]
+		  \addplot table[x=epochs,y=training]{\dropout};
+			\addlegendentry{training}		  
+		  \addplot table[x=epochs,y=validation]{\dropout};
+			\addlegendentry{validation}
+		  
+
+		\end{axis}
+		\end{tikzpicture}
+		}\captionof{figure}{Dropout plot}\label{dsad}		     
+\end{minipage}
 
 \subsection{L2 regularization}
 $L2$ regularization is a technique designed to prevent neural network from overfitting training dataset. The key idea behind this method is keeping network weights from growing too large unless it is really necessary. It can be realized by adding a term $\lambda ||W||^2_F $ to the cost function that penalizes large weights, where $||W||_F $ is
