@@ -42,7 +42,8 @@ class Runner:
                               batch_norm=self.base_params["batch_norm"],
                               fc_dropout=self.base_params["dropout"],
                               initializer=self.non_json_params[
-                                  self.base_params["weights_initializer"]])
+                                  self.base_params["weights_initializer"]],
+                              flatten=(self.base_params['mixed_precision_opt_level'] is not None))
 
         if device == 'gpu':
             device = 'cuda'
@@ -186,7 +187,12 @@ class Runner:
             if testing_dataset is not None:
                 libri_testing_dataloader = dl.get_libri_dataloader(libri_testing_dataset,
                                                                    batch_size=batch_size)
-                self.test_dataset(libri_testing_dataloader)
+
+                if self.base_params['mixed_precision_opt_level'] is None:
+                    with torch.no_grad():
+                        self.test_dataset(libri_testing_dataloader)
+                else:
+                    self.test_dataset(libri_testing_dataloader)
 
             if epoch % model_saving_epoch == model_saving_epoch - 1:
                 print('Saving model')

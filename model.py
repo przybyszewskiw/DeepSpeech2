@@ -64,12 +64,13 @@ class Recurrent(nn.Module):
     Output: Tensor of the shape NxTxF where N, T and F as in input
     """
 
-    def __init__(self, frequencies, rec_number=3, rec_type='rnn', rec_bidirectional=True):
+    def __init__(self, frequencies, rec_number=3, rec_type='rnn', rec_bidirectional=True, flatten=False):
         super(Recurrent, self).__init__()
         self.frequencies = frequencies
         self.rec_number = rec_number
         self.rec_type = rec_type
         self.rec_bidirectional = rec_bidirectional
+        self.flatten = flatten
 
         # TODO Use Hardtanh(0, 20) from paper instead of tanh or simple ReLU
         # which are default for torch.nn.RNN
@@ -95,7 +96,8 @@ class Recurrent(nn.Module):
     def forward(self, x):
         x = x.transpose(1, 2)
         for layer in self.layers:
-            layer.flatten_parameters()
+            if self.flatten:
+                layer.flatten_parameters()
             x, _ = layer(x)
             (x1, x2) = torch.chunk(x, 2, dim=2)
             x = x1 + x2
@@ -197,7 +199,8 @@ class DeepSpeech(nn.Module):
                  characters=29,
                  batch_norm=False,
                  fc_dropout=0,
-                 initializer=None):
+                 initializer=None,
+                 flatten=False):
         super(DeepSpeech, self).__init__()
         self.characters = characters
         # TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
@@ -206,6 +209,7 @@ class DeepSpeech(nn.Module):
         self.frequencies = conv_initial_channels
         self.conv_layers = conv_layers
         self.initializer = initializer
+        self.flatten = flatten
         self.rec_type = rec_type
         self.rec_bidirectional = rec_bidirectional
 
@@ -214,7 +218,8 @@ class DeepSpeech(nn.Module):
         self.rec = Recurrent(rec_number=self.rec_number,
                              frequencies=self.convs.newF * self.convs.newC,
                              rec_type=self.rec_type,
-                             rec_bidirectional=self.rec_bidirectional)
+                             rec_bidirectional=self.rec_bidirectional,
+                             flatten=self.flatten)
         self.fc = FullyConnected(layers_sizes=self.full_layers,
                                  frequencies=self.convs.newF * self.convs.newC, dropout=fc_dropout)
         self.probs = Probabilities(characters=self.characters, frequencies=fc_layers_sizes[-1])
