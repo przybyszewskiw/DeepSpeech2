@@ -80,15 +80,18 @@ class Recurrent(nn.Module):
                 new_layer = nn.RNN(input_size=self.frequencies,
                                    hidden_size=self.frequencies,
                                    nonlinearity='relu',
-                                   bidirectional=self.rec_bidirectional)
+                                   bidirectional=self.rec_bidirectional,
+                                   batch_first=True)
             elif self.rec_type == 'lstm':
                 new_layer = nn.LSTM(input_size=self.frequencies,
                                     hidden_size=self.frequencies,
-                                    bidirectional=self.rec_bidirectional)
+                                    bidirectional=self.rec_bidirectional,
+                                    batch_first=True)
             elif self.rec_type == 'gru':
                 new_layer = nn.GRU(input_size=self.frequencies,
                                    hidden_size=self.frequencies,
-                                   bidirectional=self.rec_bidirectional)
+                                   bidirectional=self.rec_bidirectional,
+                                   batch_first=True)
             else:
                 raise Exception("Cannot find recurrent layer type")
             self.layers.append(new_layer)
