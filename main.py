@@ -13,7 +13,7 @@ def main():
     parser.add_argument('--dataset', type=str, required=False)
     parser.add_argument('--config', type=str, default='./configs/default.py')
     parser.add_argument('--test-dataset', type=str, default='test-clean')
-    parser.add_argument('--track', type=str, required=False)
+    parser.add_argument('--track-dir', type=str, required=False)
     parser.add_argument('--model', type=str, required=False)
     parser.add_argument('--device', type=str, required=False, default='cpu', choices=['gpu', 'cpu'])
 
@@ -45,8 +45,8 @@ def main():
 
         if args.dataset is not None:
             run.eval_on_dataset(LibriSpeech().get_dataset(args.dataset))
-        elif args.track is not None:
-            assert 'Not implemented yet!'
+        elif args.track_dir is not None:
+            run.eval_on_tracks(args.track_dir)
         else:
             raise Exception('Nothing to evaluate on!')
 

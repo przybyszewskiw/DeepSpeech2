@@ -1,3 +1,4 @@
+import glob
 import math
 import os
 import sys
@@ -6,7 +7,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 import dataload as dl
-from evaluator import eval_model
+from evaluator import eval_model, eval_tracks
 from model import DeepSpeech
 import lrpolicy as lrp
 import runpy
@@ -203,7 +204,20 @@ class Runner:
         libri_dataset = self._get_libri_dataset(dataset)
         eval_model(self.net, dataset, libri_dataset)
 
+    def eval_on_tracks(self, dir):
+        self.net.eval()
+        tracks = glob.glob(os.path.join(dir, '*.flac'))
+        print('Evaluating {}'.format(tracks))
+        dataset = self._get_tracks_dataset(tracks)
+        eval_tracks(self.net, tracks, dataset)
+
+    def _get_tracks_dataset(self, tracks):
+        dataset = [(tr, "") for tr in tracks]
+        return dl.AudioDataset(dataset, num_audio_features=self.adv_params["sound_features_size"],
+                               time_overlap=self.adv_params["sound_time_overlap"],
+                               time_length=self.adv_params["sound_time_length"])
+
     def _get_libri_dataset(self, dataset):
-        return dl.LibriDataset(dataset, num_audio_features=self.adv_params["sound_features_size"],
+        return dl.AudioDataset(dataset, num_audio_features=self.adv_params["sound_features_size"],
                                time_overlap=self.adv_params["sound_time_overlap"],
                                time_length=self.adv_params["sound_time_length"])

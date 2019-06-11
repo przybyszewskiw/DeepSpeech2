@@ -33,3 +33,20 @@ def eval_model(model, dataset, libri_dataset):
             sys.stdout.flush()
 
     print("Word Error Rate after evaluation {}.".format(error / len(libri_dataset)))
+
+
+def eval_tracks(model, tracks, dataset):
+    with torch.no_grad():
+        for track, (track_ten, _) in zip(tracks, dataset):
+            print('evaluating {}'.format(track))
+
+            _, probs = model(track_ten)
+            probs = probs.squeeze()
+            list_aux = torch.split(probs, [1, 28], 1)
+            probs = torch.cat((list_aux[1], list_aux[0]), 1)
+            beamWidth = 200
+
+            answer = ctcbeam.ctcbeam(probs.tolist(), "ngrams.txt", beamWidth)
+
+            print('evaluated answer = "{}"'.format(answer))
+            sys.stdout.flush()

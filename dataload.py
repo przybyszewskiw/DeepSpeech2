@@ -31,7 +31,7 @@ def get_libri_dataloader(dataset, batch_size=1, shuffle=False, num_workers=0):
                       collate_fn=ctc_collate_fn)
 
 
-class LibriDataset(Dataset):
+class AudioDataset(Dataset):
     def __init__(self, ls_dataset, num_audio_features, time_length, time_overlap, eps=1e-10):
         super(Dataset, self)
         self.time_length = time_length
