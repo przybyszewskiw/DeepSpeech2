@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--track-dir', type=str, required=False)
     parser.add_argument('--model', type=str, required=False)
     parser.add_argument('--device', type=str, required=False, default='cpu', choices=['gpu', 'cpu'])
+    parser.add_argument('--local_rank', type=int, required=False)  # needed for launch of distributed training
 
     args = parser.parse_args()
 
@@ -23,14 +24,16 @@ def main():
         if not torch.cuda.is_available():
             raise Exception("CUDA (GPU) is not available!")
 
-    if args.model is not None:
-        run = Runner(config_path=args.config,
-                     pretrained_model_path=args.model,
-                     device=args.device)
+    if args.local_rank is not None:
+        torch.cuda.set_device(args.local_rank)
+        torch.distributed.init_process_group(backend='nccl',
+                                             init_method='env://')
     else:
-        run = Runner(
-            config_path=args.config,
-            device=args.device)
+        args.local_rank = 0
+    run = Runner(config_path=args.config,
+                 pretrained_model_path=args.model,
+                 device=args.device,
+                 my_rank=args.local_rank)
 
     if args.task == 'train':
         if args.dataset is None:
