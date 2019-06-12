@@ -10,7 +10,9 @@ def ctc_collate_fn(tracks):
     dim1 = tracks[0][0].shape[1]
     dim2 = max([tensor.shape[2] for tensor, _ in tracks])
     dim3 = min([tensor.shape[2] for tensor, _ in tracks])
-    print("Ratio of lengths in minibatch is {}".format(dim3/dim2))
+    ratio = dim3 / dim2
+    if ratio < 0.05:
+        print("WARNING: Ratio of lengths in minibatch is {}".format(ratio))
     extended_audio_tensors = [
         torch.cat(
             [tensor, torch.zeros(1, dim1, dim2 - tensor.shape[2])],
