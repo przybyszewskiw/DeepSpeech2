@@ -17,6 +17,7 @@ def main():
     parser.add_argument('--model', type=str, required=False)
     parser.add_argument('--device', type=str, required=False, default='cpu', choices=['gpu', 'cpu'])
     parser.add_argument('--local_rank', type=int, required=False)  # needed for launch of distributed training
+    parser.add_argument('--models-dir', type=str, default='./models')
 
     args = parser.parse_args()
 
@@ -40,7 +41,8 @@ def main():
             raise Exception("Specify dataset to train on!")
         ls = LibriSpeech()
         run.train(dataset=ls.get_dataset(args.dataset),
-                  testing_dataset=ls.get_dataset(args.test_dataset))
+                  testing_dataset=ls.get_dataset(args.test_dataset),
+                  model_save_pth=args.models_dir)
 
     elif args.task == 'eval':
         if args.model is None:

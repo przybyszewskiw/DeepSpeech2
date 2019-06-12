@@ -171,7 +171,7 @@ class Runner:
 
         print('Validation loss is {}'.format(total_loss / iterations))
 
-    def train(self, dataset, testing_dataset=None):
+    def train(self, dataset, testing_dataset=None, model_save_pth='./models'):
         starting_epoch = self.adv_params["starting_epoch"]
         epochs = self.base_params["epochs"]
         batch_size = self.base_params["batch_size"]
@@ -186,9 +186,9 @@ class Runner:
 
         self.net.train()
         for epoch in range(starting_epoch, epochs):
-            if not os.path.isdir("./models"):
+            if not os.path.isdir(model_save_pth):
                 print("Creating a directory for saved modeldevices")
-                os.makedirs("./models")
+                os.makedirs(model_save_pth)
             print(epoch)
             start_time = time.time()
 
@@ -240,10 +240,11 @@ class Runner:
 
             if epoch % model_saving_epoch == model_saving_epoch - 1 and self.my_rank == 0:
                 print('Saving model')
+                file_path = os.path.join(model_save_pth, "{}-epoch.pt".format(epoch))
                 if self.is_data_paralel:
-                    torch.save(self.net.module.state_dict(), "./models/{}-epoch.pt".format(epoch))
+                    torch.save(self.net.module.state_dict(), file_path)
                 else:
-                    torch.save(self.net.state_dict(), "./models/{}-epoch.pt".format(epoch))
+                    torch.save(self.net.state_dict(), file_path)
 
     def eval_on_dataset(self, dataset):
         self.net.eval()
