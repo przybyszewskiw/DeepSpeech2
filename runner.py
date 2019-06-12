@@ -78,9 +78,12 @@ class Runner:
                 self.net, self.optimizer,
                 opt_level=self.base_params['mixed_precision_opt_level'])
 
+        self.is_data_paralel = False
+
         if device == 'cuda':
             if self.base_params['mixed_precision_opt_level'] is None:
                 self.net = nn.DataParallel(self.net)
+                self.is_data_paralel = True
             else:
                 self.net = DDP(self.net, delay_allreduce=True)
 
@@ -237,7 +240,10 @@ class Runner:
 
             if epoch % model_saving_epoch == model_saving_epoch - 1 and self.my_rank == 0:
                 print('Saving model')
-                torch.save(self.net.state_dict(), "./models/{}-epoch.pt".format(epoch))
+                if self.is_data_paralel:
+                    torch.save(self.net.module.state_dict(), "./models/{}-epoch.pt".format(epoch))
+                else:
+                    torch.save(self.net.state_dict(), "./models/{}-epoch.pt".format(epoch))
 
     def eval_on_dataset(self, dataset):
         self.net.eval()
