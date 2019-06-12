@@ -1,3 +1,4 @@
+import datetime
 import glob
 import math
 import os
@@ -125,7 +126,8 @@ class Runner:
                 skipped += 1
                 continue
 
-            print("loss in {}th iteration is {}, it took {} seconds".format(
+            print("[{}] loss in {}th iteration is {}, it took {} seconds".format(
+                datetime.datetime.now(),
                 i,
                 loss.item(),
                 time.time() - start_time
@@ -151,7 +153,7 @@ class Runner:
             # so we have to manually flush
             sys.stdout.flush()
 
-        print('Total loss in this epoch is {}'.format(total_loss / (len(dataloader) - skipped)))
+        print('[{}] Total loss in this epoch is {}'.format(datetime.datetime.now(), total_loss / (len(dataloader) - skipped)))
 
     def test_dataset(self, dataloader):
         self.net.eval()
@@ -169,7 +171,7 @@ class Runner:
             total_loss += loss.item()
             iterations += 1
 
-        print('Validation loss is {}'.format(total_loss / iterations))
+        print('[{}] Validation loss is {}'.format(datetime.datetime.now(), total_loss / iterations))
 
     def train(self, dataset, testing_dataset=None, model_save_pth='./models'):
         starting_epoch = self.adv_params["starting_epoch"]
@@ -222,7 +224,7 @@ class Runner:
                     )
 
             self.train_epoch(libri_dataloader)
-            print('Training {}. epoch took {} seconds'.format(epoch, time.time() - start_time))
+            print('[{}] Training {}. epoch took {} seconds'.format(datetime.datetime.now(), epoch, time.time() - start_time))
 
             if testing_dataset is not None:
                 if self.base_params['mixed_precision_opt_level'] is None:
