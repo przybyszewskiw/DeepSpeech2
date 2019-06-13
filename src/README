@@ -1,5 +1,5 @@
 ctcwrapper.cpp to połączenie między pythonem a c++-em
-ctcbeam.hpp to kod ctcbeama
+ctcbeam.h to kod ctcbeama
 c++ udostępnia pythonowi funkcję, która dostaje listę list - output sieci i nazwę pliku z language
 modelem.
 aby skompilować odpalamy

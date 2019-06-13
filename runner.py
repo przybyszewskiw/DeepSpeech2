@@ -88,8 +88,9 @@ class Runner:
             else:
                 self.net = DDP(self.net, delay_allreduce=True)
 
+        devicce = torch.device('cpu')
         if pretrained_model_path is not None:
-            self.net.load_state_dict(torch.load(pretrained_model_path))
+            self.net.load_state_dict(torch.load(pretrained_model_path, map_location=devicce))
 
     """
         dataset - list of pairs (track_path, transcript_string)
@@ -248,10 +249,25 @@ class Runner:
                 else:
                     torch.save(self.net.state_dict(), file_path)
 
-    def eval_on_dataset(self, dataset):
+    def eval_on_dataset(self, dataset, lm_file):
         self.net.eval()
         libri_dataset = self._get_libri_dataset(dataset)
-        eval_model(self.net, dataset, libri_dataset)
+        beam_width = self.adv_params["beam_width"]
+
+        eval_model(self.net, dataset, libri_dataset, beam_width, lm_file)
+
+    def eval_on_tracks(self, dir, lm_file):
+        self.net.eval()
+        tracks = glob.glob(os.path.join(dir, '*.flac'))
+        print('Evaluating {}'.format(tracks))
+        dataset = self._get_tracks_dataset(tracks)
+        eval_tracks(self.net, tracks, dataset, lm_file)
+
+    def _get_tracks_dataset(self, tracks):
+        dataset = [(tr, "") for tr in tracks]
+        return dl.AudioDataset(dataset, num_audio_features=self.adv_params["sound_features_size"],
+                               time_overlap=self.adv_params["sound_time_overlap"],
+                               time_length=self.adv_params["sound_time_length"])
 
     def eval_on_tracks(self, dir):
         self.net.eval()

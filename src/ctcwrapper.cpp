@@ -2,16 +2,23 @@
 #include <Python.h>
 #include <vector>
 #include <string>
-#include "ctcbeam.hpp"
+#include "ctcbeam.h"
+#include "trie.h"
+#include "alphabet.h"
+#include "kenlm/lm/model.hh"
+const std::string globalClasses = "ABCDEFGHIJKLMNOPQRSTUVWXYZ \'";
 
 static PyObject *
 ctcBeamWrapper(PyObject *dummy, PyObject *args)
 {
     PyObject *lst=NULL;
-    const char *file;
+    const char *lmFile;
+    const char *vocabFile;
     int beamWidth;
+    double alpha;
+    double beta;
 
-    if (!PyArg_ParseTuple(args, "Osi", &lst, &file, &beamWidth)) return NULL;
+    if (!PyArg_ParseTuple(args, "Ossidd", &lst, &lmFile, &vocabFile, &beamWidth, &alpha, &beta)) return NULL;
 
     if (!PyList_Check(lst)) return NULL;
     int len = PyList_Size(lst);
@@ -19,9 +26,9 @@ ctcBeamWrapper(PyObject *dummy, PyObject *args)
     
     for (int i = 0; i < len; i++)
     {
-    	vec.push_back(std::vector<double>{});
-    	PyObject* row = PyList_GetItem(lst, i);
-    	int rowL = PyList_Size(row);
+        vec.push_back(std::vector<double>{});
+        PyObject* row = PyList_GetItem(lst, i);
+        int rowL = PyList_Size(row);
         for (int j = 0; j < rowL; j++)
         {
             PyObject *elem = PyList_GetItem(row, j);
@@ -29,7 +36,13 @@ ctcBeamWrapper(PyObject *dummy, PyObject *args)
         }
     }
 
-    std::string result = ctcBeamSearch(vec, beamWidth, globalClasses, languageModelFromFile(file));
+    Alphabet alphabet(globalClasses.c_str());
+    TrieNode *root = trieFromFile(vocabFile, alphabet);
+    lm::ngram::Model lmModel(lmFile);
+
+    std::string result = ctcBeamSearch(vec, lmModel, alphabet, root, beamWidth, alpha, beta);
+    
+    delete root;
     return PyUnicode_FromString(result.c_str());
 }
 
