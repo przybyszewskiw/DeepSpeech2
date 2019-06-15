@@ -101,6 +101,8 @@ class AudioDataset(Dataset):
                 return 27
             elif c == "'":
                 return 28
+            elif c in 'ąćęłńóśźż':
+                return 'ąćęłńóśźż'.index(c) + 29
             else:
                 raise Exception("Transcript unknown character:" + str(c))
 
