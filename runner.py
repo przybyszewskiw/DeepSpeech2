@@ -182,9 +182,9 @@ class Runner:
         sorta_grad = self.base_params['sorta_grad']
         workers = self.adv_params["workers"]
 
-        libri_dataset = self._get_libri_dataset(dataset)
+        train_dataset = self._get_audio_dataset(dataset)
 
-        libri_testing_dataset = self._get_libri_dataset(testing_dataset)
+        validation_dataset = self._get_audio_dataset(testing_dataset)
 
         self.net.train()
         for epoch in range(starting_epoch, epochs):
@@ -197,11 +197,11 @@ class Runner:
             test_sampler = None
 
             if self.base_params['mixed_precision_opt_level'] is not None:
-                train_sampler = torch.utils.data.distributed.DistributedSampler(libri_dataset)
-                test_sampler = torch.utils.data.distributed.DistributedSampler(libri_testing_dataset)
+                train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+                test_sampler = torch.utils.data.distributed.DistributedSampler(validation_dataset)
 
-                libri_dataloader = dl.get_libri_dataloader(
-                    libri_dataset,
+                libri_dataloader = dl.get_audio_dataloader(
+                    train_dataset,
                     batch_size=batch_size,
                     num_workers=workers,
                     sampler=train_sampler
@@ -209,15 +209,15 @@ class Runner:
 
             else:
                 if shuffle_dataset and not (sorta_grad and epoch == starting_epoch):
-                    libri_dataloader = dl.get_libri_dataloader(
-                        libri_dataset,
+                    libri_dataloader = dl.get_audio_dataloader(
+                        train_dataset,
                         batch_size=batch_size,
                         shuffle=True,
                         num_workers=workers
                     )
                 else:
-                    libri_dataloader = dl.get_libri_dataloader(
-                        libri_dataset,
+                    libri_dataloader = dl.get_audio_dataloader(
+                        train_dataset,
                         batch_size=batch_size,
                         shuffle=False,
                         num_workers=workers
@@ -229,12 +229,12 @@ class Runner:
             if testing_dataset is not None:
                 if self.base_params['mixed_precision_opt_level'] is None:
                     with torch.no_grad():
-                        libri_testing_dataloader = dl.get_libri_dataloader(libri_testing_dataset,
+                        libri_testing_dataloader = dl.get_audio_dataloader(validation_dataset,
                                                                            batch_size=batch_size)
                         self.test_dataset(libri_testing_dataloader)
                 else:
-                    libri_testing_dataloader = dl.get_libri_dataloader(
-                        libri_testing_dataset,
+                    libri_testing_dataloader = dl.get_audio_dataloader(
+                        validation_dataset,
                         batch_size=batch_size,
                         sampler=test_sampler
                     )
@@ -250,7 +250,7 @@ class Runner:
 
     def eval_on_dataset(self, dataset):
         self.net.eval()
-        libri_dataset = self._get_libri_dataset(dataset)
+        libri_dataset = self._get_audio_dataset(dataset)
         eval_model(self.net, dataset, libri_dataset)
 
     def eval_on_tracks(self, dir):
@@ -266,7 +266,7 @@ class Runner:
                                time_overlap=self.adv_params["sound_time_overlap"],
                                time_length=self.adv_params["sound_time_length"])
 
-    def _get_libri_dataset(self, dataset):
+    def _get_audio_dataset(self, dataset):
         return dl.AudioDataset(dataset, num_audio_features=self.adv_params["sound_features_size"],
                                time_overlap=self.adv_params["sound_time_overlap"],
                                time_length=self.adv_params["sound_time_length"])

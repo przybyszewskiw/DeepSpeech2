@@ -3,6 +3,7 @@ import argparse
 import torch.cuda
 from runner import Runner
 from scripts.librispeech import LibriSpeech
+from scripts.sejmsenat import SejmSenat
 
 
 def main():
@@ -18,6 +19,7 @@ def main():
     parser.add_argument('--device', type=str, required=False, default='cpu', choices=['gpu', 'cpu'])
     parser.add_argument('--local_rank', type=int, required=False)  # needed for launch of distributed training
     parser.add_argument('--models-dir', type=str, default='./models')
+    parser.add_argument('--polish', action='store_true', required=False)
 
     args = parser.parse_args()
 
@@ -39,9 +41,17 @@ def main():
     if args.task == 'train':
         if args.dataset is None:
             raise Exception("Specify dataset to train on!")
-        ls = LibriSpeech()
-        run.train(dataset=ls.get_dataset(args.dataset),
-                  testing_dataset=ls.get_dataset(args.test_dataset),
+        if args.polish:
+            ds = SejmSenat()
+            train_dataset = ds.get_train()
+            test_dataset = ds.get_valid()
+        else:
+            ls = LibriSpeech()
+            train_dataset = ls.get_dataset(args.dataset)
+            test_dataset = ls.get_dataset(args.test_dataset)
+
+        run.train(dataset=train_dataset,
+                  testing_dataset=test_dataset,
                   model_save_pth=args.models_dir)
 
     elif args.task == 'eval':

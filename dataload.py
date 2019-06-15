@@ -30,7 +30,7 @@ def normalize_signal(signal):
     return signal / (np.max(np.abs(signal)) + 1e-5)
 
 
-def get_libri_dataloader(dataset, batch_size=1, shuffle=False, num_workers=0, **kwargs):
+def get_audio_dataloader(dataset, batch_size=1, shuffle=False, num_workers=0, **kwargs):
     return DataLoader(dataset, batch_size, shuffle, num_workers=num_workers,
                       collate_fn=ctc_collate_fn, **kwargs)
 

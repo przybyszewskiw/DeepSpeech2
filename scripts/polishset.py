@@ -1,3 +1,0 @@
-
-class PolishSet:
-    pass
