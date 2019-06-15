@@ -39,13 +39,13 @@ def main():
                  my_rank=args.local_rank)
 
     if args.task == 'train':
-        if args.dataset is None:
-            raise Exception("Specify dataset to train on!")
         if args.polish:
             ds = SejmSenat()
             train_dataset = ds.get_train()
             test_dataset = ds.get_valid()
         else:
+            if args.dataset is None:
+                raise Exception("Specify dataset to train on!")
             ls = LibriSpeech()
             train_dataset = ls.get_dataset(args.dataset)
             test_dataset = ls.get_dataset(args.test_dataset)
