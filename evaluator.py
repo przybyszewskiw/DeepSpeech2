@@ -18,7 +18,9 @@ def eval_model(model, dataset, libri_dataset, beam_width, lm_file):
     report_freq = 50
     sum_wer = 0
     beam_width = 200
+    random.seed(12345)
     random.shuffle(dataset)
+    model.eval()
     print("Length of dataset: {}".format(len(dataset)))
     with torch.no_grad():
         index = 0
@@ -35,9 +37,8 @@ def eval_model(model, dataset, libri_dataset, beam_width, lm_file):
                                      lm_file,
                                      "../librispeech-vocab-probs.txt",
                                      beam_width,
-                                     0.05,
-                                     0.05)
-            # answer = ctcBeamSearch(probs)
+                                     0.1,
+                                     0.0)
 
             word_error_rate = wer(transcript, answer)
             sum_wer += word_error_rate
@@ -54,6 +55,7 @@ def eval_model(model, dataset, libri_dataset, beam_width, lm_file):
 
 def eval_tracks(model, tracks, dataset, lm_file):
     with torch.no_grad():
+        model.eval()
         for track, (track_ten, _) in zip(tracks, dataset):
             print('evaluating {}'.format(track))
 

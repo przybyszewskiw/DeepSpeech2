@@ -52,34 +52,10 @@ void updateEntries(std::vector<BeamEntry>& newEntries, std::vector<BeamEntry>& e
 void scoreLm(BeamEntry& beam, const Model& model)
 {
     const Vocabulary &vocab = model.GetVocabulary();
-    State state(model.BeginSentenceState()), out_state;
-    double prob = 0;
-    int order = model.Order();
-    int wordCount = beam.completeWords.size();
-    
-    for (int i = 0; i < order - wordCount; i++)
-    {
-        prob = model.Score(state, vocab.Index("<s>"), out_state);
-        state = out_state;
-    }
-    for (int i = std::max(0, wordCount - order); i < wordCount; i++)
-    {
-        int index = vocab.Index(beam.completeWords[i]);
-        if (beam.completeWords[i].empty() || index == 0)
-        {
-            beam.prText = -inf;
-            beam.lmApplied = true;
-            return;
-        }
-        prob = model.Score(state, index, out_state);
-        state = out_state;
-    }
-    if (beam.completeWords.empty())
-    {
-        prob = 0;
-    }
-
-    beam.prText = prob;
+    State out_state;
+    int index = vocab.Index(beam.completeWords.back());
+    beam.prText = model.Score(beam.lmState, index, out_state);
+    beam.lmState = out_state;
 }
 
 void applyLm(BeamEntry& beam, const Model& model, TrieNode *root, const Alphabet& alphabet)
@@ -132,30 +108,8 @@ std::string ctcBeamSearch(std::vector<std::vector<double>>& mat,
     entries.push_back({0, -inf, 0, 0, false, root, {}, {}, model.BeginSentenceState()});
     int blankInd = alphabet.getSize();
     
-    //std::cerr << blankInd << "\n";
     for (const std::vector<double>& probs : mat)
     {
-        /*for (int i = 0; i <= blankInd; i++)
-        {
-            std::cerr << probs[i] << " ";
-        }
-        std::cerr << "\n";
-        for (int i = 0; i < std::min(2, (int)entries.size()); i++)
-        {
-            for (auto word : entries[i].completeWords)
-            {
-                std::cerr << word << " ";
-            }
-            std::cerr << " | " << entries[i].lastWord << " " << entries[i].prTotal << " " << entries[i].prText << "\n";
-            if (entries[i].lastWordNode != nullptr)
-            {
-                std::cerr << entries[i].lastWordNode->getWordCount() << "\n";
-            }
-            else
-            {
-                std::cerr << "nullptr\n";
-            }
-        }*/
         std::vector<BeamEntry> newEntries;
         for (BeamEntry& beam : entries)
         {
@@ -198,7 +152,6 @@ std::string ctcBeamSearch(std::vector<std::vector<double>>& mat,
         for (BeamEntry& beam : newEntries)
             applyLm(beam, model, root, alphabet);
         updateEntries(newEntries, entries);
-        //std::cerr << "                             " << entries.size() << "\n";
         std::sort(entries.begin(), entries.end(), beamCmp);
         entries.resize(std::min(beamWidth, (int)entries.size()));
     }
@@ -211,7 +164,6 @@ std::string ctcBeamSearch(std::vector<std::vector<double>>& mat,
     for (std::string word : entries[0].completeWords)
         result += word + ' ';
     result.pop_back();
-    //std::cerr << result << " " << entries[0].prTotal << " " << entries[0].prText << std::endl;
     return result;
 }
 

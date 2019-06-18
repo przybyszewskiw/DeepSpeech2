@@ -38,14 +38,14 @@ public:
     
     TrieNode *getChild(int index) const
     {
-    	if (index < 0 || index >= alphaSize)
-    		return nullptr;
-    	return children[index];
+        if (index < 0 || index >= alphaSize)
+            return nullptr;
+        return children[index];
     }
     
     int getWordCount() const
     {
-    	return wordCount;
+        return wordCount;
     }
 private:
     double minScore;

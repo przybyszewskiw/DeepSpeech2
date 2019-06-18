@@ -54,12 +54,12 @@ public:
     
     char getLetter(int ind) const
     {
-    	return intToChar[ind];
+        return intToChar[ind];
     }
     
     int getIndex(char c) const
     {
-    	return charToInt[c];
+        return charToInt[c];
     }
     
     int getSize() const
