@@ -432,7 +432,7 @@ Figure \ref{fig:dropout} presents results of our experiments with and without dr
 $L2$ regularization is a technique designed to prevent neural network from overfitting training dataset. The key idea behind this method is keeping network weights from growing too large unless it is really necessary. It can be realized by adding a term $\lambda ||W||^2_F $ to the cost function that penalizes large weights, where $||W||_F $ is
 a Frobenius norm, and $\lambda$ is parameter governing how strongly large weights are penalized \cite{L2}.
 
-\todoplot{TODO}
+Performed experiments showed that applying L2 regularization does not have positive effect on loss function convergence. With weight decay scale equal to $0.0005$ CTC loss oscillated around $1$.
 
 \section{Recurrent unit type}
 In section \ref{sec:layers} we mentioned bidirectional recurrent layers. Three most commonly used ones are vanilla \textbf{Recurrent Neural Networks} (RNN) \cite{RNN}, \textbf{Long Short Term Memory Unit} (LSTM) \cite{LSTM} and \textbf{Gated Recurrent Unit} (GRU) \cite{GRU}. We will deliver a brief description of these units based on \cite{DS2}.
@@ -453,7 +453,36 @@ And here is description of the plot above.
 \section{Performance and multi GPU scaling}
 For training, we used machine with Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz, (which has 20 physical cores), and 256 GB of RAM. It was equipped with four Nvidia Tesla V100 GPGPUs (32 GB of global memory each), connected by NVlink.
 
-Figures below describe performance and scaling we achieved by utilizing more than one GPUs. Performance is measured by time in seconds it took for train for one epoch on full dataset of 1000 hours.
+Figures below describe performance and scaling we achieved by utilizing more than one GPUs. Performance is measured by time in seconds it took for train for one epoch on full dataset of 960 hours.
+
+\parbox{.45\linewidth}{
+\centering
+\begin{tabular}{|c|c|c|}
+        \hline
+        1 GPU & 2 GPU & 4 GPU \\
+        \hline
+        \hline
+        \textbf{???} & \textbf{???} & \textbf{???} \\
+        \hline
+    \end{tabular}
+\captionof{table}{Full precision training time}
+}
+\hfill
+\parbox{.45\linewidth}{
+\centering
+\begin{tabular}{|c|c|c|}
+        \hline
+        1 GPU & 2 GPU & 4 GPU \\
+        \hline
+        \hline
+        119 & 56 & 36 \\
+        \hline
+    \end{tabular}
+\captionof{table}{Mixed precision training time}
+}
+
+For $11$ epochs long mixed precision training on 4 GPUs standard deviation of an epoch time was approximately $14$ seconds. It shows that network is scalable, and can be extended to more GPUs.
+
 
 \todoplot{TODO}
 
