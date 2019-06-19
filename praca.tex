@@ -455,13 +455,13 @@ Dropout is regularization strategy patented by Google \cite{DROPG}, it is used t
             legend pos=outer north east,
             no markers
           ]
-		  \addplot table[x=epochs,y=training]{\dropouticm};
+		  \addplot[dashed, color=red] table[x=epochs,y=training]{\dropouticm};
 			\addlegendentry{training without dropout}		  
-		  \addplot table[x=epochs,y=validation]{\dropouticm};
+		  \addplot[color=red] table[x=epochs,y=validation]{\dropouticm};
 			\addlegendentry{validation without dropout}
-		  \addplot table[x=epochs,y=training]{\amp};
+		  \addplot[dashed, color=blue] table[x=epochs,y=training]{\amp};
 			\addlegendentry{normal training}		  
-		  \addplot table[x=epochs,y=validation]{\amp};
+		  \addplot[color=blue] table[x=epochs,y=validation]{\amp};
 			\addlegendentry{normal validation}
 		  
 		  
@@ -516,12 +516,67 @@ This technique particularly helps models without BatchNorm but isn't without eff
 \todoplot{TODO}
 
 \section{Initialization}
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 1.53 & 0.66 \\
+   2 & 0.62 & 0.40 \\
+   3 & 0.44 & 0.31 \\
+   4 & 0.35 & 0.27 \\
+   5 & 0.29 & 0.26 \\
+   6 & 0.25 & 0.24 \\
+   7 & 0.21 & 0.23 \\
+   8 & 0.19 & 0.23 \\
+   9 & 0.16 & 0.22 \\
+   10 & 0.15 & 0.23 \\
+   11 & 0.13 & 0.24 \\
+   12 & 0.12 & 0.24 \\
+   13 & 0.11 & 0.24 \\
+   14 & 0.10 & 0.23 \\
+   15 & 0.09 & 0.24 \\
+   16 & 0.08 & 0.25 \\
+   17 & 0.08 & 0.26 \\
+   18 & 0.07 & 0.26 \\
+}\xavier
+
 \subsection{Xavier initialization}
 We use Xavier initialization \cite{XAVIER} for weights in our model. It is a heuristic random initialization of trainable weights in a neural network that assigns values sampled from normal distribution $$\mathcal{N}\left(0, \sqrt{\frac{2}{N_{in} + N_{out}}}\right)$$ where $N_{in}$ is number of inputs and $N_{out}$ is number of outputs of a certain layer. Parameters of the distribution are chosen in such a way that variances of input to Xavier - intialized layer and output of that layer differ slightly. This prevents exploding and diminishing values during both forward and backward pass through the network and thus speeds up learning.
 
 This is a comparison of training loss with and without Xavier initialization:
 
-\todoplot{TODO}
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\makebox[\linewidth]{%        to center the image
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 0, ymax = 2,
+            xmin = 0, xmax = 13,
+            minor y tick num = 4,
+            minor x tick num = 1,
+            ymajorgrids = true,
+            grid style = dashed,
+            scaled x ticks = false,
+            xlabel = Epochs,
+            ylabel = CTC Loss,
+            legend pos=outer north east,
+            no markers
+          ]
+		  \addplot[dashed, color=red] table[x=epochs,y=training]{\xavier};
+			\addlegendentry{training with no initialization}		  
+		  \addplot[color=red] table[x=epochs,y=validation]{\xavier};
+			\addlegendentry{validation with no initialization}
+		  \addplot[dashed, color=blue] table[x=epochs,y=training]{\amp};
+			\addlegendentry{training with Xavier initialization}		  
+		  \addplot[color=blue] table[x=epochs,y=validation]{\amp};
+			\addlegendentry{validation with Xavier initialization}
+
+		\end{axis}
+		\end{tikzpicture}
+		}\captionof{figure}{Xavier initialization plot}
+		\label{fig:xavier}		     
+\end{minipage}\\
+
+
+One can easily see in the figure \ref{fig:xavier} that Xavier initialization outperforms no initialization in the early stage of training. After around 10 epochs both models have more or less the same training and validation loss -- it means that when we train model for a longer time benefits of a proper initialization are not so important. Final WER in both cases is \textbf{TODO} and \textbf{TODO} for model with Xavier initialization and no initialization respectively. 
 
 \subsection{Random seed}
 In order to rule out random chance from the results of our model we ran training on 20 random random seeds for \_ epochs. We then measuerd the mean and standard deviation of validation loss and compared it to validation loss of our best performance. The results are:
