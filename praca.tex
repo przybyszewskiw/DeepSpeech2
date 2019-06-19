@@ -367,49 +367,7 @@ where $\epsilon$ is small constant added for numerical stability. Finally we sca
 $$ y^{(k)}_i = \gamma^{(k)} \hat{x}^{(k)}_i + \beta^{(k)}$$
 where $\gamma^{(k)}$ and $\beta^{(k)}$ are learnable parameters.
 
-\pgfplotstableread[row sep=\\,col sep=&]{
-    epochs & training & validation \\ 
-   1 & 2.89 & 2.94 \\
-   2 & 3.10 & 3.09 \\
-   3 & 3.10 & 3.09 \\
-   4 & 3.10 & 3.07 \\
-   5 & 3.10 & 3.04 \\
-   6 & 3.10 & 3.09 \\
-   7 & 3.10 & 3.11 \\
-   8 & 3.10 & 3.09 \\
-   9 & 3.10 & 3.06 \\
-   10 & 3.10 & 3.07 \\
-   11 & 3.10 & 3.02 \\
-}\bn
-
-
-\noindent%
-\begin{minipage}{\linewidth}% to keep image and caption on one page
-\makebox[\linewidth]{%        to center the image
-		\begin{tikzpicture}
-		\begin{axis}[
-            ymin = 2.75, ymax = 3.25,
-            xmin = 0, xmax = 12,
-            minor y tick num = 2,
-            minor x tick num = 1,
-            ymajorgrids = true,
-            grid style = dashed,
-            scaled x ticks = false,
-            xlabel = Epochs,
-            ylabel = CTC Loss,
-            legend pos=outer north east,
-            no markers
-          ]
-		  \addplot table[x=epochs,y=training]{\bn};
-			\addlegendentry{training}		  
-		  \addplot table[x=epochs,y=validation]{\bn};
-			\addlegendentry{validation}
-		  
-
-		\end{axis}
-		\end{tikzpicture}
-		}\captionof{figure}{Batch norm plot}\label{dsad}		     
-\end{minipage}
+In our model we use batch normalization after each convolutional layer. When we tried training our model without batch normalization layers, we found out, that model didn't learn. Training loss was very high, over $2.5$, and validation loss was NaN. That experiment clearly shows that batch normalization is crucial for proper model training and without it we can't expect model to work correctly.
 
 \subsection{Dropout}
 Dropout is regularization strategy patented by Google \cite{DROPG}, it is used to remove neural network overfitting. The basic idea of this technique is multiplying input and hidden units, during training process, by randomly generated bit mask. \cite{DROPW}. It follows that some nodes will be inactive, set to 0, and model is prevented from complex co-adaptations.
