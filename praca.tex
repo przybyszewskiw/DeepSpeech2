@@ -26,56 +26,56 @@
 
 
 \pgfplotstableread[row sep=\\,col sep=&]{
-	epochs & training \\
-	1   &  4.79 \\
-	30   &  2.91 \\
-	60   &  2.90 \\
-	90   &  2.87 \\
-	120  &  2.87 \\
-	150  &  2.87 \\
-	180  &  2.87 \\
-	210  &  2.86 \\
-	240  &  2.35 \\
-	270 &  1.95 \\
-	300 &  1.84 \\
-	330 &  1.77 \\
-	360 &  1.72 \\
-	390 &  1.69 \\
-	420 &  1.66 \\
-	450 &  1.65 \\
-	480 &  1.62 \\
-	510 &  1.61 \\
-	540 &  1.59 \\
-	570 &  1.64 \\
-	600 &  1.60 \\
-}\first
+    epochs & training \\
+1   &  4.79 \\
+30   &  2.91 \\
+60   &  2.90 \\
+90   &  2.87 \\
+120  &  2.87 \\
+150  &  2.87 \\
+180  &  2.87 \\
+210  &  2.86 \\
+240  &  2.35 \\
+270 &  1.95 \\
+300 &  1.84 \\
+330 &  1.77 \\
+360 &  1.72 \\
+390 &  1.69 \\
+420 &  1.66 \\
+450 &  1.65 \\
+480 &  1.62 \\
+510 &  1.61 \\
+540 &  1.59 \\
+570 &  1.64 \\
+600 &  1.60 \\
+    }\first
 
 \newcommand{\todoplot}[1]{
-	\ \\
-	\noindent%
-	\begin{minipage}{\linewidth}% to keep image and caption on one page
-		\makebox[\linewidth]{%        to center the image
-			\begin{tikzpicture}
-			\begin{axis}[
-			ymin = 0, ymax = 5,
-			xmin = 0, xmax = 600,
-			minor y tick num = 4,
-			minor x tick num = 1,
-			ymajorgrids = true,
-			grid style = dashed,
-			scaled x ticks = false,
-			xlabel = TODO,
-			ylabel = TODO,
-			legend pos=outer north east,
-			no markers
-			]
-			\addplot table[x=epochs,y=training]{\first};
-			\addlegendentry{TODO}
-			
-			\end{axis}
-			\end{tikzpicture}
+\ \\
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\makebox[\linewidth]{%        to center the image
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 0, ymax = 5,
+            xmin = 0, xmax = 600,
+            minor y tick num = 4,
+            minor x tick num = 1,
+            ymajorgrids = true,
+            grid style = dashed,
+            scaled x ticks = false,
+            xlabel = TODO,
+            ylabel = TODO,
+            legend pos=outer north east,
+            no markers
+          ]
+		  \addplot table[x=epochs,y=training]{\first};
+		  \addlegendentry{TODO}
+
+		\end{axis}
+		\end{tikzpicture}
 		}\captionof{figure}{#1}\label{diag:time}     
-	\end{minipage}
+\end{minipage}
 }
 
 % Dane magistrantów:
@@ -113,7 +113,7 @@
 % Instytut
 % ew. Wydział ew. Uczelnia (jeżeli nie MIM UW))
 \opiekun{dr Janina Mincer-Daszkiewicz \\
-	Instytut Informatyki\\
+  Instytut Informatyki\\
 }
 
 % miesiąc i~rok:
@@ -121,20 +121,20 @@
 
 %Podać dziedzinę wg klasyfikacji Socrates-Erasmus:
 \dziedzina{
-	%11.0 Matematyka, Informatyka:\\
-	%11.1 Matematyka\\
-	%11.2 Statystyka\\
-	11.3 Informatyka\\
-	%11.4 Sztuczna inteligencja\\
-	%11.5 Nauki aktuarialne\\
-	%11.9 Inne nauki matematyczne i informatyczne
+%11.0 Matematyka, Informatyka:\\
+%11.1 Matematyka\\
+%11.2 Statystyka\\
+11.3 Informatyka\\
+%11.4 Sztuczna inteligencja\\
+%11.5 Nauki aktuarialne\\
+%11.9 Inne nauki matematyczne i informatyczne
 }
 
 %Klasyfikacja tematyczna wedlug AMS (matematyka) lub ACM (informatyka)
 \klasyfikacja{D. Software\\
-	%D.127. Blabalgorithms\\
-	%D.127.6. Numerical blabalysis
-}
+  %D.127. Blabalgorithms\\
+  %D.127.6. Numerical blabalysis
+  }
 
 % Słowa kluczowe:
 \keywords{Deep Speech, ASR, Neural Networks, Machine Learning, Python, PyTorch, NVIDIA, RNN, multi-GPU, FP16}
@@ -145,452 +145,457 @@
 % koniec definicji
 
 \begin{document}
-	\maketitle
-	
-	%tu idzie streszczenie na strone poczatkowa
-	\begin{abstract}
-		The authors of this thesis focus on implementing scripts for training DeepSpeech2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper \cite{DS2} using \texttt{PyTorch} framework. We also experiment with obtaining dataset for Polish language and trying DeepSpeech2 model for it. Finally, we provide fully trained models for English and Polish together with statistics about how changing hyperparameters and architecture impacts model's performance and accuracy.
-	\end{abstract}
-	
-	\tableofcontents
-	%\listoffigures
-	%\listoftables
-	
-	\chapter*{Introduction}
-	\addcontentsline{toc}{chapter}{Introduction}
-	Transcription of spoken language is a crucial problem for many areas of modern technology industry. Being able to communicate with electronic devices not only by touching them, but also by talking to them is an important goal for IT companies. Such devices are more user-friendly so it is undoubtedly beneficial for everybody. To achieve this goal, various solutions were proposed, and many of them use complex algorithms (e.g. Hidden Markov Models) \cite{DS1}. However, it has been shown that the best accuracy can be achieved with Automatic Speech Recognition (ASR) models based on neural networks \cite{DS2}.
-	
-	Our thesis concentrates on implementing state of the art ASR model Deep Speech 2 (DS2) described in \cite{DS2} and we realize it with the support of NVIDIA Corporation. Authors of Deep Speech 2 prepared their model only for recognizing English and Mandarin, so we plan to experiment with applying it to Polish language as well. We think, it is the biggest challenge, since accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset (therefore, we have to find appropriate one and prepare it adequately). Large size of the dataset creates another problem -- we need our model to be able to train on that data in a reasonable time. We also want it to work in real time after training. Last but not least, in order to determine the best hyperparameters we have to run many experiments, collect their results, and finally analyze them.
-	
-	In order to accomplish our goals we are going to implement DeepSpeech2 model using \texttt{PyTorch} deep learning framework, which supports parallel processing using GPUs. To achieve high performance system, we plan to use open-source libraries prepared by NVIDIA, which make it possible to train one neural network on multiple GPUs. Another optimization, which we expect to speed up computations, is using half precision floating-point numbers (also known as FP16) together with single precision. When it comes to collecting datasets, we assume it should be relatively easy for English as there are lots of free English utterances with transcriptions. However, for spoken corpus of Polish it may be harder -- we are going to search for Polish speech collected for university programs and from audiobooks.
-	
-	The structure of our thesis is as follows. In Chapter \ref{r:desc} we introduce architecture of Deep Speech 2 model in terms of, among others, used layers, data flow and functions. After that, in Chapter \ref{r:experiments}, we present applied optimizations which increased network performance together with experiments results. In Chapter \ref{r:polish} we describe how we modified and trained neural network to detect Polish language and compare obtained results with English model. Finally, in Chapter \ref{r:concls}, we summarize our experiments, show their results and present final version of the model.
-	
-	\textbf{TODO - opisać podział pracy zgodnie z tym, jak to się rzeczywiście potoczyło}
-	
-	\chapter{Basic model description}\label{r:desc}
-	
-	DeepSpeech 2 (DS2) system is a recurrent neural network trained to ingest speech spectrograms and generate a text transcription.
-	Following description of the model architecture is pretty basic and it is based on \cite{DS2}. More details can be find there.
-	
-	\section{Input and Output specification} \label{sec:input}
-	Let $\{(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), ...\}$ be a training set. $x^{(i)}$ is a time-series of variable length where every time-slice is a spectrogram of power
-	normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of the utterance $x^{(i)}$. One can see that $x^{(i)}$ is in fact a matrix of size depending on number of frequency bins and $i$'th audio clip length. We use the same number of frequency bins for all audio clips in dataset.
-	
-	DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ for each output time-step. For English language possible values of $l_t$ are letters from 'a' to 'z', space, apostrophe and blank. Adding non-letter characters allows to find word boundaries. The special symbol blank is outputted each time when the network is unable
-	to tell which character is most likely to occur for the current input spectrogram.
-	
-	\section{Layers} \label{sec:layers}
-	The model of the network is composed of one or more convolutional layers, followed in turn by one or more bidirectional recurrent layers \cite{RNN}, followed by one or more fully connected layers. Activation function used throughout the network is the Clipped Rectified Linear (ReLU) function, given by the formula:
-	$$
+\maketitle
+
+%tu idzie streszczenie na strone poczatkowa
+\begin{abstract}
+  The authors of this thesis focus on implementing scripts for training DeepSpeech2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper \cite{DS2} using \texttt{PyTorch} framework. We also experiment with obtaining dataset for Polish language and trying DeepSpeech2 model for it. Finally, we provide fully trained models for English and Polish together with statistics about how changing hyperparameters and architecture impacts model's performance and accuracy.
+\end{abstract}
+
+\tableofcontents
+%\listoffigures
+%\listoftables
+
+\chapter*{Introduction}
+\addcontentsline{toc}{chapter}{Introduction}
+Transcription of spoken language is a crucial problem for many areas of modern technology industry. Being able to communicate with electronic devices not only by touching them, but also by talking to them is an important goal for IT companies. Such devices are more user-friendly so it is undoubtedly beneficial for everybody. To achieve this goal, various solutions were proposed, and many of them use complex algorithms (e.g. Hidden Markov Models) \cite{DS1}. However, it has been shown that the best accuracy can be achieved with Automatic Speech Recognition (ASR) models based on neural networks \cite{DS2}.
+
+Our thesis concentrates on implementing state of the art ASR model Deep Speech 2 (DS2) described in \cite{DS2} and we realize it with the support of NVIDIA Corporation. Authors of Deep Speech 2 prepared their model only for recognizing English and Mandarin, so we plan to experiment with applying it to Polish language as well. We think, it is the biggest challenge, since accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset (therefore, we have to find appropriate one and prepare it adequately). Large size of the dataset creates another problem -- we need our model to be able to train on that data in a reasonable time. We also want it to work in real time after training. Last but not least, in order to determine the best hyperparameters we have to run many experiments, collect their results, and finally analyze them.
+
+In order to accomplish our goals we are going to implement DeepSpeech2 model using \texttt{PyTorch} deep learning framework, which supports parallel processing using GPUs. To achieve high performance system, we plan to use open-source libraries prepared by NVIDIA, which make it possible to train one neural network on multiple GPUs. Another optimization, which we expect to speed up computations, is using half precision floating-point numbers (also known as FP16) together with single precision. When it comes to collecting datasets, we assume it should be relatively easy for English as there are lots of free English utterances with transcriptions. However, for spoken corpus of Polish it may be harder -- we are going to search for Polish speech collected for university programs and from audiobooks.
+
+The structure of our thesis is as follows. In Chapter \ref{r:desc} we introduce architecture of Deep Speech 2 model in terms of, among others, used layers, data flow and functions. After that, in Chapter \ref{r:experiments}, we present applied optimizations which increased network performance together with experiments results. In Chapter \ref{r:polish} we describe how we modified and trained neural network to detect Polish language and compare obtained results with English model. Finally, in Chapter \ref{r:concls}, we summarize our experiments, show their results and present final version of the model.
+
+\textbf{TODO - opisać podział pracy zgodnie z tym, jak to się rzeczywiście potoczyło}
+
+\chapter{Basic model description}\label{r:desc}
+
+DeepSpeech 2 (DS2) system is a recurrent neural network trained to ingest speech spectrograms and generate a text transcription.
+Following description of the model architecture is pretty basic and it is based on \cite{DS2}. More details can be find there.
+
+\section{Input and Output specification} \label{sec:input}
+Let $\{(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), ...\}$ be a training set. $x^{(i)}$ is a time-series of variable length where every time-slice is a spectrogram of power
+normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of the utterance $x^{(i)}$. One can see that $x^{(i)}$ is in fact a matrix of size depending on number of frequency bins and $i$'th audio clip length. We use the same number of frequency bins for all audio clips in dataset.
+
+DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ for each output time-step. For English language possible values of $l_t$ are letters from 'a' to 'z', space, apostrophe and blank. Adding non-letter characters allows to find word boundaries. The special symbol blank is outputted each time when the network is unable
+to tell which character is most likely to occur for the current input spectrogram.
+
+\section{Layers} \label{sec:layers}
+The model of the network is composed of one or more convolutional layers, followed in turn by one or more bidirectional recurrent layers \cite{RNN}, followed by one or more fully connected layers. Activation function used throughout the network is the Clipped Rectified Linear (ReLU) function, given by the formula:
+$$
 	\sigma(x) =
 	\begin{cases*}
-	0 & for $x < 0$, \\
-	20 & for $x > 20$, \\
-	x & otherwise.
+		0 & for $x < 0$, \\
+		20 & for $x > 20$, \\
+		x & otherwise.
 	\end{cases*}
-	$$
-	The recurrent layers appear in a few different variants -- standard recurrent layers or Long Short-Term Memory (LSTM) \cite{LSTM}, or Gated Recurrent Units (GRU) \cite{GRU}. After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.
-	
-	\textbf{TODO - w tym miejscu rysunek z wykonanym obrazkiem sieci}
-	
-	Softmax function $f : \mathbb{R}^k \rightarrow \mathbb{R}^k$ is defined by the formula:
-	$$
-	f_i(v) = \frac{e^{v_i}}{\sum_{i=1}^{k} e^{v_j}},
-	$$
-	and
-	$$
-	f(v) = \big(f_1(v), f_2(v), \ldots, f_k(v) \big).
-	$$
-	We basically apply exponential function to each outputted value, and then normalize these values to make sure, that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
-	
-	\section{CTC Loss} \label{sec:ctc}
-	To train a neural network, we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing a value of the loss function is a main goal of the training.
-	
-	Loss function used in DS2 is \textbf{Connectionist Temporal Classification} (CTC) \cite{DS3}. To define this loss, let us introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". Only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".
-	
-	For instance, possible encodings of \textit{"to"} are \textit{"-tttooo"} and \textit{"-tttoo-o"}, but only the latter could be an encoding of the word \textit{"too"}.
-	
-	Now we say that the probability of an actual transcription is the sum of probabilities of all possible encodings of the actual transcription, that have the same length as the output of the model. The loss function here is simply the negative logarithm of this probability. Having this we can count derivatives of this loss function with respect to model output and then apply \textit{backpropagation through time} algorithm to train the network, which is just a standard backpropagation algorithm modified for recurrent neural networks.
-	
-	\section{Training} \label{sec:trainig}
-	During the training, datasets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated through the network, and then weights on the layers are updated. The speed in which changes are applied to the model depends on some chosen constant -- \textbf{learning rate}. All batches make up for an epoch of training and training lasts for many epochs -- until loss does not decrease anymore or decreases very slightly.
-	Accuracy of the model is measured by \textbf{Word Error Rate} (WER). It is a common metric of the performance of speech recognition systems. In \cite{DS8} many commercial ASR systems were compared using WER. To measure Word Error Rate, we compare the recognized word sequence with a reference word sequence by transforming the latter to the former and find:
-	
-	\begin{itemize}
-		\item $S$ -- the number of substitutions,
-		\item $D$ -- the number of deletions,
-		\item $I$ -- the number of insertions,
-		\item $C$ -- the number of correct words,
-		\item $N$ -- the number of words in the reference ($N=S+D+C$).
-	\end{itemize}
-	Now the $WER$ can be computed as:
-	$$
-	WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
-	$$
-	
-	\section{Generating transcription} \label{sec:transcription}
-	In order to find Word Error Rate of the model, one has to generate some final transcription. It is generated based on both output of the model and an $N$-gram language model \cite{DS9}. To generate the final transcription, we search for transcription \textit{y} that maximizes \textit{Q(y)}, where \textit{Q} is given as follows:
-	$$
-	Q(y) = \log \big(\mathbb{P}_{ctc}(y|x)\big) + \alpha \cdot \log \big( \mathbb{P}_{lm}(y) \big) + \beta \cdot word\_count(y).
-	$$
-	The term $\mathbb{P}_{ctc}(y|x)$ denotes the probability of $y$ being a transcription of the utterance $x$ as described in section 1.3 and the term $\mathbb{P}_{lm}(y)$ denotes the probability of the sequence $y$ according to the language model. The weight $\alpha$ controls the relative contributions of the language model and the CTC network. The weight $\beta$ encourages more words in the transcription. Both of those parameters are tunable. We use a beam search similar to one described in \cite{DS7} to find the optimal transcription \textit{y}.
-	
-	Beam search is an algorithm that iterates over each time-step in the output of DS2 model, while remembering some constant number (let this number be $BW$ -- \textit{Beam Width}) of the most probable transcriptions up to this point. When considering the next time-step, we create $BW \cdot C$ new transcriptions corresponding to appending every possible character (we denote number of them by $C$) to the end of each of $BW$ remembered transcriptions. After merging identical transcriptions and recalculating their probabilities we again keep $BW$ best ones. In the end we have $BW$ \textit{most probable} transcriptions, so we just take the best one.
-	
-	In order to efficiently merge transcriptions and recalculate new probabilities for them, we must store probabilities $\mathcal{P}_{b}$, $\mathcal{P}_{nb}$, $\mathcal{P}_{lm}$ for all kept transcriptions, where:
-	\begin{itemize}
-		\item $\mathcal{P}_{b}(y, t)$ -- probability of the given transcription $y$ at time-step $t$ if the encoding ends with \textit{blank},
-		\item $\mathcal{P}_{nb}(y, t)$ -- probability of the given transcription $y$ at time-step $t$ if the encoding doesn't end with \textit{blank},
-		\item $\mathcal{P}_{lm}(y)$ -- probability of the given transcription $y$, according to the language model.\\
-	\end{itemize}
-	
-	\section{Summary}
-	To sum up, workflow in DS2 is quite standard as for neural network. We prepare some data in the form described in section \ref{sec:input}. Next we forward propagate the data through the layers described in section \ref{sec:layers}. After that we count CTC Loss (section \ref{sec:ctc}) and update model weights with specific learning rate (section \ref{sec:trainig}). To evaluate the model we generate transcription from predictions given by the output layer using Beam search (section \ref{sec:transcription}) and count Word Error Rate metrics (section \ref{sec:trainig}).
-	
-	
-	\chapter{Experiments on architecture and hyperparameters}\label{r:experiments}
-	
-	\section{Mixed precision training}
-	In order to speed up training, we decided to try to reduce precision of floating-point calculations, where full precision is not really needed to achieve comparable accuracy.
-	
-	Standard deep learning frameworks, such as PyTorch, use 32 bit floating points variables (FP32) to keep model parameters, and perform all operation. Massively parallel architecture of modern GPUs allows to, perform in the same time much more arithmetic operations on 16 bit floating-point variables (FP16) than on 32 bit variables.
-	Specifically, performance can be boosted by using Tensor Cores: hardware units prepared to accelerate matrix multiplications, introduced by Nvidia in Volta GPU architecture \cite{MPT}.
-	So reducing precision could not only reduce memory consumption but also measurably improve time needed for model convergence.
-	
-	Common technique, used to improve speed, but not to break performance, is to keep model weights in two copies -- one in FP32 and one in FP16. In each iteration we would use FP16 one to perform forward, backward propagation, and then to calculate gradients of every weight. Then we would use these gradients to update weights of original, FP32 model weights. Finally, we would make a new instance of FP16 model weight by cutting off precision of updated FP32 model \cite{APEX}.
-	
-	Another heuristic is to split operations on tensors into two groups. In the first groups we would place for instance transitions through fully connected and convolutional layers. In general computational heavy and precision safe operations. In the second group we would place all the other operations: for instance softmax and batchnorm. Now we would port to FP16 operations from the first group and keep in FP32 operations from the second group. This way we would be safe from precision issues and still achieve pretty good speedup (in comparison to the model, that performs all computations in FP16) \cite{APEX}.
-	
-	There is one more thing, we need to care about, while reducing precision. FP16 uses only 5 bits for exponent, and its representable range is quite narrow, so that in some cases gradients are small enough to be eventually rounded to 0. To prevent that, one may multiply loss by a power of two, then perform backward propagation algorithm, and then scale back obtained gradients. This solution works pretty well in practice. However now we have to deal with another problem. Gradients calculated in the process may overflow. And even one overflow unables us to calculate gradients for parameters depended on that particular weight. So the scaling factor, rather than being one fixed power of two, need to be adjusted during training: decreased after detection of overflow and increased if too many gradients are zeroed as a result of rounding \cite{LOSS_SCALING}.
-	
-	Speaking from more practical side, we used Apex AMP, which is a PyTorch Extension developed to ease mixed precision training. It supports automatic dynamic loss scaling, and both described above ways of performing mixed precision training.
-	
-	Further description of this tool can be found in \cite{APEX_DOCS}.
-	
-	\pgfplotstableread[row sep=\\,col sep=&]{
-		epochs & training & validation \\ 
-		1 & 1.02 & 0.41 \\
-		2 & 0.45 & 0.29 \\
-		3 & 0.33 & 0.26 \\
-		4 & 0.26 & 0.24 \\
-		5 & 0.22 & 0.22 \\
-		6 & 0.18 & 0.21 \\
-		7 & 0.16 & 0.21 \\
-		8 & 0.14 & 0.20 \\
-		9 & 0.13 & 0.21 \\
-		10 & 0.11 & 0.21 \\
-		11 & 0.10 & 0.22 \\
-		12 & 0.10 & 0.22 \\
-		13 & 0.09 & 0.22 \\
-	}\amp
-	
-	\pgfplotstableread[row sep=\\,col sep=&]{
-		epochs & training & validation \\ 
-		1 & 0.86 & 0.33 \\
-		2 & 0.39 & 0.26 \\
-		3 & 0.30 & 0.23 \\
-		4 & 0.25 & 0.21 \\
-		5 & 0.21 & 0.20 \\
-		6 & 0.19 & 0.19 \\
-		7 & 0.17 & 0.19 \\
-		8 & 0.15 & 0.18 \\
-		9 & 0.14 & 0.18 \\
-		10 & 0.13 & 0.18 \\
-		11 & 0.12 & 0.176 \\
-		12 & 0.11 & 0.18 \\
-		13 & 0.11 & 0.18 \\
-	}\norm
-	
-	\begin{figure}[!hbt]
-		\begin{center}
-			\begin{tikzpicture}
-			\begin{axis}[
-			ymin = 0, ymax = 1,
-			xmin = 0, xmax = 13,
-			minor y tick num = 4,
-			minor x tick num = 1,
-			ymajorgrids = true,
-			grid style = dashed,
-			%area style,
-			scaled x ticks = false,
-			xlabel = Epochs,
-			ylabel = CTCLoss,
-			legend pos=outer north east,
-			no markers            
-			]
-			\addplot[dashed, color=blue] table[x=epochs,y=training]{\amp};
-			\addlegendentry{Training FP$16$}
-			\addplot[ color=blue] table[x=epochs,y=validation]{\amp};
-			\addlegendentry{Validation FP$16$}
-			\addplot[dashed, color=red] table[x=epochs,y=training]{\norm};
-			\addlegendentry{Training FP$32$}
-			\addplot[color=red] table[x=epochs,y=validation]{\norm};
-			\addlegendentry{Validation FP$32$}
-			\end{axis}
-			\end{tikzpicture}
-		\end{center}
-		\caption{Comparison of training with and without AMP.}
-		\label{fig:amp}
-	\end{figure}
-	
-	Figure \ref{fig:amp} presents comparison of training process with and without AMP, denoted as FP16 and FP32 respectively. We used the same architecture and the same hyperparameters in both cases. One epoch in FP32 lasted for around $135$ minutes, while in FP16 only $75$ minutes. Therefore, we got $1.8$ speedup. When it comes to the performance, one can see from the figure \ref{fig:amp} that the training loss was falling more or less in the same way. To measure models performance we calculated the validation loss - loss function on all examples from the validation dataset. The reason for this is that computing the validation loss is less computationally expensive then WER. We found that validation loss was always a bit lower for FP32 training. However, it doesn't mean that FP32 model was worse. Figure \ref{fig:wer} shows that \textbf{TODO}. Therefore we can conclude, that we can use validation loss as a convenient metric to know when we should stop trainig and we can calculate loss function only after training is finished. What's more, we decided to run rest of experiments only with AMP as it gives us as good results as usual FP32 training and is much faster.
-	
-	\section{Language model and decoding predictions}
-	\textbf{$N$-gram language model} is a model of a language in which we assign probabilities of occurrence to sequences of N words based on some large unlabelled text data. Incorporating model to prediction decoding helps avoid typos which are usually phonetically plausible and often occur on words that rarely or never occur in training set. We use ................ language model.
-	
-	Beam size in beam search used in our model is ..... This size practically scales time of decoding linearly so we used such size that increasing it further wouldn't give any decrease in WER.
-	
-	Performances with the language model in comparison to no language model are:
-	\renewcommand{\labelitemi}{$\cdot$}
-	\begin{itemize}
-		\item ....\% WER with LM; ...\% WER without LM (model ....)
-	\end{itemize}
-	
-	In the beginning we also experimented with an easier language model that assigned probabilities to sequences of letters as it was much smaller and simpler. Unfortunately WER was increasing after applying such LM so we abandoned this idea for the bigger and more reliable N-gram LM.
-	
-	\section{Regularization}
-	\subsection{Batch normalization}
-	Batch normalization is a technique for improving the speed, performance, and stability of artificial neural networks, primarily introduced to reduce internal covariate shift \cite{BN}. Method bases on the idea of normalizing data within each mini-batch using stochastic optimizations for mean and variance.
-	
-	Denote by $B$ mini-batch of a training set, by $m$ size of $B$. If input is $d$--dimensional: $x = (x^{(1)}, x^{(2)}, \ldots, x^{(d)})$, we calculate mean and variance as follows:
-	$$\mu^{(k)} = \frac{1}{m}\sum_{i=1}^m x^{(k)}_i$$
-	
-	$$ \sigma^{{(k)}^2} = \frac{1}{m} \sum_{i = 1}^{m} \left(x^{(k)}_i - \mu^{(k)}\right) ^ 2.$$
-	Next step is normalization:
-	
-	$$
-	\hat{x} ^ {(k)} _ i = \frac{x^{(k)}_i - \mu^{(k)}} {\sqrt{ \sigma^{{(k)}^2} + \epsilon}}
-	$$
-	where $\epsilon$ is small constant added for numerical stability. Finally we scale and shift normalized data:
-	
-	$$ y^{(k)}_i = \gamma^{(k)} \hat{x}^{(k)}_i + \beta^{(k)}$$
-	where $\gamma^{(k)}$ and $\beta^{(k)}$ are learnable parameters.
-	
-	\pgfplotstableread[row sep=\\,col sep=&]{
-		epochs & training & validation \\ 
-		1 & 2.89 & 2.94 \\
-		2 & 3.10 & 3.09 \\
-		3 & 3.10 & 3.09 \\
-		4 & 3.10 & 3.07 \\
-		5 & 3.10 & 3.04 \\
-		6 & 3.10 & 3.09 \\
-		7 & 3.10 & 3.11 \\
-		8 & 3.10 & 3.09 \\
-		9 & 3.10 & 3.06 \\
-		10 & 3.10 & 3.07 \\
-		11 & 3.10 & 3.02 \\
-	}\bn
-	
-	
-	\noindent%
-	\begin{minipage}{\linewidth}% to keep image and caption on one page
-		\makebox[\linewidth]{%        to center the image
-			\begin{tikzpicture}
-			\begin{axis}[
-			ymin = 2.75, ymax = 3.25,
-			xmin = 0, xmax = 12,
-			minor y tick num = 2,
-			minor x tick num = 1,
-			ymajorgrids = true,
-			grid style = dashed,
-			scaled x ticks = false,
-			xlabel = Epochs,
-			ylabel = CTC Loss,
-			legend pos=outer north east,
-			no markers
-			]
-			\addplot table[x=epochs,y=training]{\bn};
+$$
+The recurrent layers appear in a few different variants -- standard recurrent layers or Long Short-Term Memory (LSTM) \cite{LSTM}, or Gated Recurrent Units (GRU) \cite{GRU}. After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.
+
+\textbf{TODO - w tym miejscu rysunek z wykonanym obrazkiem sieci}
+
+Softmax function $f : \mathbb{R}^k \rightarrow \mathbb{R}^k$ is defined by the formula:
+$$
+f_i(v) = \frac{e^{v_i}}{\sum_{i=1}^{k} e^{v_j}},
+$$
+and
+$$
+f(v) = \big(f_1(v), f_2(v), \ldots, f_k(v) \big).
+$$
+We basically apply exponential function to each outputted value, and then normalize these values to make sure, that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
+
+\section{CTC Loss} \label{sec:ctc}
+To train a neural network, we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing a value of the loss function is a main goal of the training.
+
+Loss function used in DS2 is \textbf{Connectionist Temporal Classification} (CTC) \cite{DS3}. To define this loss, let us introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". Only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".
+
+For instance, possible encodings of \textit{"to"} are \textit{"-tttooo"} and \textit{"-tttoo-o"}, but only the latter could be an encoding of the word \textit{"too"}.
+
+Now we say that the probability of an actual transcription is the sum of probabilities of all possible encodings of the actual transcription, that have the same length as the output of the model. The loss function here is simply the negative logarithm of this probability. Having this we can count derivatives of this loss function with respect to model output and then apply \textit{backpropagation through time} algorithm to train the network, which is just a standard backpropagation algorithm modified for recurrent neural networks.
+
+\section{Training} \label{sec:trainig}
+During the training, datasets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated through the network, and then weights on the layers are updated. The speed in which changes are applied to the model depends on some chosen constant -- \textbf{learning rate}. All batches make up for an epoch of training and training lasts for many epochs -- until loss does not decrease anymore or decreases very slightly.
+Accuracy of the model is measured by \textbf{Word Error Rate} (WER). It is a common metric of the performance of speech recognition systems. In \cite{DS8} many commercial ASR systems were compared using WER. To measure Word Error Rate, we compare the recognized word sequence with a reference word sequence by transforming the latter to the former and find:
+
+\begin{itemize}
+  \item $S$ -- the number of substitutions,
+  \item $D$ -- the number of deletions,
+  \item $I$ -- the number of insertions,
+  \item $C$ -- the number of correct words,
+  \item $N$ -- the number of words in the reference ($N=S+D+C$).
+\end{itemize}
+Now the $WER$ can be computed as:
+$$
+WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
+$$
+
+\section{Generating transcription} \label{sec:transcription}
+In order to find Word Error Rate of the model, one has to generate some final transcription. It is generated based on both output of the model and an $N$-gram language model \cite{DS9}. To generate the final transcription, we search for transcription \textit{y} that maximizes \textit{Q(y)}, where \textit{Q} is given as follows:
+$$
+Q(y) = \log \big(\mathbb{P}_{ctc}(y|x)\big) + \alpha \cdot \log \big( \mathbb{P}_{lm}(y) \big) + \beta \cdot word\_count(y).
+$$
+The term $\mathbb{P}_{ctc}(y|x)$ denotes the probability of $y$ being a transcription of the utterance $x$ as described in section 1.3 and the term $\mathbb{P}_{lm}(y)$ denotes the probability of the sequence $y$ according to the language model. The weight $\alpha$ controls the relative contributions of the language model and the CTC network. The weight $\beta$ encourages more words in the transcription. Both of those parameters are tunable. We use a beam search similar to one described in \cite{DS7} to find the optimal transcription \textit{y}.
+
+Beam search is an algorithm that iterates over each time-step in the output of DS2 model, while remembering some constant number (let this number be $BW$ -- \textit{Beam Width}) of the most probable transcriptions up to this point. When considering the next time-step, we create $BW \cdot C$ new transcriptions corresponding to appending every possible character (we denote number of them by $C$) to the end of each of $BW$ remembered transcriptions. After merging identical transcriptions and recalculating their probabilities we again keep $BW$ best ones. In the end we have $BW$ \textit{most probable} transcriptions, so we just take the best one.
+
+In order to efficiently merge transcriptions and recalculate new probabilities for them, we must store probabilities $\mathcal{P}_{b}$, $\mathcal{P}_{nb}$, $\mathcal{P}_{lm}$ for all kept transcriptions, where:
+\begin{itemize}
+\item $\mathcal{P}_{b}(y, t)$ -- probability of the given transcription $y$ at time-step $t$ if the encoding ends with \textit{blank},
+\item $\mathcal{P}_{nb}(y, t)$ -- probability of the given transcription $y$ at time-step $t$ if the encoding doesn't end with \textit{blank},
+\item $\mathcal{P}_{lm}(y)$ -- probability of the given transcription $y$, according to the language model.\\
+\end{itemize}
+
+\section{Summary}
+To sum up, workflow in DS2 is quite standard as for neural network. We prepare some data in the form described in section \ref{sec:input}. Next we forward propagate the data through the layers described in section \ref{sec:layers}. After that we count CTC Loss (section \ref{sec:ctc}) and update model weights with specific learning rate (section \ref{sec:trainig}). To evaluate the model we generate transcription from predictions given by the output layer using Beam search (section \ref{sec:transcription}) and count Word Error Rate metrics (section \ref{sec:trainig}).
+
+
+\chapter{Experiments on architecture and hyperparameters}\label{r:experiments}
+
+\section{Mixed precision training}
+In order to speed up training, we decided to try to reduce precision of floating-point calculations, where full precision is not really needed to achieve comparable accuracy.
+
+Standard deep learning frameworks, such as PyTorch, use 32 bit floating points variables (FP32) to keep model parameters, and perform all operation. Massively parallel architecture of modern GPUs allows to, perform in the same time much more arithmetic operations on 16 bit floating-point variables (FP16) than on 32 bit variables.
+Specifically, performance can be boosted by using Tensor Cores: hardware units prepared to accelerate matrix multiplications, introduced by Nvidia in Volta GPU architecture \cite{MPT}.
+So reducing precision could not only reduce memory consumption but also measurably improve time needed for model convergence.
+
+Common technique, used to improve speed, but not to break performance, is to keep model weights in two copies -- one in FP32 and one in FP16. In each iteration we would use FP16 one to perform forward, backward propagation, and then to calculate gradients of every weight. Then we would use these gradients to update weights of original, FP32 model weights. Finally, we would make a new instance of FP16 model weight by cutting off precision of updated FP32 model \cite{APEX}.
+
+Another heuristic is to split operations on tensors into two groups. In the first groups we would place for instance transitions through fully connected and convolutional layers. In general computational heavy and precision safe operations. In the second group we would place all the other operations: for instance softmax and batchnorm. Now we would port to FP16 operations from the first group and keep in FP32 operations from the second group. This way we would be safe from precision issues and still achieve pretty good speedup (in comparison to the model, that performs all computations in FP16) \cite{APEX}.
+
+There is one more thing, we need to care about, while reducing precision. FP16 uses only 5 bits for exponent, and its representable range is quite narrow, so that in some cases gradients are small enough to be eventually rounded to 0. To prevent that, one may multiply loss by a power of two, then perform backward propagation algorithm, and then scale back obtained gradients. This solution works pretty well in practice. However now we have to deal with another problem. Gradients calculated in the process may overflow. And even one overflow unables us to calculate gradients for parameters depended on that particular weight. So the scaling factor, rather than being one fixed power of two, need to be adjusted during training: decreased after detection of overflow and increased if too many gradients are zeroed as a result of rounding \cite{LOSS_SCALING}.
+
+Speaking from more practical side, we used Apex AMP, which is a PyTorch Extension developed to ease mixed precision training. It supports automatic dynamic loss scaling, and both described above ways of performing mixed precision training.
+
+Further description of this tool can be found in \cite{APEX_DOCS}.
+
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 1.02 & 0.41 \\
+   2 & 0.45 & 0.29 \\
+   3 & 0.33 & 0.26 \\
+   4 & 0.26 & 0.24 \\
+   5 & 0.22 & 0.22 \\
+   6 & 0.18 & 0.21 \\
+   7 & 0.16 & 0.21 \\
+   8 & 0.14 & 0.20 \\
+   9 & 0.13 & 0.21 \\
+   10 & 0.11 & 0.21 \\
+   11 & 0.10 & 0.22 \\
+   12 & 0.10 & 0.22 \\
+   13 & 0.09 & 0.22 \\
+}\amp
+
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 0.86 & 0.33 \\
+   2 & 0.39 & 0.26 \\
+   3 & 0.30 & 0.23 \\
+   4 & 0.25 & 0.21 \\
+   5 & 0.21 & 0.20 \\
+   6 & 0.19 & 0.19 \\
+   7 & 0.17 & 0.19 \\
+   8 & 0.15 & 0.18 \\
+   9 & 0.14 & 0.18 \\
+   10 & 0.13 & 0.18 \\
+   11 & 0.12 & 0.176 \\
+   12 & 0.11 & 0.18 \\
+   13 & 0.11 & 0.18 \\
+}\norm
+
+\begin{figure}[!hbt]
+	\begin{center}
+	\begin{tikzpicture}
+	\begin{axis}[
+        ymin = 0, ymax = 1,
+        xmin = 0, xmax = 13,
+        minor y tick num = 4,
+        minor x tick num = 1,
+        ymajorgrids = true,
+        grid style = dashed,
+        %area style,
+        scaled x ticks = false,
+        xlabel = Epochs,
+        ylabel = CTCLoss,
+        legend pos=outer north east,
+        no markers            
+      ]
+	  \addplot[dashed, color=blue] table[x=epochs,y=training]{\amp};
+	  \addlegendentry{Training FP$16$}
+	  \addplot[ color=blue] table[x=epochs,y=validation]{\amp};
+      \addlegendentry{Validation FP$16$}
+      \addplot[dashed, color=red] table[x=epochs,y=training]{\norm};
+	  \addlegendentry{Training FP$32$}
+	  \addplot[color=red] table[x=epochs,y=validation]{\norm};
+      \addlegendentry{Validation FP$32$}
+	\end{axis}
+	\end{tikzpicture}
+	\end{center}
+	\caption{Comparison of training with and without AMP.}
+	\label{fig:amp}
+\end{figure}
+
+Figure \ref{fig:amp} presents comparison of training process with and without AMP, denoted as FP16 and FP32 respectively. We used the same architecture and the same hyperparameters in both cases. One epoch in FP32 lasted for around $135$ minutes, while in FP16 only $75$ minutes. Therefore, we got $1.8$ speedup. When it comes to the performance, one can see from the figure \ref{fig:amp} that the training loss was falling more or less in the same way. To measure models performance we calculated the validation loss - loss function on all examples from the validation dataset. The reason for this is that computing the validation loss is less computationally expensive then WER. We found that validation loss was always a bit lower for FP32 training. However, it doesn't mean that FP32 model was worse. Figure \ref{fig:wer} shows that \textbf{TODO}. Therefore we can conclude, that we can use validation loss as a convenient metric to know when we should stop trainig and we can calculate loss function only after training is finished. What's more, we decided to run rest of experiments only with AMP as it gives us as good results as usual FP32 training and is much faster.
+
+\section{Language model and decoding predictions}
+\textbf{$N$-gram language model} is a model of a language in which we assign probabilities of occurrence to sequences of N words based on some large unlabelled text data. Incorporating model to prediction decoding helps avoid typos which are usually phonetically plausible and often occur on words that rarely or never occur in training set. We use ................ language model.
+
+Beam size in beam search used in our model is ..... This size practically scales time of decoding linearly so we used such size that increasing it further wouldn't give any decrease in WER.
+
+Performances with the language model in comparison to no language model are:
+\renewcommand{\labelitemi}{$\cdot$}
+\begin{itemize}
+  \item ....\% WER with LM; ...\% WER without LM (model ....)
+\end{itemize}
+
+In the beginning we also experimented with an easier language model that assigned probabilities to sequences of letters as it was much smaller and simpler. Unfortunately WER was increasing after applying such LM so we abandoned this idea for the bigger and more reliable N-gram LM.
+
+\section{Regularization}
+\subsection{Batch normalization}
+Batch normalization is a technique for improving the speed, performance, and stability of artificial neural networks, primarily introduced to reduce internal covariate shift \cite{BN}. Method bases on the idea of normalizing data within each mini-batch using stochastic optimizations for mean and variance.
+
+Denote by $B$ mini-batch of a training set, by $m$ size of $B$. If input is $d$--dimensional: $x = (x^{(1)}, x^{(2)}, \ldots, x^{(d)})$, we calculate mean and variance as follows:
+$$\mu^{(k)} = \frac{1}{m}\sum_{i=1}^m x^{(k)}_i$$
+
+$$ \sigma^{{(k)}^2} = \frac{1}{m} \sum_{i = 1}^{m} \left(x^{(k)}_i - \mu^{(k)}\right) ^ 2.$$
+Next step is normalization:
+
+$$
+\hat{x} ^ {(k)} _ i = \frac{x^{(k)}_i - \mu^{(k)}} {\sqrt{ \sigma^{{(k)}^2} + \epsilon}}
+$$
+where $\epsilon$ is small constant added for numerical stability. Finally we scale and shift normalized data:
+
+$$ y^{(k)}_i = \gamma^{(k)} \hat{x}^{(k)}_i + \beta^{(k)}$$
+where $\gamma^{(k)}$ and $\beta^{(k)}$ are learnable parameters.
+
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 2.89 & 2.94 \\
+   2 & 3.10 & 3.09 \\
+   3 & 3.10 & 3.09 \\
+   4 & 3.10 & 3.07 \\
+   5 & 3.10 & 3.04 \\
+   6 & 3.10 & 3.09 \\
+   7 & 3.10 & 3.11 \\
+   8 & 3.10 & 3.09 \\
+   9 & 3.10 & 3.06 \\
+   10 & 3.10 & 3.07 \\
+   11 & 3.10 & 3.02 \\
+}\bn
+
+
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\makebox[\linewidth]{%        to center the image
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 2.75, ymax = 3.25,
+            xmin = 0, xmax = 12,
+            minor y tick num = 2,
+            minor x tick num = 1,
+            ymajorgrids = true,
+            grid style = dashed,
+            scaled x ticks = false,
+            xlabel = Epochs,
+            ylabel = CTC Loss,
+            legend pos=outer north east,
+            no markers
+          ]
+		  \addplot table[x=epochs,y=training]{\bn};
 			\addlegendentry{training}		  
-			\addplot table[x=epochs,y=validation]{\bn};
+		  \addplot table[x=epochs,y=validation]{\bn};
 			\addlegendentry{validation}
-			
-			
-			\end{axis}
-			\end{tikzpicture}
+		  
+
+		\end{axis}
+		\end{tikzpicture}
 		}\captionof{figure}{Batch norm plot}\label{dsad}		     
-	\end{minipage}
-	
-	\subsection{Dropout}
-	Dropout is regularization strategy patented by Google \cite{DROPG}, it is used to remove neural network overfitting. The basic idea of this technique is multiplying input and hidden units, during training process, by randomly generated bit mask. \cite{DROPW}. It follows that some nodes will be inactive, set to 0, and model is prevented from complex co-adaptations.
-	
-	\pgfplotstableread[row sep=\\,col sep=&]{
-		epochs & training & validation \\ 
-		1 & 1.38 & 0.83 \\
-		2 & 0.88 & 0.73 \\
-		3 & 0.79 & 0.66 \\
-		4 & 0.73 & 0.63 \\
-		5 & 0.69 & 0.60 \\
-		6 & 0.66 & 0.58 \\
-		7 & 0.63 & 0.57 \\
-		8 & 0.61 & 0.56 \\
-		9 & 0.60 & 0.55 \\
-		10 & 0.58 & 0.54 \\
-		11 & 0.57 & 0.53 \\
-		12 & 0.55 & 0.53 \\
-		13 & 0.54 & 0.52 \\
-		14 & 0.53 & 0.52 \\
-		15 & 0.52 & 0.51 \\
-		16 & 0.51 & 0.51 \\
-		17 & 0.50 & 0.50 \\
-		18 & 0.49 & 0.50 \\
-		19 & 0.49 & 0.50 \\
-		20 & 0.48 & 0.50 \\
-		21 & 0.47 & 0.50 \\
-		22 & 0.47 & 0.50 \\
-		23 & 0.46 & 0.50 \\
-	}\dropout
-	
-	
-	\noindent%
-	\begin{minipage}{\linewidth}% to keep image and caption on one page
-		\makebox[\linewidth]{%        to center the image
-			\begin{tikzpicture}
-			\begin{axis}[
-			ymin = 0, ymax = 2,
-			xmin = 0, xmax = 24,
-			minor y tick num = 4,
-			minor x tick num = 1,
-			ymajorgrids = true,
-			grid style = dashed,
-			scaled x ticks = false,
-			xlabel = Epochs,
-			ylabel = CTC Loss,
-			legend pos=outer north east,
-			no markers
-			]
-			\addplot table[x=epochs,y=training]{\dropout};
-			\addlegendentry{training}		  
-			\addplot table[x=epochs,y=validation]{\dropout};
-			\addlegendentry{validation}
-			
-			
-			\end{axis}
-			\end{tikzpicture}
-		}\captionof{figure}{Dropout plot}\label{dsad}		     
-	\end{minipage}
-	
-	\subsection{L2 regularization}
-	$L2$ regularization is a technique designed to prevent neural network from overfitting training dataset. The key idea behind this method is keeping network weights from growing too large unless it is really necessary. It can be realized by adding a term $\lambda ||W||^2_F $ to the cost function that penalizes large weights, where $||W||_F $ is
-	a Frobenius norm, and $\lambda$ is parameter governing how strongly large weights are penalized \cite{L2}.
-	
-	\todoplot{TODO}
-	
-	\section{Recurrent unit type}
-	In section \ref{sec:layers} we mentioned bidirectional recurrent layers. Three most commonly used ones are vanilla \textbf{Recurrent Neural Networks} (RNN) \cite{RNN}, \textbf{Long Short Term Memory Unit} (LSTM) \cite{LSTM} and \textbf{Gated Recurrent Unit} (GRU) \cite{GRU}. We will deliver a brief description of these units based on \cite{DS2}.
-	
-	Let's denote by $l$ the layer number. A bidirectional recurrent layer $h^l$ consist of a forward recurrent layer $\overrightarrow{h^l}$ and a backward recurrent layer $\overleftarrow{h^l}$. The forward and backward recurrent layer activations for time $t$ are computed as $\overrightarrow{h^l_t} = g(\overrightarrow{h^l_{t - 1}}, h^{l-1}_t)$ and $\overleftarrow{h^l_t} = g(\overleftarrow{h^l_{t+1}}, h^{l-1}_t)$. In the end, we add both partial layers to get $h^l = \overrightarrow{h^l} + \overleftarrow{h^l}$.
-	
-	Function $g$ mentioned before depends on specific recurrent unit type. For vanilla RNN it is just
-	$$\overrightarrow{h^l_t} = f(W^l h^{l-1}_t + \overrightarrow{U^l} \overrightarrow{h^l_{t - 1}} + b^l)$$
-	and analogically for the backward recurrent layer. Here $W^l$ and $\overrightarrow{U^l}$ are just weight matrices, $b^l$ is a bias vector and $f$ is an activation function (e.g. ReLU or tanh). For LSTM and GRU function $g$ is much more complex to simulate some kind of \textit{memory}.
-	
-	This is a short summary of our experiments:
-	
-	\todoplot{TODO}
-	
-	
-	And here is description of the plot above.
-	
-	\section{Performance and multi GPU scaling}
-	For training, we used machine with Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz, (which has 20 physical cores), and 256 GB of RAM. It was equipped with four Nvidia Tesla V100 GPGPUs (32 GB of global memory each), connected by NVlink.
-	
-	Figures below describe performance and scaling we achieved by utilizing more than one GPUs. Performance is measured by time in seconds it took for train for one epoch on full dataset of 1000 hours.
-	
-	\todoplot{TODO}
-	
-	And here is performance of mixed precision training.
-	
-	\todoplot{TODO}
-	
-	\section{Sortagrad and dataset sorting}
-	Training examples that we use vary in length. Longer examples may be described as more challenging. Additionally, as CTC cost function is a negative logarithm of probability, it is bigger for longer utterances. Authors of Deep Speech 2 also suspect that these longer utterances usually have bigger gradients. Their proposition for challenging varying lenght of examples is \textbf{SortaGrad}. Instead of training on minibatches in random order, in the first epoch we sort them in the increasing order of longest utterance of minibatch. From the second epoch they are shuffled again.
-	
-	This technique particularly helps models without BatchNorm but isn't without effect for the ones with. Moreover, it not only improves results, but sometimes prevents explosion of gradients in the early stages of training. Here are our results on models with and without SortaGrad/BatchNorm:
-	
-	\todoplot{TODO}
-	
-	\section{Initialization}
-	\subsection{Xavier initialization}
-	We use Xavier initialization \cite{XAVIER} for weights in our model. It is a heuristic random initialization of trainable weights in a neural network that assigns values sampled from normal distribution $$\mathcal{N}\left(0, \sqrt{\frac{2}{N_{in} + N_{out}}}\right)$$ where $N_{in}$ is number of inputs and $N_{out}$ is number of outputs of a certain layer. Parameters of the distribution are chosen in such a way that variances of input to Xavier - intialized layer and output of that layer differ slightly. This prevents exploding and diminishing values during both forward and backward pass through the network and thus speeds up learning.
-	
-	This is a comparison of training loss with and without Xavier initialization:
-	
-	\todoplot{TODO}
-	
-	\subsection{Random seed}
-	In order to rule out random chance from the results of our model we ran training on 20 random random seeds for \_ epochs. We then measuerd the mean and standard deviation of validation loss and compared it to validation loss of our best performance. The results are:
-	
-	\section{Training dataset}
-	As our dataset we use ''LibriSpeech ASR corpus'' \cite{DATA} - public ASR dataset containing 960 hours of audiobook English speech for training together with test datasets. This dataset is much smaller than the dataset used in original Deep Speech 2 paper. Unfortunately original Deep Speech 2 dataset is not publicly available and almost impossible to reproduce with limited resources. \textbf{TODO:} Zacytować prace używające LibriSpeecha
-	
-	We report our results on model trained on 460 hours of ''clean'' speech and 960 hours of combined 460 hours of ''clean'' speech and 500 hours of ''other'' speech:
-	
-	\todoplot{TODO}
-	
-	\section{Hyperparameters}
-	\textbf{TODO} Ta sekcja będzie mówiła o eksperymentach na hiperparametrach. Zakładamy, że nie trzeba będzie tutaj wyjaśniać pojęć, bo były one już wyjaśnione w rozdziale \ref{r:desc}, a tutaj będą tylko wykresy z opisami. Co dokładnie będzie na tych wykresach - jeszcze nie podjęliśmy decyzji, dlatego cały podrozdział jest jako TODO.
-	
-	\chapter{Recognizing Polish language}\label{r:polish}
-	\textbf{TODO - we are going to do some experiments in case we have enough time}
-	
-	%\section{Preparing Polish dataset}
-	%\section{Model’s architecture description}
-	%\section{Comparison of model's performance on English and Polish}
-	
-	
-	\chapter{Conclusions}\label{r:concls}
-	
-	To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also present already trained models for English and Polish as well as the results of our experiments justifying using specific hyperparameters and architecture solutions.
-	
-	\begin{thebibliography}{99}
-		\addcontentsline{toc}{chapter}{Bibliography}
-		
-		\bibitem{DS1} Hannun et al.
-		\textit{Deep Speech: Scaling up end-to-end speech recognition}, Silicon Valley AI Lab 2014, \href{https://arxiv.org/abs/1412.5567}{https://arxiv.org/abs/1412.5567}
-		
-		\bibitem{DS2} Baidu Research \textit{Deep Speech 2: End-to-End Speech Recognition in English and Mandarin}, Silicon Valley AI Lab 2015, \href{https://arxiv.org/abs/1512.02595}{https://arxiv.org/abs/1512.02595}
-		
-		\bibitem{DS3} A. Graves, S. Fernandez, F. Gomez, and J. Schmidhuber. \textit{Connectionist temporal classification:
-			Labelling unsegmented sequence data with recurrent neural networks. In ICML, pages 369-376. ACM, 2006.}
-		
-		\bibitem{DS7} A. Y. Hannun, A. L. Maas, D. Jurafsky, and A. Y. Ng. \textit{First-pass large vocabulary continuous speech recognition using bi-directional recurrent DNNs.} abs/1408.2873, 2014. \href{http://arxiv.org/abs/1408.2873}{http://arxiv.org/abs/1408.2873}
-		
-		\bibitem{DS8} Bohouta, Gamal \& Këpuska, Veton. (2017). \textit{Comparing Speech Recognition Systems (Microsoft API, Google API And CMU Sphinx).} Int. Journal of Engineering Research and Application. 2248-9622. 20-24. 10.9790/9622-0703022024.
-		
-		\bibitem{DS9} \href{https://web.stanford.edu/~jurafsky/slp3/3.pdf}{https://web.stanford.edu/~jurafsky/slp3/3.pdf}
-		
-		\bibitem{MPT} \href{https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/}
-		{https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/}
-		
-		\bibitem{APEX} \href{https://devblogs.nvidia.com/apex-pytorch-easy-mixed-precision-training/}{https://devblogs.nvidia.com/apex-pytorch-easy-mixed-precision-training/}
-		
-		\bibitem{APEX_DOCS} \href{https://nvidia.github.io/apex/amp.html}{https://nvidia.github.io/apex/amp.html}
-		
-		\bibitem{LOSS_SCALING} \href{https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/index.html}{https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/index.html}
-		
-		\bibitem{RNN} M. Schuster \& K. K. Paliwal. \textit{Bidirectional recurrent neural networks. IEEE Transactions on Signal Processing, 45(11):2673–2681, 1997} \href{https://pdfs.semanticscholar.org/4b80/89bc9b49f84de43acc2eb8900035f7d492b2.pdf}{https://pdfs.semanticscholar.org/4b80/89bc9b49f84de43acc2eb8900035f7d492b2.pdf}
-		
-		\bibitem{LSTM} S. Hochreiter \& J. Schmidhuber. \textit{Long short-term memory. Neural Computation, 9(8):1735—1780, 1997} \href{https://www.bioinf.jku.at/publications/older/2604.pdf}{https://www.bioinf.jku.at/publications/older/2604.pdf}
-		
-		\bibitem{GRU} Kyunghyun Cho, Bart van Merrienboer, Dzmitry Bahdanau, Yoshua Bengio \textit{On the Properties of Neural Machine Translation: Encoder-Decoder Approaches} \href{https://arxiv.org/pdf/1409.1259.pdf}{https://arxiv.org/pdf/1409.1259.pdf}
-		
-		\bibitem{L2} Anders Krogh, John A. Hertz \textit{A Simple Weight Decay Can Improve Generalization} \href{https://papers.nips.cc/paper/563-a-simple-weight-decay-can-improve-generalization.pdf}{https://papers.nips.cc/paper/563-a-simple-weight-decay-can-improve-generalization.pdf}
-		
-		\bibitem{BN} Sergey Ioffe, Christian Szegedy \textit{Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift} \href{https://arxiv.org/pdf/1502.03167.pdf}{https://arxiv.org/pdf/1502.03167.pdf}
-		
-		\bibitem{DROPW} David Warde-Farley, Ian J. Goodfellow, Aaron Courville, Yoshua Bengio \textit{An empirical analysis of dropout in piecewise linear networks
-		} \href{https://arxiv.org/abs/1312.6197}{https://arxiv.org/abs/1312.6197}
-		
-		\bibitem{DROPG} System and method for addressing overfitting in a neural network \href{https://patents.google.com/patent/US9406017B2/en}{https://patents.google.com/patent/US9406017B2/en}
-		
-		\bibitem{XAVIER} Xavier Glorot, Yoshua Bengio \textit{Understanding the difficulty of training deep feedforward neural networks} \href{http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf}{http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf}
-		
-		\bibitem{DATA} LibriSpeech ASR corpus \href{http://www.openslr.org/12/}{http://www.openslr.org/12/}
-		
-	\end{thebibliography}
-	All the files were downloaded on \bibDownloadDate
-	
+\end{minipage}
+
+\subsection{Dropout}
+Dropout is regularization strategy patented by Google \cite{DROPG}, it is used to remove neural network overfitting. The basic idea of this technique is multiplying input and hidden units, during training process, by randomly generated bit mask. \cite{DROPW}. It follows that some nodes will be inactive, set to 0, and model is prevented from complex co-adaptations.
+
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 2.02 & 0.76 \\
+   2 & 0.66 & 0.44 \\
+   3 & 0.45 & 0.33 \\
+   4 & 0.35 & 0.28 \\
+   5 & 0.29 & 0.27 \\
+   6 & 0.24 & 0.25 \\
+   7 & 0.21 & 0.24 \\
+   8 & 0.18 & 0.23 \\
+   9 & 0.16 & 0.24 \\
+   10 & 0.14 & 0.23 \\
+   11 & 0.12 & 0.23 \\
+   12 & 0.11 & 0.24 \\
+   13 & 0.10 & 0.25 \\
+   14 & 0.09 & 0.25 \\
+   15 & 0.08 & 0.26 \\
+   16 & 0.07 & 0.26 \\
+   17 & 0.07 & 0.26 \\
+   18 & 0.06 & 0.27 \\
+}\dropouticm
+
+
+
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\makebox[\linewidth]{%        to center the image
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 0, ymax = 2,
+            xmin = 0, xmax = 13,
+            minor y tick num = 4,
+            minor x tick num = 1,
+            ymajorgrids = true,
+            grid style = dashed,
+            scaled x ticks = false,
+            xlabel = Epochs,
+            ylabel = CTC Loss,
+            legend pos=outer north east,
+            no markers
+          ]
+		  \addplot table[x=epochs,y=training]{\dropouticm};
+			\addlegendentry{training without dropout}		  
+		  \addplot table[x=epochs,y=validation]{\dropouticm};
+			\addlegendentry{validation without dropout}
+		  \addplot table[x=epochs,y=training]{\amp};
+			\addlegendentry{normal training}		  
+		  \addplot table[x=epochs,y=validation]{\amp};
+			\addlegendentry{normal validation}
+		  
+		  
+
+		\end{axis}
+		\end{tikzpicture}
+		}\captionof{figure}{Dropout plot}
+		\label{fig:dropout}		     
+\end{minipage}
+
+Figure \ref{fig:dropout} presents results of our experiments with and without dropout. One can see that dropout has the biggest impact in the begging of the training but as the time goes by, results of both versions are getting similar. However, if one don't have enough time to train model for multiple epochs, dropout is necessary to achieve good results. Our final WER results are \textbf{TODO} for net with dropout and \textbf{TODO} for net without dropout. 
+
+
+\subsection{L2 regularization}
+$L2$ regularization is a technique designed to prevent neural network from overfitting training dataset. The key idea behind this method is keeping network weights from growing too large unless it is really necessary. It can be realized by adding a term $\lambda ||W||^2_F $ to the cost function that penalizes large weights, where $||W||_F $ is
+a Frobenius norm, and $\lambda$ is parameter governing how strongly large weights are penalized \cite{L2}.
+
+\todoplot{TODO}
+
+\section{Recurrent unit type}
+In section \ref{sec:layers} we mentioned bidirectional recurrent layers. Three most commonly used ones are vanilla \textbf{Recurrent Neural Networks} (RNN) \cite{RNN}, \textbf{Long Short Term Memory Unit} (LSTM) \cite{LSTM} and \textbf{Gated Recurrent Unit} (GRU) \cite{GRU}. We will deliver a brief description of these units based on \cite{DS2}.
+
+Let's denote by $l$ the layer number. A bidirectional recurrent layer $h^l$ consist of a forward recurrent layer $\overrightarrow{h^l}$ and a backward recurrent layer $\overleftarrow{h^l}$. The forward and backward recurrent layer activations for time $t$ are computed as $\overrightarrow{h^l_t} = g(\overrightarrow{h^l_{t - 1}}, h^{l-1}_t)$ and $\overleftarrow{h^l_t} = g(\overleftarrow{h^l_{t+1}}, h^{l-1}_t)$. In the end, we add both partial layers to get $h^l = \overrightarrow{h^l} + \overleftarrow{h^l}$.
+
+Function $g$ mentioned before depends on specific recurrent unit type. For vanilla RNN it is just
+$$\overrightarrow{h^l_t} = f(W^l h^{l-1}_t + \overrightarrow{U^l} \overrightarrow{h^l_{t - 1}} + b^l)$$
+and analogically for the backward recurrent layer. Here $W^l$ and $\overrightarrow{U^l}$ are just weight matrices, $b^l$ is a bias vector and $f$ is an activation function (e.g. ReLU or tanh). For LSTM and GRU function $g$ is much more complex to simulate some kind of \textit{memory}.
+
+This is a short summary of our experiments:
+
+\todoplot{TODO}
+
+
+And here is description of the plot above.
+
+\section{Performance and multi GPU scaling}
+For training, we used machine with Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz, (which has 20 physical cores), and 256 GB of RAM. It was equipped with four Nvidia Tesla V100 GPGPUs (32 GB of global memory each), connected by NVlink.
+
+Figures below describe performance and scaling we achieved by utilizing more than one GPUs. Performance is measured by time in seconds it took for train for one epoch on full dataset of 1000 hours.
+
+\todoplot{TODO}
+
+And here is performance of mixed precision training.
+
+\todoplot{TODO}
+
+\section{Sortagrad and dataset sorting}
+Training examples that we use vary in length. Longer examples may be described as more challenging. Additionally, as CTC cost function is a negative logarithm of probability, it is bigger for longer utterances. Authors of Deep Speech 2 also suspect that these longer utterances usually have bigger gradients. Their proposition for challenging varying lenght of examples is \textbf{SortaGrad}. Instead of training on minibatches in random order, in the first epoch we sort them in the increasing order of longest utterance of minibatch. From the second epoch they are shuffled again.
+
+This technique particularly helps models without BatchNorm but isn't without effect for the ones with. Moreover, it not only improves results, but sometimes prevents explosion of gradients in the early stages of training. Here are our results on models with and without SortaGrad/BatchNorm:
+
+\todoplot{TODO}
+
+\section{Initialization}
+\subsection{Xavier initialization}
+We use Xavier initialization \cite{XAVIER} for weights in our model. It is a heuristic random initialization of trainable weights in a neural network that assigns values sampled from normal distribution $$\mathcal{N}\left(0, \sqrt{\frac{2}{N_{in} + N_{out}}}\right)$$ where $N_{in}$ is number of inputs and $N_{out}$ is number of outputs of a certain layer. Parameters of the distribution are chosen in such a way that variances of input to Xavier - intialized layer and output of that layer differ slightly. This prevents exploding and diminishing values during both forward and backward pass through the network and thus speeds up learning.
+
+This is a comparison of training loss with and without Xavier initialization:
+
+\todoplot{TODO}
+
+\subsection{Random seed}
+In order to rule out random chance from the results of our model we ran training on 20 random random seeds for \_ epochs. We then measuerd the mean and standard deviation of validation loss and compared it to validation loss of our best performance. The results are:
+
+\section{Training dataset}
+As our dataset we use ''LibriSpeech ASR corpus'' \cite{DATA} - public ASR dataset containing 960 hours of audiobook English speech for training together with test datasets. This dataset is much smaller than the dataset used in original Deep Speech 2 paper. Unfortunately original Deep Speech 2 dataset is not publicly available and almost impossible to reproduce with limited resources. \textbf{TODO:} Zacytować prace używające LibriSpeecha
+
+We report our results on model trained on 460 hours of ''clean'' speech and 960 hours of combined 460 hours of ''clean'' speech and 500 hours of ''other'' speech:
+
+\todoplot{TODO}
+
+\section{Hyperparameters}
+\textbf{TODO} Ta sekcja będzie mówiła o eksperymentach na hiperparametrach. Zakładamy, że nie trzeba będzie tutaj wyjaśniać pojęć, bo były one już wyjaśnione w rozdziale \ref{r:desc}, a tutaj będą tylko wykresy z opisami. Co dokładnie będzie na tych wykresach - jeszcze nie podjęliśmy decyzji, dlatego cały podrozdział jest jako TODO.
+
+\chapter{Recognizing Polish language}\label{r:polish}
+\textbf{TODO - we are going to do some experiments in case we have enough time}
+
+%\section{Preparing Polish dataset}
+%\section{Model’s architecture description}
+%\section{Comparison of model's performance on English and Polish}
+
+
+\chapter{Conclusions}\label{r:concls}
+
+To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also present already trained models for English and Polish as well as the results of our experiments justifying using specific hyperparameters and architecture solutions.
+
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{Bibliography}
+
+\bibitem{DS1} Hannun et al.
+\textit{Deep Speech: Scaling up end-to-end speech recognition}, Silicon Valley AI Lab 2014, \href{https://arxiv.org/abs/1412.5567}{https://arxiv.org/abs/1412.5567}
+
+\bibitem{DS2} Baidu Research \textit{Deep Speech 2: End-to-End Speech Recognition in English and Mandarin}, Silicon Valley AI Lab 2015, \href{https://arxiv.org/abs/1512.02595}{https://arxiv.org/abs/1512.02595}
+
+\bibitem{DS3} A. Graves, S. Fernandez, F. Gomez, and J. Schmidhuber. \textit{Connectionist temporal classification:
+Labelling unsegmented sequence data with recurrent neural networks. In ICML, pages 369-376. ACM, 2006.}
+
+\bibitem{DS7} A. Y. Hannun, A. L. Maas, D. Jurafsky, and A. Y. Ng. \textit{First-pass large vocabulary continuous speech recognition using bi-directional recurrent DNNs.} abs/1408.2873, 2014. \href{http://arxiv.org/abs/1408.2873}{http://arxiv.org/abs/1408.2873}
+
+\bibitem{DS8} Bohouta, Gamal \& Këpuska, Veton. (2017). \textit{Comparing Speech Recognition Systems (Microsoft API, Google API And CMU Sphinx).} Int. Journal of Engineering Research and Application. 2248-9622. 20-24. 10.9790/9622-0703022024.
+
+\bibitem{DS9} \href{https://web.stanford.edu/~jurafsky/slp3/3.pdf}{https://web.stanford.edu/~jurafsky/slp3/3.pdf}
+
+\bibitem{MPT} \href{https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/}
+{https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/}
+
+\bibitem{APEX} \href{https://devblogs.nvidia.com/apex-pytorch-easy-mixed-precision-training/}{https://devblogs.nvidia.com/apex-pytorch-easy-mixed-precision-training/}
+
+\bibitem{APEX_DOCS} \href{https://nvidia.github.io/apex/amp.html}{https://nvidia.github.io/apex/amp.html}
+
+\bibitem{LOSS_SCALING} \href{https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/index.html}{https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/index.html}
+
+\bibitem{RNN} M. Schuster \& K. K. Paliwal. \textit{Bidirectional recurrent neural networks. IEEE Transactions on Signal Processing, 45(11):2673–2681, 1997} \href{https://pdfs.semanticscholar.org/4b80/89bc9b49f84de43acc2eb8900035f7d492b2.pdf}{https://pdfs.semanticscholar.org/4b80/89bc9b49f84de43acc2eb8900035f7d492b2.pdf}
+
+\bibitem{LSTM} S. Hochreiter \& J. Schmidhuber. \textit{Long short-term memory. Neural Computation, 9(8):1735—1780, 1997} \href{https://www.bioinf.jku.at/publications/older/2604.pdf}{https://www.bioinf.jku.at/publications/older/2604.pdf}
+
+\bibitem{GRU} Kyunghyun Cho, Bart van Merrienboer, Dzmitry Bahdanau, Yoshua Bengio \textit{On the Properties of Neural Machine Translation: Encoder-Decoder Approaches} \href{https://arxiv.org/pdf/1409.1259.pdf}{https://arxiv.org/pdf/1409.1259.pdf}
+
+\bibitem{L2} Anders Krogh, John A. Hertz \textit{A Simple Weight Decay Can Improve Generalization} \href{https://papers.nips.cc/paper/563-a-simple-weight-decay-can-improve-generalization.pdf}{https://papers.nips.cc/paper/563-a-simple-weight-decay-can-improve-generalization.pdf}
+
+\bibitem{BN} Sergey Ioffe, Christian Szegedy \textit{Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift} \href{https://arxiv.org/pdf/1502.03167.pdf}{https://arxiv.org/pdf/1502.03167.pdf}
+
+\bibitem{DROPW} David Warde-Farley, Ian J. Goodfellow, Aaron Courville, Yoshua Bengio \textit{An empirical analysis of dropout in piecewise linear networks
+} \href{https://arxiv.org/abs/1312.6197}{https://arxiv.org/abs/1312.6197}
+
+\bibitem{DROPG} System and method for addressing overfitting in a neural network \href{https://patents.google.com/patent/US9406017B2/en}{https://patents.google.com/patent/US9406017B2/en}
+
+\bibitem{XAVIER} Xavier Glorot, Yoshua Bengio \textit{Understanding the difficulty of training deep feedforward neural networks} \href{http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf}{http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf}
+
+\bibitem{DATA} LibriSpeech ASR corpus \href{http://www.openslr.org/12/}{http://www.openslr.org/12/}
+
+\end{thebibliography}
+All the files were downloaded on \bibDownloadDate
+
 \end{document}
 
 
@@ -599,3 +604,4 @@
 %%% TeX-master: t
 %%% coding: latin-2
 %%% End:
+
