@@ -84,8 +84,8 @@
 \autorii{Wojciech Przybyszewski}{386044}
 \autoriii{Jan Tabaszewski}{386319}
 
-\title{NVIDIA Deep Speech}
-\titlepl{NVIDIA Deep Speech}
+\title{Deep Learning for speech recognition -- Deep Speech 2}
+\titlepl{Rozpoznawanie mowy metodami głębokiego uczenia -- Deep Speech 2}
 
 %\tytulang{An implementation of a difference blabalizer based on the theory of $\sigma$ -- $\rho$ phetors}
 
@@ -149,7 +149,7 @@
 
 %tu idzie streszczenie na strone poczatkowa
 \begin{abstract}
-  The authors of this thesis focus on implementing scripts for training DeepSpeech2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper \cite{DS2} using \texttt{PyTorch} framework. We also experiment with obtaining dataset for Polish language and trying DeepSpeech2 model for it. Finally, we provide fully trained models for English and Polish together with statistics about how changing hyperparameters and architecture impacts model's performance and accuracy.
+  The authors of this thesis focus on implementing scripts for training DeepSpeech2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper \cite{DS2} using \texttt{PyTorch} framework.We provide fully trained models for English language together with statistics about how changing hyperparameters and architecture impacts model's performance and accuracy.
 \end{abstract}
 
 \tableofcontents
@@ -160,11 +160,11 @@
 \addcontentsline{toc}{chapter}{Introduction}
 Transcription of spoken language is a crucial problem for many areas of modern technology industry. Being able to communicate with electronic devices not only by touching them, but also by talking to them is an important goal for IT companies. Such devices are more user-friendly so it is undoubtedly beneficial for everybody. To achieve this goal, various solutions were proposed, and many of them use complex algorithms (e.g. Hidden Markov Models) \cite{DS1}. However, it has been shown that the best accuracy can be achieved with Automatic Speech Recognition (ASR) models based on neural networks \cite{DS2}.
 
-Our thesis concentrates on implementing state of the art ASR model Deep Speech 2 (DS2) described in \cite{DS2} and we realize it with the support of NVIDIA Corporation. Authors of Deep Speech 2 prepared their model only for recognizing English and Mandarin, so we plan to experiment with applying it to Polish language as well. We think, it is the biggest challenge, since accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset (therefore, we have to find appropriate one and prepare it adequately). Large size of the dataset creates another problem -- we need our model to be able to train on that data in a reasonable time. We also want it to work in real time after training. Last but not least, in order to determine the best hyperparameters we have to run many experiments, collect their results, and finally analyze them.
+Our thesis concentrates on implementing state of the art ASR model Deep Speech 2 (DS2) described in \cite{DS2} and we realize it with the support of NVIDIA Corporation. Authors of Deep Speech 2 showed that accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset (therefore, we have to find appropriate one and prepare it adequately). Large size of the dataset creates another problem -- we need our model to be able to train on that data in a reasonable time. We also want it to work in real time after training. Last but not least, in order to determine the best hyperparameters we have to run many experiments, collect their results, and finally analyze them.
 
-In order to accomplish our goals we are going to implement DeepSpeech2 model using \texttt{PyTorch} deep learning framework, which supports parallel processing using GPUs. To achieve high performance system, we plan to use open-source libraries prepared by NVIDIA, which make it possible to train one neural network on multiple GPUs. Another optimization, which we expect to speed up computations, is using half precision floating-point numbers (also known as FP16) together with single precision. When it comes to collecting datasets, we assume it should be relatively easy for English as there are lots of free English utterances with transcriptions. However, for spoken corpus of Polish it may be harder -- we are going to search for Polish speech collected for university programs and from audiobooks.
+In order to accomplish our goals we are going to implement DeepSpeech2 model using \texttt{PyTorch} deep learning framework, which supports parallel processing using GPUs. To achieve high performance system, we plan to use open-source libraries prepared by NVIDIA, which make it possible to train one neural network on multiple GPUs. Another optimization, which we expect to speed up computations, is using half precision floating-point numbers (also known as FP16) together with single precision. When it comes to collecting datasets, we plan to use one of free datasets available online, so our results are easy to reproduce.
 
-The structure of our thesis is as follows. In Chapter \ref{r:desc} we introduce architecture of Deep Speech 2 model in terms of, among others, used layers, data flow and functions. After that, in Chapter \ref{r:experiments}, we present applied optimizations which increased network performance together with experiments results. In Chapter \ref{r:polish} we describe how we modified and trained neural network to detect Polish language and compare obtained results with English model. Finally, in Chapter \ref{r:concls}, we summarize our experiments, show their results and present final version of the model.
+The structure of our thesis is as follows. In Chapter \ref{r:desc} we introduce architecture of Deep Speech 2 model in terms of, among others, used layers, data flow and functions. After that, in Chapter \ref{r:experiments}, we present applied optimizations which increased network performance together with experiments results. Finally, in Chapter \ref{r:concls}, we summarize all our results and achieved goals.
 
 \textbf{TODO - opisać podział pracy zgodnie z tym, jak to się rzeczywiście potoczyło}
 
@@ -572,13 +572,6 @@ We report our results on model trained on 460 hours of ''clean'' speech and 960 
 
 \section{Hyperparameters}
 \textbf{TODO} Ta sekcja będzie mówiła o eksperymentach na hiperparametrach. Zakładamy, że nie trzeba będzie tutaj wyjaśniać pojęć, bo były one już wyjaśnione w rozdziale \ref{r:desc}, a tutaj będą tylko wykresy z opisami. Co dokładnie będzie na tych wykresach - jeszcze nie podjęliśmy decyzji, dlatego cały podrozdział jest jako TODO.
-
-\chapter{Recognizing Polish language}\label{r:polish}
-\textbf{TODO - we are going to do some experiments in case we have enough time}
-
-%\section{Preparing Polish dataset}
-%\section{Model’s architecture description}
-%\section{Comparison of model's performance on English and Polish}
 
 
 \chapter{Conclusions}\label{r:concls}
