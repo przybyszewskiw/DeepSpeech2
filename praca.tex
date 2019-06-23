@@ -692,9 +692,6 @@ This is a comparison of training loss with and without Xavier initialization:
 
 One can easily see in the figure \ref{fig:xavier} that Xavier initialization outperforms no initialization in the early stage of training. After around 10 epochs both models have more or less the same training and validation loss -- it means that when we train model for a longer time benefits of a proper initialization are not so important. Final WER in both cases is \textbf{TODO} and \textbf{TODO} for model with Xavier initialization and no initialization respectively. 
 
-\subsection{Random seed}
-In order to rule out random chance from the results of our model we ran training on 20 random random seeds for \_ epochs. We then measuerd the mean and standard deviation of validation loss and compared it to validation loss of our best performance. The results are:
-
 \section{Training dataset}
 As our dataset we use ''LibriSpeech ASR corpus'' \cite{DATA} - public ASR dataset containing 960 hours of audiobook English speech for training together with test datasets. This dataset is much smaller than the dataset used in original Deep Speech 2 paper. Unfortunately original Deep Speech 2 dataset is not publicly available and almost impossible to reproduce with limited resources. However, many other works rely on Librispeech as their dataset \cite{LIBRI-EX}.
 
