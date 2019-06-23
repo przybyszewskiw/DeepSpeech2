@@ -607,13 +607,16 @@ Figures below describe performance and scaling we achieved by utilizing more tha
 \centering
 \begin{tabular}{|c|c|c|}
         \hline
-        1 GPU & 2 GPU & 4 GPU \\
+        number of GPUs & time in minutes & speedup \\
         \hline
+        1 GPU & 119 & 1 \\
         \hline
-        119 & 56 & 36 \\
+        2 GPUs & 75 & 1.57 \\
+        \hline
+        4 GPUs & 35 & 3.37 \\
         \hline
     \end{tabular}
-\captionof{table}{Epoch training time in minutes}
+\captionof{table}{Epoch training time comparison}
 }
 
 For $11$ epochs long mixed precision training on 4 GPUs standard deviation of an epoch time was approximately $14$ seconds. It shows that network is scalable, and can be extended to more GPUs.
