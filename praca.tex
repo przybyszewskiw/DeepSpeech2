@@ -435,6 +435,49 @@ a Frobenius norm, and $\lambda$ is parameter governing how strongly large weight
 Performed experiments showed that applying L2 regularization does not have positive effect on loss function convergence. With weight decay scale equal to $0.0005$ CTC loss oscillated around $1$.
 
 \section{Recurrent unit type}
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 1.34 & 0.59 \\
+   2 & 0.57 & 0.38 \\
+   3 & 0.41 & 0.28 \\
+   4 & 0.32 & 0.27 \\
+   5 & 0.27 & 0.25 \\
+   6 & 0.23 & 0.25 \\
+   7 & 0.20 & 0.25 \\
+   8 & 0.17 & 0.25 \\
+   9 & 0.15 & 0.21 \\
+   10 & 0.13 & 0.26 \\
+   11 & 0.12 & 0.22 \\
+   12 & 0.11 & 0.26 \\
+}\rnn
+
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 1.44 & 0.79 \\
+   2 & 0.78 & 0.57 \\
+}\gru
+
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 1.14 & 0.39 \\
+   2 & 0.37 & 0.25 \\
+   3 & 0.23 & 0.21 \\
+   4 & 0.16 & 0.20 \\
+   5 & 0.11 & 0.18 \\
+   6 & 0.08 & 0.19 \\
+   7 & 0.06 & 0.21 \\
+   8 & 0.05 & 0.22 \\
+   9 & 0.04 & 0.23 \\
+   10 & 0.03 & 0.23 \\
+   11 & 0.03 & 0.22 \\
+   12 & 0.03 & 0.24 \\
+   13 & 0.02 & 0.27 \\
+   14 & 0.02 & 0.25 \\
+   15 & 0.02 & 0.27 \\
+   16 & 0.02 & 0.26 \\
+   17 & 0.01 & 0.27 \\
+}\lstm
+
 In section \ref{sec:layers} we mentioned bidirectional recurrent layers. Three most commonly used ones are vanilla \textbf{Recurrent Neural Networks} (RNN) \cite{RNN}, \textbf{Long Short Term Memory Unit} (LSTM) \cite{LSTM} and \textbf{Gated Recurrent Unit} (GRU) \cite{GRU}. We will deliver a brief description of these units based on \cite{DS2}.
 
 Let's denote by $l$ the layer number. A bidirectional recurrent layer $h^l$ consist of a forward recurrent layer $\overrightarrow{h^l}$ and a backward recurrent layer $\overleftarrow{h^l}$. The forward and backward recurrent layer activations for time $t$ are computed as $\overrightarrow{h^l_t} = g(\overrightarrow{h^l_{t - 1}}, h^{l-1}_t)$ and $\overleftarrow{h^l_t} = g(\overleftarrow{h^l_{t+1}}, h^{l-1}_t)$. In the end, we add both partial layers to get $h^l = \overrightarrow{h^l} + \overleftarrow{h^l}$.
@@ -443,32 +486,102 @@ Function $g$ mentioned before depends on specific recurrent unit type. For vanil
 $$\overrightarrow{h^l_t} = f(W^l h^{l-1}_t + \overrightarrow{U^l} \overrightarrow{h^l_{t - 1}} + b^l)$$
 and analogically for the backward recurrent layer. Here $W^l$ and $\overrightarrow{U^l}$ are just weight matrices, $b^l$ is a bias vector and $f$ is an activation function (e.g. ReLU or tanh). For LSTM and GRU function $g$ is much more complex to simulate some kind of \textit{memory}.
 
-This is a short summary of our experiments:
+Below are performed experiments:
 
-\todoplot{TODO}
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\makebox[\linewidth]{%        to center the image
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 0, ymax = 2,
+            xmin = 1, xmax = 2,
+            minor y tick num = 4,
+            minor x tick num = 0,
+            ymajorgrids = true,
+            grid style = dashed,
+            scaled x ticks = false,
+            xlabel = Epochs,
+            ylabel = CTC Loss,
+            legend pos=outer north east,
+            no markers
+          ]
+		  \addplot[dashed, color=red] table[x=epochs,y=training]{\gru};
+			\addlegendentry{training with GRU}		  
+		  \addplot[color=red] table[x=epochs,y=validation]{\gru};
+			\addlegendentry{validation with GRU}
+		  \addplot[dashed, color=blue] table[x=epochs,y=training]{\rnn };
+			\addlegendentry{training with RNN}		  
+		  \addplot[color=blue] table[x=epochs,y=validation]{\rnn};
+			\addlegendentry{validation with RNN}
+		  
+		  
 
+		\end{axis}
+		\end{tikzpicture}
+		}\captionof{figure}{RNN vs GRU plot}
+		\label{fig:gru}		     
+\end{minipage}
 
-And here is description of the plot above.
+\noindent
+As we can see, GRU layer appeared to perform worse that RNN layer. 
+\\
+
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\makebox[\linewidth]{%        to center the image
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 0, ymax = 1.5,
+            xmin = 0, xmax = 12,
+            minor y tick num = 4,
+            minor x tick num = 1,
+            ymajorgrids = true,
+            grid style = dashed,
+            scaled x ticks = false,
+            xlabel = Epochs,
+            ylabel = CTC Loss,
+            legend pos=outer north east,
+            no markers
+          ]
+		  \addplot[dashed, color=red] table[x=epochs,y=training]{\lstm};
+			\addlegendentry{training with LSTM}		  
+		  \addplot[color=red] table[x=epochs,y=validation]{\lstm};
+			\addlegendentry{validation with LSTM}
+		  \addplot[dashed, color=blue] table[x=epochs,y=training]{\rnn };
+			\addlegendentry{training with RNN}		  
+		  \addplot[color=blue] table[x=epochs,y=validation]{\rnn};
+			\addlegendentry{validation with RNN}
+		  
+		  
+
+		\end{axis}
+		\end{tikzpicture}
+		}\captionof{figure}{RNN vs LSTM plot}
+		\label{fig:lstm}		     
+\end{minipage}
+
+Validation loss with LSTM layer appeared to convergence faster than validation loss with RNN layer. Because of the time table below we have decided to use RNN as a benchmark.
+
+{
+\centering
+\begin{tabular}{|c|c|c|}
+        \hline
+        RNN & GRU & LSTM \\
+        \hline
+        \hline
+        36 & 59 & 43 \\
+        \hline
+    \end{tabular}
+\captionof{table}{Epoch training time in minutes}
+}
+
 
 \section{Performance and multi GPU scaling}
 For training, we used machine with Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz, (which has 20 physical cores), and 256 GB of RAM. It was equipped with four Nvidia Tesla V100 GPGPUs (32 GB of global memory each), connected by NVlink.
 
 Figures below describe performance and scaling we achieved by utilizing more than one GPUs. Performance is measured by time in seconds it took for train for one epoch on full dataset of 960 hours.
 
-\parbox{.45\linewidth}{
-\centering
-\begin{tabular}{|c|c|c|}
-        \hline
-        1 GPU & 2 GPU & 4 GPU \\
-        \hline
-        \hline
-        \textbf{???} & \textbf{???} & \textbf{???} \\
-        \hline
-    \end{tabular}
-\captionof{table}{Full precision training time}
-}
-\hfill
-\parbox{.45\linewidth}{
+{
 \centering
 \begin{tabular}{|c|c|c|}
         \hline
@@ -478,17 +591,11 @@ Figures below describe performance and scaling we achieved by utilizing more tha
         119 & 56 & 36 \\
         \hline
     \end{tabular}
-\captionof{table}{Mixed precision training time}
+\captionof{table}{Epoch training time in minutes}
 }
 
 For $11$ epochs long mixed precision training on 4 GPUs standard deviation of an epoch time was approximately $14$ seconds. It shows that network is scalable, and can be extended to more GPUs.
 
-
-\todoplot{TODO}
-
-And here is performance of mixed precision training.
-
-\todoplot{TODO}
 
 \section{Sortagrad and dataset sorting}
 Training examples that we use vary in length. Longer examples may be described as more challenging. Additionally, as CTC cost function is a negative logarithm of probability, it is bigger for longer utterances. Authors of Deep Speech 2 also suspect that these longer utterances usually have bigger gradients. Their proposition for challenging varying lenght of examples is \textbf{SortaGrad}. Instead of training on minibatches in random order, in the first epoch we sort them in the increasing order of longest utterance of minibatch. From the second epoch they are shuffled again.
