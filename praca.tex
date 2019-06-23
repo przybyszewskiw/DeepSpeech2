@@ -623,11 +623,9 @@ For $11$ epochs long mixed precision training on 4 GPUs standard deviation of an
 
 
 \section{Sortagrad and dataset sorting}
-Training examples that we use vary in length. Longer examples may be described as more challenging. Additionally, as CTC cost function is a negative logarithm of probability, it is bigger for longer utterances. Authors of Deep Speech 2 also suspect that these longer utterances usually have bigger gradients. Their proposition for challenging varying lenght of examples is \textbf{SortaGrad}. Instead of training on minibatches in random order, in the first epoch we sort them in the increasing order of longest utterance of minibatch. From the second epoch they are shuffled again.
+Training examples that we use vary in length. Longer examples may be described as more challenging. Additionally, as CTC cost function is a negative logarithm of probability, it gets bigger for longer utterances. Authors of Deep Speech 2 also suspect that these longer utterances usually have bigger gradients. Their proposition for challenging varying lenght of examples is \textbf{SortaGrad}. Instead of training on minibatches in random order, in the first epoch we sort them in the increasing order of longest utterance of minibatch. From the second epoch they are shuffled again.
 
-This technique particularly helps models without BatchNorm but isn't without effect for the ones with. Moreover, it not only improves results, but sometimes prevents explosion of gradients in the early stages of training. Here are our results on models with and without SortaGrad/BatchNorm:
-
-\todoplot{TODO}
+Unfortunately, Apex AMP only supports shuffling dataset for distributed training. Therefore we were not able to test, how sortagrad would affect our results.
 
 \section{Initialization}
 \pgfplotstableread[row sep=\\,col sep=&]{
@@ -698,6 +696,8 @@ As our dataset we use ''LibriSpeech ASR corpus'' \cite{DATA} - public ASR datase
 We report our results on model trained on 460 hours of ''clean'' speech and 960 hours of combined 460 hours of ''clean'' speech and 500 hours of ''other'' speech:
 
 \todoplot{TODO}
+
+Final WER is \textbf{TODO} for model trained on 460 hours dataset and \textbf{TODO} for model trained on 960 hours dataset.
 
 \section{Hyperparameters}
 To achieve the best accuracy and performance we had to determine what should be values of hyperparameters (e.g. learning rate, batch size, convolutional kernel size, number of features in fully connected layer etc.). We did it by training our network many times with various combinations of mentioned hyperparameters. We looked at results and, according to our intuitions, tried to modify them to achieve better accuracy. What we present in final training scripts is the best combination we found. Probably, there are better ones, but what we have allows us to train model and achieve state the art accuracy.
