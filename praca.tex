@@ -338,8 +338,8 @@
 		\label{fig:amp}
 	\end{figure}
 	
-	Figure \ref{fig:amp} presents comparison of training process with and without AMP, denoted as MP (standing for Mixed Precision) and FP32 respectively. We used the same architecture and the same hyperparameters in both cases. One epoch in FP32 lasted for around $135$ minutes, while in mixed precision only $75$ minutes. Therefore, we got $1.8$ speedup. When it comes to the performance, one can see from the figure \ref{fig:amp} that the training loss was falling more or less in the same way. To measure models performance we calculated the validation loss - loss function on all examples from the validation dataset. The reason for this is that computing the validation loss is less computationally expensive then WER. We found that validation loss was always a bit lower for FP32 training. Figure \ref{fig:wer} shows that FP32 model was a bit better also in WER as final WER for FP32 was $13.1$\% and for MP it was $14.4$\%. Looking at validation loss, we can conclude, that we can use it as a convenient metric to know when we should stop trainig and we can calculate loss function only after training is finished. What's more, we decided to run rest of experiments only with AMP as it gives us comparable results as usual FP32 training and is much faster.
-	\textbf{Z uwagi na nasz błąd te liczby na wykresie będą jeszcze raz policzone i nieznacznie się zmienią. Co więcej, w kolejnych podrodziałach liczba 12.77\% również ulegnie zmianie -- pozostałe będą takie same.}
+	Figure \ref{fig:amp} presents comparison of training process with and without AMP, denoted as MP (standing for Mixed Precision) and FP32 respectively. We used the same architecture and the same hyperparameters in both cases. One epoch in FP32 lasted for around $135$ minutes, while in mixed precision only $75$ minutes. Therefore, we got $1.8$ speedup. When it comes to the performance, one can see from the figure \ref{fig:amp} that the training loss was falling more or less in the same way. To measure models performance we calculated the validation loss - loss function on all examples from the validation dataset. The reason for this is that computing the validation loss is less computationally expensive then WER. We found that validation loss was always a bit lower for FP32 training. Figure \ref{fig:wer} shows that FP32 model was a bit better also in WER as final WER for FP32 was $13.1$\% and for MP it was $13.84$\%. Looking at validation loss, we can conclude, that we can use it as a convenient metric to know when we should stop trainig and we can calculate loss function only after training is finished. What's more, we decided to run rest of experiments only with AMP as it gives us comparable results as usual FP32 training and is much faster.
+	\textbf{Z uwagi na nasz błąd te liczby na wykresie 2.2 będą jeszcze raz policzone i nieznacznie się zmienią.}
 	
 	\pgfplotstableread[row sep=\\,col sep=&]{
 		epochs & amp & noamp \\ 
@@ -378,104 +378,7 @@
 		\caption{Comparison of WER with and without AMP.}
 		\label{fig:wer}
 	\end{figure}
-	
-	\section{Language model and decoding predictions}
-	\textbf{$N$-gram language model} is a model of a language in which we assign probabilities of occurrence to sequences of N words based on some large unlabelled text data. Incorporating model to prediction decoding helps avoid typos which are usually phonetically plausible and often occur on words that rarely or never occur in training set. We use Librispeech 4-gram language model available in \cite{LM-LINK}.
-	
-	Performances with the language model in comparison to no language model are 12.77\% WER and 13.35\% WER.
-	
-	At the beginning we also experimented with an easier language model that assigned probabilities to sequences of letters as it was much smaller and simpler. Unfortunately WER was increasing after applying such LM so we abandoned this idea for the bigger and more reliable N-gram LM.
-	
-	\section{Regularization}
-	\subsection{Batch normalization}
-	Batch normalization is a technique for improving the speed, performance, and stability of artificial neural networks, primarily introduced to reduce internal covariate shift \cite{BN}. Method based on the idea of normalizing data within each mini-batch using stochastic optimizations for mean and variance.
-	
-	Denote by $B$ mini-batch of a training set, by $m$ size of $B$. If input is $d$--dimensional: $x = (x^{(1)}, x^{(2)}, \ldots, x^{(d)})$, we calculate mean and variance as follows:
-	$$\mu^{(k)} = \frac{1}{m}\sum_{i=1}^m x^{(k)}_i$$
-	
-	$$ \sigma^{{(k)}^2} = \frac{1}{m-1} \sum_{i = 1}^{m} \left(x^{(k)}_i - \mu^{(k)}\right) ^ 2.$$
-	Next step is normalization:
-	
-	$$
-	\hat{x} ^ {(k)} _ i = \frac{x^{(k)}_i - \mu^{(k)}} {\sqrt{ \sigma^{{(k)}^2} + \epsilon}}
-	$$
-	where $\epsilon$ is small constant added for numerical stability. Finally we scale and shift normalized data:
-	
-	$$ y^{(k)}_i = \gamma^{(k)} \hat{x}^{(k)}_i + \beta^{(k)}$$
-	where $\gamma^{(k)}$ and $\beta^{(k)}$ are learnable parameters.
-	
-	In our model we use batch normalization after each convolutional layer. When we tried training our model without batch normalization layers, we found out that model didn't learn. Training loss was very high, over $2.5$, and validation loss was NaN. That experiment clearly shows that batch normalization is crucial for proper model training and without it we can't expect model to work correctly.
-	
-	\subsection{Dropout}
-	Dropout is regularization strategy patented by Google \cite{DROPG}, it is used to remove neural network overfitting. The basic idea of this technique is multiplying input and hidden units, during training process, by randomly generated bit mask (or in other words with a given probability we decide whether or not given neuron will be used in the next iteration) \cite{DROPW}. It follows that some nodes will be inactive, set to 0, and model is prevented from complex co-adaptations.
-	
-	\pgfplotstableread[row sep=\\,col sep=&]{
-		epochs & training & validation \\ 
-		1 & 2.02 & 0.76 \\
-		2 & 0.66 & 0.44 \\
-		3 & 0.45 & 0.33 \\
-		4 & 0.35 & 0.28 \\
-		5 & 0.29 & 0.27 \\
-		6 & 0.24 & 0.25 \\
-		7 & 0.21 & 0.24 \\
-		8 & 0.18 & 0.23 \\
-		9 & 0.16 & 0.24 \\
-		10 & 0.14 & 0.23 \\
-		11 & 0.12 & 0.23 \\
-		12 & 0.11 & 0.24 \\
-		13 & 0.10 & 0.25 \\
-		14 & 0.09 & 0.25 \\
-		15 & 0.08 & 0.26 \\
-		16 & 0.07 & 0.26 \\
-		17 & 0.07 & 0.26 \\
-		18 & 0.06 & 0.27 \\
-	}\dropouticm
-	
-	
-	
-	\noindent%
-	\begin{minipage}{\linewidth}% to keep image and caption on one page
-		\makebox[\linewidth]{%        to center the image
-			\begin{tikzpicture}
-			\begin{axis}[
-			ymin = 0, ymax = 2,
-			xmin = 0, xmax = 13,
-			minor y tick num = 4,
-			minor x tick num = 1,
-			ymajorgrids = true,
-			grid style = dashed,
-			scaled x ticks = false,
-			xlabel = Epochs,
-			ylabel = CTC Loss,
-			legend pos=outer north east,
-			no markers
-			]
-			\addplot[dashed, color=red] table[x=epochs,y=training]{\dropouticm};
-			\addlegendentry{training without dropout}
-			\addplot[color=red] table[x=epochs,y=validation]{\dropouticm};
-			\addlegendentry{validation without dropout}
-			\addplot[dashed, color=blue] table[x=epochs,y=training]{\amp};
-			\addlegendentry{normal training}		  
-			\addplot[color=blue] table[x=epochs,y=validation]{\amp};
-			\addlegendentry{normal validation}
-			
-			
-			
-			\end{axis}
-			\end{tikzpicture}
-		}\captionof{figure}{Dropout plot}
-		\label{fig:dropout}		     
-	\end{minipage}
-	
-	Figure \ref{fig:dropout} presents results of our experiments with and without dropout. One can see that dropout has the biggest impact in the beginning of the training but as the time goes by, results of both versions are getting similar. However, if one don't have enough time to train model for multiple epochs, dropout is necessary to achieve good results. Our final WER results are 12.77\% WER for net with dropout and 17\% WER for net without dropout.
-	
-	
-	\subsection{L2 regularization}
-	$L2$ regularization is a technique designed to prevent neural network from overfitting training dataset. The key idea behind this method is keeping network weights from growing too large unless it is really necessary. It can be realized by adding a term $\lambda ||W||^2_F $ to the cost function that penalizes large weights, where $||W||_F $ is
-	a Frobenius norm, and $\lambda$ is parameter governing how strongly large weights are penalized \cite{L2}.
-	
-	Performed experiments showed that applying L2 regularization does not have positive effect on loss function convergence. With weight decay scale equal to $0.0005$ CTC loss oscillated around $1$.
-	
+
 	\section{Recurrent unit type}
 	\pgfplotstableread[row sep=\\,col sep=&]{
 		epochs & training & validation \\ 
@@ -582,7 +485,7 @@
 	\end{minipage}
 	
 	\noindent
-	As we can see in the figure \ref{fig:gru} there is a noticeable difference in training loss of GRU and RNN layers. In fact, GRU layer achieved WER of $17.45$\% while RNN layer achieved $12.77$\%.
+	As we can see in the figure \ref{fig:gru} there is a noticeable difference in training loss of GRU and RNN layers. In fact, GRU layer achieved WER of $15.9$\% while RNN layer achieved $13.84$\%.
 	\\
 	
 	\noindent%
@@ -619,7 +522,7 @@
 		\label{fig:lstm}		     
 	\end{minipage}
 	
-	Validation loss with LSTM layer appeared to convergence faster than validation loss with RNN layer. In fact, it achieved better WER. Nevertheless we decided to use vanilla RNN as it's faster -- it is shown in table \ref{tab:rec}.
+	Validation loss with LSTM layer appeared to converge faster than validation loss with RNN layer. In fact, it achieved better WER. Nevertheless we decided to use vanilla RNN in our experiments as it's faster -- it is shown in table \ref{tab:rec}.
 	
 	{
 		\centering
@@ -635,7 +538,106 @@
 		\label{tab:rec}
 	}
 	
-	WER results with GRU and LSTM are 17.45\% and 13.46\% respectively compared to 12.77\% of vanilla RNN.
+	WER results with GRU and LSTM are $15.9$\% and $12.38$\% respectively compared to $13.84$\% of vanilla RNN.
+
+	\section{Language model and decoding predictions}
+	\textbf{$N$-gram language model} is a model of a language in which we assign probabilities of occurrence to sequences of N words based on some large unlabelled text data. Incorporating model to prediction decoding helps avoid typos which are usually phonetically plausible and often occur on words that rarely or never occur in training set. We use Librispeech 4-gram language model available in \cite{LM-LINK}.
+	
+	Performances with the language model in comparison to no language model are $13.84$\% WER and $14.22$\% WER.
+	
+	At the beginning we also experimented with an easier language model that assigned probabilities to sequences of letters as it was much smaller and simpler. Unfortunately WER was increasing after applying such LM so we abandoned this idea for the bigger and more reliable N-gram LM.
+	
+	\section{Regularization}
+	\subsection{Batch normalization}
+	Batch normalization is a technique for improving the speed, performance, and stability of artificial neural networks, primarily introduced to reduce internal covariate shift \cite{BN}. Method based on the idea of normalizing data within each mini-batch using stochastic optimizations for mean and variance.
+	
+	Denote by $B$ mini-batch of a training set, by $m$ size of $B$. If input is $d$--dimensional: $x = (x^{(1)}, x^{(2)}, \ldots, x^{(d)})$, we calculate mean and variance as follows:
+	$$\mu^{(k)} = \frac{1}{m}\sum_{i=1}^m x^{(k)}_i$$
+	
+	$$ \sigma^{{(k)}^2} = \frac{1}{m-1} \sum_{i = 1}^{m} \left(x^{(k)}_i - \mu^{(k)}\right) ^ 2.$$
+	Next step is normalization:
+	
+	$$
+	\hat{x} ^ {(k)} _ i = \frac{x^{(k)}_i - \mu^{(k)}} {\sqrt{ \sigma^{{(k)}^2} + \epsilon}}
+	$$
+	where $\epsilon$ is small constant added for numerical stability. Finally we scale and shift normalized data:
+	
+	$$ y^{(k)}_i = \gamma^{(k)} \hat{x}^{(k)}_i + \beta^{(k)}$$
+	where $\gamma^{(k)}$ and $\beta^{(k)}$ are learnable parameters.
+	
+	In our model we use batch normalization after each convolutional layer. When we tried training our model without batch normalization layers, we found out that model didn't learn. Training loss was very high, over $2.5$, and validation loss was NaN. That experiment clearly shows that batch normalization is crucial for proper model training and without it we can't expect model to work correctly.
+	
+	\subsection{Dropout}
+	Dropout is regularization strategy patented by Google \cite{DROPG}, it is used to remove neural network overfitting. The basic idea of this technique is multiplying input and hidden units, during training process, by randomly generated bit mask (or in other words with a given probability we decide whether or not given neuron will be used in the next iteration) \cite{DROPW}. It follows that some nodes will be inactive, set to 0, and model is prevented from complex co-adaptations.
+	
+	\pgfplotstableread[row sep=\\,col sep=&]{
+		epochs & training & validation \\ 
+		1 & 2.02 & 0.76 \\
+		2 & 0.66 & 0.44 \\
+		3 & 0.45 & 0.33 \\
+		4 & 0.35 & 0.28 \\
+		5 & 0.29 & 0.27 \\
+		6 & 0.24 & 0.25 \\
+		7 & 0.21 & 0.24 \\
+		8 & 0.18 & 0.23 \\
+		9 & 0.16 & 0.24 \\
+		10 & 0.14 & 0.23 \\
+		11 & 0.12 & 0.23 \\
+		12 & 0.11 & 0.24 \\
+		13 & 0.10 & 0.25 \\
+		14 & 0.09 & 0.25 \\
+		15 & 0.08 & 0.26 \\
+		16 & 0.07 & 0.26 \\
+		17 & 0.07 & 0.26 \\
+		18 & 0.06 & 0.27 \\
+	}\dropouticm
+	
+	
+	
+	\noindent%
+	\begin{minipage}{\linewidth}% to keep image and caption on one page
+		\makebox[\linewidth]{%        to center the image
+			\begin{tikzpicture}
+			\begin{axis}[
+			ymin = 0, ymax = 2,
+			xmin = 0, xmax = 13,
+			minor y tick num = 4,
+			minor x tick num = 1,
+			ymajorgrids = true,
+			grid style = dashed,
+			scaled x ticks = false,
+			xlabel = Epochs,
+			ylabel = CTC Loss,
+			legend pos=outer north east,
+			no markers
+			]
+			\addplot[dashed, color=red] table[x=epochs,y=training]{\dropouticm};
+			\addlegendentry{training without dropout}
+			\addplot[color=red] table[x=epochs,y=validation]{\dropouticm};
+			\addlegendentry{validation without dropout}
+			\addplot[dashed, color=blue] table[x=epochs,y=training]{\amp};
+			\addlegendentry{normal training}		  
+			\addplot[color=blue] table[x=epochs,y=validation]{\amp};
+			\addlegendentry{normal validation}
+			
+			
+			
+			\end{axis}
+			\end{tikzpicture}
+		}\captionof{figure}{Dropout plot}
+		\label{fig:dropout}		     
+	\end{minipage}
+	
+	Figure \ref{fig:dropout} presents results of our experiments with and without dropout. One can see that dropout has the biggest impact in the beginning of the training but as the time goes by, results of both versions are getting similar. However, even after longer training WER results differ: $13.84$\% for net with dropout and $17$\% for net without dropout.
+	
+	
+	\subsection{L2 regularization}
+	$L2$ regularization is a technique designed to prevent neural network from overfitting training dataset. The key idea behind this method is keeping network weights from growing too large unless it is really necessary. It can be realized by adding a term $\lambda ||W||^2_F $ to the cost function that penalizes large weights, where $||W||_F $ is
+	a Frobenius norm, and $\lambda$ is parameter governing how strongly large weights are penalized \cite{L2}.
+	
+	Performed experiments showed that applying L2 regularization does not have positive effect on loss function convergence. With weight decay scale equal to $0.0005$ CTC loss oscillated around $1$.
+	
+
 	
 	\section{Performance and multi GPU scaling}
 	For training, we used machine with Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz, (which has 20 physical cores), and 256 GB of RAM. It was equipped with four Nvidia Tesla V100 GPGPUs (32 GB of global memory each), connected by NVlink.
@@ -727,7 +729,7 @@
 	\end{minipage}\\
 	
 	
-	One can easily see in the figure \ref{fig:xavier} that Xavier initialization outperforms default PyTorch initialization in the early stage of training. After around 10 epochs both models have more or less the same training and validation loss -- it means that when we train model for a longer time benefits of a proper initialization are not so important. Final WER in both cases is 12.77\% and 16.23\% for model with Xavier initialization and no initialization respectively.
+	One can easily see in the figure \ref{fig:xavier} that Xavier initialization outperforms default PyTorch initialization in the early stage of training. After around 10 epochs both models have more or less the same training and validation loss -- it means that when we train model for a longer time benefits of a proper initialization are not so important. Final WER in both cases is $13.84$\% and $16.23$\% for model with Xavier initialization and no initialization respectively.
 	
 	\section{Training dataset}
 	As our dataset we use ''LibriSpeech ASR corpus'' \cite{DATA} - public ASR dataset containing 960 hours of audiobook English speech for training together with test datasets. This dataset is much smaller than the dataset used in original Deep Speech 2 paper. Unfortunately original Deep Speech 2 dataset is not publicly available and almost impossible to reproduce with limited resources. However, many other works rely on Librispeech as their dataset \cite{LIBRI-EX}.
@@ -736,7 +738,7 @@
 	
 	\todoplot{TODO}
 	
-	Final WER is \textbf{TODO} for model trained on 460 hours dataset and 12.77\% for model trained on 960 hours dataset.
+	WER of model trained on 460 hours dataset is $24$\% and WER of the one trained on 960 hours $13.84$\%.
 	
 	\section{Hyperparameters}
 	To achieve the best accuracy and performance we had to determine what should be values of hyperparameters (e.g. learning rate, batch size, convolutional kernel size, number of features in fully connected layer etc.). We did it by training our network many times with various combinations of mentioned hyperparameters. We looked at results and, according to our intuitions, tried to modify them to achieve better accuracy. What we present in final training scripts is the best combination we found. Probably, there are better ones, but what we have allows us to train model and achieve state of the art accuracy.
@@ -746,7 +748,7 @@
 	
 	To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also provide already trained models as well as the results of our experiments justifying using specific architecture solutions.
 	
-	The best model we managed to train achieved $13.1$\% WER after training for \textbf{??} hours. One should notice that original Deep Speech 2 model trained on 1200h dataset achieved $13.8$\% WER \cite{DS2}, but it used dataset with conversations as well as monologues (and we used monologues only) -- that probably explains our better performance. Nevertheless, we can state that we managed to implement and train state of the art model for ASR.
+	The best model we managed to train achieved $12.38$\% WER after training for 9 hours. One should notice that original Deep Speech 2 model trained on 1200h dataset achieved $13.8$\% WER \cite{DS2}, but it used dataset with conversations as well as monologues (and we used monologues only) -- that probably explains our better performance. Nevertheless, we can state that we managed to implement and train state of the art model for ASR.
 	
 	We also managed to speed-up training using potential of GPUs -- we trained our model in mixed precision and used multiple GPUs for it. We also showed how exactly that optimizations speed-up training process.
 	
