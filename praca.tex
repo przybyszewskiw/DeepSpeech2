@@ -571,12 +571,18 @@ We report our results on model trained on 460 hours of ''clean'' speech and 960 
 \todoplot{TODO}
 
 \section{Hyperparameters}
-\textbf{TODO} Ta sekcja będzie mówiła o eksperymentach na hiperparametrach. Zakładamy, że nie trzeba będzie tutaj wyjaśniać pojęć, bo były one już wyjaśnione w rozdziale \ref{r:desc}, a tutaj będą tylko wykresy z opisami. Co dokładnie będzie na tych wykresach - jeszcze nie podjęliśmy decyzji, dlatego cały podrozdział jest jako TODO.
+To achieve the best accuracy and performance we had to determine what should be values of hyperparameters (e.g. learning rate, batch size, convolutional kernel size, number of features in fully connected layer etc.). We did it by training our network many times with various combinations of mentioned hyperparameters. We looked at results and, according to our intuitions, tried to modify them to achieve better accuracy. What we present in final training scripts is the best combination we found. Probably, there are better ones, but what we have allows us to train model and achieve state the art accuracy.
 
 
 \chapter{Conclusions}\label{r:concls}
 
-To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also present already trained models for English and Polish as well as the results of our experiments justifying using specific hyperparameters and architecture solutions.
+To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also present already trained models as well as the results of our experiments justifying using specific architecture solutions.
+
+The best model we managed to train achieved \textbf{??} WER after training for \textbf{??} hours. One should notice that original Deep Speech 2 model trained on 1200h dataset achieved $13.8$\% WER \cite{DS2}, but it used dataset with conversations as well as monologues (and we used monologues only) -- that probably explains our better performance. Nevertheless, we can state that we managed to implement and train state of the art model for ASR.
+
+We also managed to speed-up training using possibilities of GPUs -- we trained our model in mixed precision and used multiple GPUs for it. We showed how exactly that optimizations speed-up training process.
+
+In future we plan to use prepared model for recognizing other languages. The main problem is finding appropriate datasets - we want ones that are free and have sufficiently short utterances. If we don't find such dataset we can try generating it on our own (e.g. splitting audio-books into shorter parts). We assume that probably we will have to change some hyperparameters but the core architecture should work.
 
 \begin{thebibliography}{99}
 \addcontentsline{toc}{chapter}{Bibliography}
