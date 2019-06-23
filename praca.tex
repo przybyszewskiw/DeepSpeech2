@@ -456,8 +456,27 @@ Performed experiments showed that applying L2 regularization does not have posit
 
 \pgfplotstableread[row sep=\\,col sep=&]{
     epochs & training & validation \\ 
-   1 & 1.44 & 0.79 \\
-   2 & 0.78 & 0.57 \\
+   1 & 1.58 & 0.59 \\
+   2 & 0.54 & 0.35 \\
+   3 & 0.35 & 0.29 \\
+   4 & 0.25 & 0.25 \\
+   5 & 0.19 & 0.26 \\
+   6 & 0.15 & 0.26 \\
+   7 & 0.12 & 0.25 \\
+   8 & 0.10 & 0.25 \\
+   9 & 0.09 & 0.27 \\
+   10 & 0.08 & 0.25 \\
+   11 & 0.07 & 0.27 \\
+   12 & 0.06 & 0.27 \\
+   13 & 0.05 & 0.32 \\
+   14 & 0.05 & 0.26 \\
+   15 & 0.05 & 0.31 \\
+   16 & 0.04 & 0.33 \\
+   17 & 0.04 & 0.33 \\
+   18 & 0.04 & 0.35 \\
+   19 & 0.04 & 0.30 \\
+   20 & 0.03 & 0.30 \\
+   21 & 0.03 & 0.30 \\
 }\gru
 
 \pgfplotstableread[row sep=\\,col sep=&]{
@@ -496,8 +515,8 @@ Below are performed experiments:
 \makebox[\linewidth]{%        to center the image
 		\begin{tikzpicture}
 		\begin{axis}[
-            ymin = 0, ymax = 2,
-            xmin = 1, xmax = 2,
+            ymin = 0, ymax = 1.75,
+            xmin = 0, xmax = 12,
             minor y tick num = 4,
             minor x tick num = 0,
             ymajorgrids = true,
@@ -526,7 +545,7 @@ Below are performed experiments:
 \end{minipage}
 
 \noindent
-As we can see, GRU layer appeared to perform worse that RNN layer. 
+As we can see, GRU layer appeared to perform similarly to RNN layer. 
 \\
 
 \noindent%
@@ -572,7 +591,7 @@ Validation loss with LSTM layer appeared to convergence faster than validation l
         RNN & GRU & LSTM \\
         \hline
         \hline
-        36 & 59 & 43 \\
+        36 & 53 & 43 \\
         \hline
     \end{tabular}
 \captionof{table}{Epoch training time in minutes}
