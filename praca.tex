@@ -22,8 +22,8 @@
 \usepackage{tikz}
 \usepackage{pgfplots}
 % \usepackage{float}
-\usepackage{caption}
-
+%\usepackage{caption}
+\usepackage[font=small,labelfont=bf]{caption}
 
 \pgfplotstableread[row sep=\\,col sep=&]{
     epochs & training \\
@@ -166,20 +166,18 @@ In order to accomplish our goals we are going to implement DeepSpeech2 model usi
 
 The structure of our thesis is as follows. In Chapter \ref{r:desc} we introduce architecture of Deep Speech 2 model in terms of, among others, used layers, data flow and functions. After that, in Chapter \ref{r:experiments}, we present applied optimizations which increased network performance together with experiments results. Finally, in Chapter \ref{r:concls}, we summarize all our results and achieved goals.
 
-\textbf{TODO - opisać podział pracy zgodnie z tym, jak to się rzeczywiście potoczyło}
+Our work was divided evenly between everyone and we worked agile. This allowed us more flexibility in what we were doing.
 
-\chapter{Basic model description}\label{r:desc}
+\chapter{Model description}\label{r:desc}
 
 DeepSpeech 2 (DS2) is a recurrent neural network trained to ingest speech spectrograms and generate a text transcription.
-Following description of the model architecture is pretty basic and it is based on the original paper \cite{DS2}. More details can be find there.
+Following description of the model architecture is quite basic and it is based on the original paper \cite{DS2}. More details can be found there.
 
 \section{Input and Output specification} \label{sec:input}
 Let $\{(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), ...\}$ be a training set. $x^{(i)}$ is a time-series of variable length where every time-slice is a spectrogram of power
 normalized audio clips, so $x^{(i)}_{t,p}$ denotes the power of the $p$’th frequency bin in the audio frame at time $t$. $y^{(i)}$ is a transcription of the utterance $x^{(i)}$. One can see that $x^{(i)}$ is in fact a matrix of size depending on number of frequency bins and $i$'th audio clip length. We use the same number of frequency bins for all audio clips in dataset.
 
-DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ for each output time-step. For English language possible values of $l_t$ are letters from 'a' to 'z', space, apostrophe and blank. Adding non-letter characters allows to find word boundaries. The special symbol blank is outputted each time when the network is unable
-to tell which character is most likely to occur for the current input spectrogram.
-\textbf{TODO nie wiem czy bym napisał, że unable to tell to blank}
+DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ for each output time-step. For English language possible values of $l_t$ are letters from 'a' to 'z', space, apostrophe and blank. Adding non-letter characters allows to find word boundaries. The special symbol blank allows repeating identical letters (e.g. ''too'') and generally helps generating correct transcriptions.
 
 \section{Layers} \label{sec:layers}
 The model of the network is composed of one or more convolutional layers, followed in turn by one or more bidirectional recurrent layers \cite{RNN}, followed by one or more fully connected layers. Activation function used throughout the network is the Clipped Rectified Linear (ReLU) function, given by the formula:
@@ -193,7 +191,12 @@ $$
 $$
 The recurrent layers appear in a few different variants -- standard recurrent layers or Long Short-Term Memory (LSTM) \cite{LSTM}, or Gated Recurrent Units (GRU) \cite{GRU}. After the recurrent layers and fully connected layers are applied, we count the output layer $L$ as a softmax of the output of the last layer.
 
-\textbf{TODO - w tym miejscu rysunek z wykonanym obrazkiem sieci}
+\begin{figure}[h]
+\centering
+\captionsetup{justification=centering}
+\caption{Model of the network. F - number of frequency bins, T - number of time frames, C~-~size of the alphabet}
+\includegraphics[width=\textwidth]{net_model.png}
+\end{figure}
 
 Softmax function $f : \mathbb{R}^k \rightarrow \mathbb{R}^k$ is defined by the formula:
 $$
