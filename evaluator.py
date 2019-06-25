@@ -1,14 +1,11 @@
 import sys
-
-import numpy as np
-from decoder import ctcBeamSearch
 from jiwer import wer
 import torch
 import ctcbeam
 import random
 
+
 def eval_model(model, dataset, libri_dataset, beam_width, lm_file):
-    error = 0
     if len(dataset) != len(libri_dataset):
         raise RuntimeError(
             "Datasets sizes not equal len(dataset):{}, len(libri_dataset):{}".format(len(dataset),
@@ -17,7 +14,6 @@ def eval_model(model, dataset, libri_dataset, beam_width, lm_file):
     sum_error = 0
     report_freq = 50
     sum_wer = 0
-    beam_width = 200
     random.seed(12345)
     random.shuffle(dataset)
     model.eval()
@@ -46,7 +42,7 @@ def eval_model(model, dataset, libri_dataset, beam_width, lm_file):
             sum_error += word_error_rate * length
             sum_length += length
             print('answer = "{}" WER = {}'.format(answer, word_error_rate))
-            if (index % report_freq == 0):
+            if index % report_freq == 0:
                 print("Running WER after {} examples: {}, {} / {}; average: {}".format(index, sum_error / sum_length, sum_error, sum_length, sum_wer / index))
             sys.stdout.flush()
 

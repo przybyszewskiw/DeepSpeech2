@@ -26,17 +26,14 @@ def ctc_collate_fn(tracks):
     return audio_tensor, transs_tensor, lengths_tensor
 
 
-def normalize_signal(signal):
-    return signal / (np.max(np.abs(signal)) + 1e-5)
-
-
-def get_libri_dataloader(dataset, batch_size=1, shuffle=False, num_workers=0, **kwargs):
+def get_dataloader(dataset, batch_size=1, shuffle=False, num_workers=0, **kwargs):
     return DataLoader(dataset, batch_size, shuffle, num_workers=num_workers,
                       collate_fn=ctc_collate_fn, **kwargs)
 
 
+# Dataset takes list of pairs (transcription, path) representing tracks
 class AudioDataset(Dataset):
-    def __init__(self, ls_dataset, num_audio_features, time_length, time_overlap, eps=1e-10):
+    def __init__(self, ls_dataset, num_audio_features, time_length, time_overlap, eps=0.0001):
         super(Dataset, self)
         self.time_length = time_length
         self.time_overlap = time_overlap
@@ -50,15 +47,14 @@ class AudioDataset(Dataset):
     def __getitem__(self, idx):
         return self._load_tensors(*self.ls_dataset[idx])
 
-    # arguments: file_path - path to music file (must be mono)
-    #            bucket_size - size of frequency bucket in hz
-    #            time_overlap - overlap of time intervals in ms
-    def _load_track(self, file_path, debug=False, eps=0.0001):
-        data, sample_rate = sf.read(file_path)
-        data = normalize_signal(data)
+    def _normalize_signal(self, signal):
+        return signal / (np.max(np.abs(signal)) + 1e-5)
 
-        if debug: print("length of data: {}".format(len(data)))
-        if debug: print("sample rate: {}".format(sample_rate))
+    # Works only with mono files
+    def _load_track(self, file_path):
+        data, sample_rate = sf.read(file_path)
+        data = self._normalize_signal(data)
+
         nperseg = int(round(sample_rate * self.time_length / 1e3))
         noverlap = int(round(sample_rate * self.time_overlap / 1e3))
 
@@ -77,23 +73,17 @@ class AudioDataset(Dataset):
 
         mean = np.mean(spec, axis=0)
         std_dev = np.std(spec, axis=0)
-        spec = (spec - mean) / np.sqrt(std_dev ** 2 + eps)
-
-        if debug: print("spectrogram done")
-        if debug: print("number of frequency bins: {}".format(spec.shape[0]))
-        if debug: print("size of frequency bin: {} Hz".format(freqs[1] - freqs[0]))
-        if debug: print("number of time samples: {}".format(len(times)))
-        if debug: print("step between time samples: {} ms".format((times[1] - times[0]) * 1e3))
+        spec = (spec - mean) / np.sqrt(std_dev ** 2 + self.eps)
 
         return spec
 
-    def load_transcript(self, file_path):
+    def _load_transcript(self, file_path):
         with open(file_path, 'r') as f:
             transcript = f.read()
 
         return transcript
 
-    def convert_transcript(self, trans):
+    def _convert_transcript(self, trans):
         def convert_char(c):
             if ord('a') <= ord(c) <= ord('z'):
                 return ord(c) - ord('a') + 1
@@ -107,7 +97,7 @@ class AudioDataset(Dataset):
         return [convert_char(c) for c in trans.lower()]
 
     def _load_tensors(self, track_path, transcript):
-        transcript = self.convert_transcript(transcript)
+        transcript = self._convert_transcript(transcript)
         trans_ten = torch.FloatTensor([transcript]).int()
 
         track = self._load_track(track_path)

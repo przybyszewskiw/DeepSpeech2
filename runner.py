@@ -34,11 +34,12 @@ class Runner:
         self.adv_params = config_module.get('adv_params')
         self.non_json_params = config_module.get('non_json_params')
 
-        print("Loaded config file from {}".format(config_path))
-        print("base_params:", json.dumps(self.base_params, indent=4))
-        print("adv_params:", json.dumps(self.adv_params, indent=4))
+        if self.my_rank == 0:
+            print("Loaded config file from {}".format(config_path))
+            print("base_params:", json.dumps(self.base_params, indent=4))
+            print("adv_params:", json.dumps(self.adv_params, indent=4))
 
-        self.net = DeepSpeech(conv_initial_channels=self.base_params["frequencies"],
+        self.net = DeepSpeech(frequencies=self.base_params["frequencies"],
                               conv_layers=self.base_params["conv_layers"],
                               rec_number=self.base_params["rec_number"],
                               rec_type=self.base_params["rec_type"],
@@ -88,9 +89,9 @@ class Runner:
             else:
                 self.net = DDP(self.net, delay_allreduce=True)
 
-        devicce = torch.device('cpu')
+        device = torch.device('cpu')
         if pretrained_model_path is not None:
-            self.net.load_state_dict(torch.load(pretrained_model_path, map_location=devicce))
+            self.net.load_state_dict(torch.load(pretrained_model_path, map_location=device))
 
     """
         dataset - list of pairs (track_path, transcript_string)
@@ -154,7 +155,8 @@ class Runner:
             # so we have to manually flush
             sys.stdout.flush()
 
-        print('[{}] Total loss in this epoch is {}'.format(datetime.datetime.now(), total_loss / (len(dataloader) - skipped)))
+        print('[{}] Total loss in this epoch is {}'.format(datetime.datetime.now(),
+                                                           total_loss / (len(dataloader) - skipped)))
 
     def test_dataset(self, dataloader):
         self.net.eval()
@@ -201,7 +203,7 @@ class Runner:
                 train_sampler = torch.utils.data.distributed.DistributedSampler(libri_dataset)
                 test_sampler = torch.utils.data.distributed.DistributedSampler(libri_testing_dataset)
 
-                libri_dataloader = dl.get_libri_dataloader(
+                libri_dataloader = dl.get_dataloader(
                     libri_dataset,
                     batch_size=batch_size,
                     num_workers=workers,
@@ -210,14 +212,14 @@ class Runner:
 
             else:
                 if shuffle_dataset and not (sorta_grad and epoch == starting_epoch):
-                    libri_dataloader = dl.get_libri_dataloader(
+                    libri_dataloader = dl.get_dataloader(
                         libri_dataset,
                         batch_size=batch_size,
                         shuffle=True,
                         num_workers=workers
                     )
                 else:
-                    libri_dataloader = dl.get_libri_dataloader(
+                    libri_dataloader = dl.get_dataloader(
                         libri_dataset,
                         batch_size=batch_size,
                         shuffle=False,
@@ -225,16 +227,17 @@ class Runner:
                     )
 
             self.train_epoch(libri_dataloader)
-            print('[{}] Training {}. epoch took {} seconds'.format(datetime.datetime.now(), epoch, time.time() - start_time))
+            print('[{}] Training {}. epoch took {} seconds'.format(datetime.datetime.now(), epoch,
+                                                                   time.time() - start_time))
 
             if testing_dataset is not None:
                 if self.base_params['mixed_precision_opt_level'] is None:
                     with torch.no_grad():
-                        libri_testing_dataloader = dl.get_libri_dataloader(libri_testing_dataset,
-                                                                           batch_size=batch_size)
+                        libri_testing_dataloader = dl.get_dataloader(libri_testing_dataset,
+                                                                     batch_size=batch_size)
                         self.test_dataset(libri_testing_dataloader)
                 else:
-                    libri_testing_dataloader = dl.get_libri_dataloader(
+                    libri_testing_dataloader = dl.get_dataloader(
                         libri_testing_dataset,
                         batch_size=batch_size,
                         sampler=test_sampler
@@ -252,7 +255,7 @@ class Runner:
     def eval_on_dataset(self, dataset, lm_file):
         self.net.eval()
         libri_dataset = self._get_libri_dataset(dataset)
-        beam_width = self.adv_params["beam_width"]
+        beam_width = 200  # TODO tabasz weź coś z tym zrób
 
         eval_model(self.net, dataset, libri_dataset, beam_width, lm_file)
 
