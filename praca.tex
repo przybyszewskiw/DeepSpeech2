@@ -821,7 +821,7 @@
 	
 	To sum up, we present PyTorch scripts for training Deep Speech 2 model for ASR. We also provide already trained models as well as the results of our experiments justifying using specific architecture solutions.
 	
-	The best model we managed to train achieved $11.57$\% WER after training for 9 hours. One should notice that original Deep Speech 2 model trained on 1200 h dataset achieved $13.8$\% WER \cite{DS2}, but it used dataset with conversations as well as monologues (and we used monologues only) -- that probably explains our better performance. Nevertheless, we can state that we managed to implement and train state of the art model for ASR.
+	The best model we managed to train in normal precision (FP32) achieved $10.37$\% WER after training for 24 hours. The best model trained in mixed precision achieved $11.57$\% WER after training for only $11.5$ hours. One should notice that the original Deep Speech 2 model trained on 1200 h dataset achieved $13.8$\% WER \cite{DS2}, but it used dataset with conversations as well as monologues (and we used monologues only) -- that probably explains our better performance. Nevertheless, we can state that we managed to implement and train state of the art model for ASR.
 	
 	We also managed to speed-up training using potential of GPUs -- we trained our model in mixed precision and used multiple GPUs for it. We also showed how exactly that optimizations speed-up training process.
 	
