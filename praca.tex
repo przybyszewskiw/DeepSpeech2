@@ -485,7 +485,7 @@
 	\end{minipage}
 	
 	\noindent
-	As we can see in the figure \ref{fig:gru} there is a noticeable difference in training loss of GRU and RNN layers. In fact, GRU layer achieved WER of $15.9$\% while RNN layer achieved $13.84$\%.
+	As we can see in the figure \ref{fig:gru} there is a noticeable difference in training loss of GRU and RNN layers. In fact, GRU layer achieved WER of $14.66$\% while RNN layer achieved $13.84$\%.
 	\\
 	
 	\noindent%
@@ -538,7 +538,7 @@
 		\label{tab:rec}
 	}
 	
-	WER results with GRU and LSTM are $15.9$\% and $12.38$\% respectively compared to $13.84$\% of vanilla RNN.
+	WER results with GRU and LSTM are $14.66$\% and $11.57$\% respectively compared to $13.84$\% of vanilla RNN.
 
 	\section{Language model and decoding predictions}
 	\textbf{$N$-gram language model} is a model of a language in which we assign probabilities of occurrence to sequences of N words based on some large unlabelled text data. Incorporating model to prediction decoding helps avoid typos which are usually phonetically plausible and often occur on words that rarely or never occur in training set. We use Librispeech 4-gram language model available in \cite{LM-LINK}.
@@ -628,7 +628,7 @@
 		\label{fig:dropout}		     
 	\end{minipage}
 	
-	Figure \ref{fig:dropout} presents results of our experiments with and without dropout. One can see that dropout has the biggest impact in the beginning of the training but as the time goes by, results of both versions are getting similar. However, even after longer training WER results differ: $13.84$\% for net with dropout and $17$\% for net without dropout.
+	Figure \ref{fig:dropout} presents results of our experiments with and without dropout. One can see that dropout has the biggest impact in the beginning of the training but as the time goes by, results of both versions are getting similar. However, even after longer training WER results differ: $13.84$\% for net with dropout and $16.48$\% for net without dropout.
 	
 	
 	\subsection{L2 regularization}
@@ -729,7 +729,7 @@
 	\end{minipage}\\
 	
 	
-	One can easily see in the figure \ref{fig:xavier} that Xavier initialization outperforms default PyTorch initialization in the early stage of training. After around 10 epochs both models have more or less the same training and validation loss -- it means that when we train model for a longer time benefits of a proper initialization are not so important. Final WER in both cases is $13.84$\% and $16.23$\% for model with Xavier initialization and no initialization respectively.
+	One can easily see in the figure \ref{fig:xavier} that Xavier initialization outperforms default PyTorch initialization in the early stage of training. After around 10 epochs both models have more or less the same training and validation loss -- it means that when we train model for a longer time benefits of a proper initialization are not so important. Final WER in both cases is $13.84$\% and $15.24$\% for model with Xavier initialization and no initialization respectively.
 	
 	\section{Training dataset}
 	As our dataset we use ''LibriSpeech ASR corpus'' \cite{DATA} - public ASR dataset containing 960 hours of audiobook English speech for training together with test datasets. This dataset is much smaller than the dataset used in original Deep Speech 2 paper. Unfortunately original Deep Speech 2 dataset is not publicly available and almost impossible to reproduce with limited resources. However, many other works rely on Librispeech as their dataset \cite{LIBRI-EX}.
@@ -738,7 +738,7 @@
 	
 	\todoplot{TODO}
 	
-	WER of model trained on 460 hours dataset is $24$\% and WER of the one trained on 960 hours $13.84$\%.
+	WER of model trained on 460 hours dataset is $23.35$\% and WER of the one trained on 960 hours $13.84$\%.
 	
 	\section{Hyperparameters}
 	To achieve the best accuracy and performance we had to determine what should be values of hyperparameters (e.g. learning rate, batch size, convolutional kernel size, number of features in fully connected layer etc.). We did it by training our network many times with various combinations of mentioned hyperparameters. We looked at results and, according to our intuitions, tried to modify them to achieve better accuracy. What we present in final training scripts is the best combination we found. Probably, there are better ones, but what we have allows us to train model and achieve state of the art accuracy.
@@ -748,7 +748,7 @@
 	
 	To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also provide already trained models as well as the results of our experiments justifying using specific architecture solutions.
 	
-	The best model we managed to train achieved $12.38$\% WER after training for 9 hours. One should notice that original Deep Speech 2 model trained on 1200h dataset achieved $13.8$\% WER \cite{DS2}, but it used dataset with conversations as well as monologues (and we used monologues only) -- that probably explains our better performance. Nevertheless, we can state that we managed to implement and train state of the art model for ASR.
+	The best model we managed to train achieved $11.57$\% WER after training for 9 hours. One should notice that original Deep Speech 2 model trained on 1200h dataset achieved $13.8$\% WER \cite{DS2}, but it used dataset with conversations as well as monologues (and we used monologues only) -- that probably explains our better performance. Nevertheless, we can state that we managed to implement and train state of the art model for ASR.
 	
 	We also managed to speed-up training using potential of GPUs -- we trained our model in mixed precision and used multiple GPUs for it. We also showed how exactly that optimizations speed-up training process.
 	
