@@ -84,7 +84,7 @@
 \autorii{Wojciech Przybyszewski}{386044}
 \autoriii{Jan Tabaszewski}{386319}
 
-\title{Deep Learning for speech recognition -- Deep Speech 2}
+\title{Deep Learning for Speech Recognition -- Deep Speech 2}
 \titlepl{Rozpoznawanie mowy metodami głębokiego uczenia -- Deep Speech 2}
 
 %\tytulang{An implementation of a difference blabalizer based on the theory of $\sigma$ -- $\rho$ phetors}
@@ -137,7 +137,7 @@
 }
 
 % Słowa kluczowe:
-\keywords{Deep Speech, ASR, Neural Networks, Machine Learning, Python, PyTorch, NVIDIA, RNN, multi-GPU, FP16, AMP}
+\keywords{Deep Speech, ASR, neural networks, machine learning, Python, PyTorch, NVIDIA, RNN, multi-GPU, mixed precision training}
 
 % Tu jest dobre miejsce na Twoje własne makra i~środowiska:
 \newtheorem{defi}{Definicja}[section]
@@ -149,7 +149,7 @@
 	
 	%tu idzie streszczenie na strone poczatkowa
 	\begin{abstract}
-		The authors of this thesis focus on implementing scripts for training DeepSpeech2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper \cite{DS2} using \texttt{PyTorch} framework and techniques for speeding up computations on GPUs -- training in mixed precision and mutli-GPU scaling.We provide fully trained models for English language together with statistics about how changing hyperparameters and architecture impacts model's performance and accuracy.
+		The authors of this thesis focus on implementing scripts for training DeepSpeech2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper \cite{DS2} using PyTorch framework and techniques for speeding up computations on GPUs -- training in mixed precision and mutli-GPU scaling.We provide fully trained models for English language together with statistics about how changing hyperparameters and architecture impacts performance and accuracy of the model.
 	\end{abstract}
 	
 	\tableofcontents
@@ -158,15 +158,15 @@
 	
 	\chapter*{Introduction}
 	\addcontentsline{toc}{chapter}{Introduction}
-	Transcription of spoken language is a crucial problem for many areas of a modern technology industry. Being able to communicate with electronic devices not only by touching them, but also by talking to them is an important goal for IT companies. Such devices are more user-friendly so it is undoubtedly beneficial for everybody. To achieve this goal, various solutions were proposed, and many of them use complex algorithms (e.g. Hidden Markov Models) \cite{DS1}. However, it has been shown that the best accuracy can be achieved with Automatic Speech Recognition (ASR) models based on neural networks \cite{DS2}.
+	Transcription of spoken language is a crucial problem for many areas of a modern technology industry. Being able to communicate with electronic devices not only by touching them, but also by talking to them is an important goal for IT companies. Such devices are more user-friendly and undoubtedly beneficial for everybody. Various solutions were proposed for speech recognition, and many of them use complex algorithms (e.g. Hidden Markov Models) \cite{DS1}. However, it has been shown that the best accuracy can be achieved with Automatic Speech Recognition (ASR) models based on neural networks \cite{DS2}.
 	
-	Our thesis concentrates on implementing state of the art ASR model Deep Speech 2 (DS2) described in \cite{DS2} and we realize it with the support of NVIDIA Corporation. Authors of Deep Speech 2 showed that accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset (therefore, we have to find appropriate one and prepare it adequately). Large size of the dataset creates another problem -- we need our model to be able to train on that data in a reasonable time. We also want it to work in real time after training. Last but not least, in order to determine the best hyperparameters we have to run many experiments, collect their results, and finally analyze them.
+	Our thesis concentrates on implementing state of the art ASR model Deep Speech 2 (DS2) described in \cite{DS2}, and we realize it with the support of NVIDIA Corporation. Authors of Deep Speech 2 showed that accuracy of the model depends not only on its implementation, but also on the size and diversity of the used dataset (therefore, we have to find appropriate one and prepare it adequately). Large size of the dataset creates another problem -- we need our model to be able to train on that data in a reasonable time. We also want it to work in real time after training. Last but not least, in order to determine the best hyperparameters we have to run many experiments, collect their results, and finally, analyze them.
 	
-	In order to accomplish our goals we are going to implement DeepSpeech2 model using \texttt{PyTorch} deep learning framework, which supports parallel processing using GPUs. To achieve high performance system, we plan to use open-source libraries prepared by NVIDIA, which make it possible to train one neural network on multiple GPUs. Another optimization, which we expect to speed up computations, is using half precision floating-point numbers (also known as FP16) together with single precision. When it comes to collecting datasets, we plan to use LibriSpeech dataset available online, so our results are easy to reproduce.
+	In order to accomplish our goals we are going to implement DeepSpeech2 model using PyTorch deep learning framework, which supports parallel processing using GPUs. To achieve high performance system, we plan to use open-source libraries developed by NVIDIA, which make it possible to train one neural network on multiple GPUs. Another optimization, which we expect to speed up computations, is using half precision floating-point numbers (also known as FP16) together with single precision. When it comes to collecting datasets, we plan to use LibriSpeech \cite{LIBRI} dataset available online, so our results are easy to reproduce.
 	
 	The structure of our thesis is as follows. In Chapter \ref{r:desc} we introduce architecture of Deep Speech 2 model in terms of, among others, used layers, data flow and functions. After that, in Chapter \ref{r:experiments}, we present applied optimizations which increased network performance together with experiments results. Finally, in Chapter \ref{r:concls}, we summarize all our results and achieved goals.
 	
-	We worked agile and therefore our work was divided between everyone. However, each person in our team had it main responsibilities. Jan mainly took care of audio encoding and transcription decoding. Łukasz was responsible for dataset preparation and porting model to mixed precision. Piotr took care if implementing neural network features and researching for the best model hyperparameters. Wojciech was responsible for implementing basic model and overall coordination of our work.
+	We worked agile and, therefore our work was divided between everyone. However, each person in our team had their main responsibilities. Jan Tabaszewski mainly took care of audio encoding and transcription decoding. Łukasz Kondraciuk was responsible for dataset preparation and porting model to mixed precision. Piotr Ambroszczyk took care if implementing neural network features and researching for the best model hyperparameters. Wojciech Przybyszewski was responsible for implementing basic model and overall coordination of our work.
 	
 	\chapter{Model description}\label{r:desc}
 	
@@ -180,7 +180,7 @@
 	DS2 network's input is a time-series $x$ and the output is a prediction over characters $p(l_t|x)$ for each input time-step. For English language possible values of $l_t$ are letters from 'a' to 'z', space, apostrophe and blank. Adding non-letter characters allows to find word boundaries. The special symbol blank allows repeating identical letters (e.g. ''too'') and generally helps generating correct transcriptions.
 	
 	\section{Layers} \label{sec:layers}
-	The model of the network is composed of one or more convolutional layers, followed in turn by one or more bidirectional recurrent layers \cite{RNN}, followed by one or more fully connected layers. Activation function used throughout the network is the Clipped Rectified Linear Unit (Clipped ReLU) function, given by the formula:
+	The model of the network is composed of one or more convolutional layers, followed by one or more bidirectional recurrent layers \cite{RNN}, followed by one or more fully connected layers. Activation function used throughout the network is the Clipped Rectified Linear Unit (Clipped ReLU) function, given by the formula:
 	$$
 	\sigma(x) =
 	\begin{cases*}
@@ -206,20 +206,20 @@
 	$$
 	f(v) = \big(f_1(v), f_2(v), \ldots, f_k(v) \big).
 	$$
-	We basically apply exponential function to each outputted value, and then normalize these values to make sure, that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
+	We apply exponential function to each outputted value, and then normalize these values to make sure that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
 	
 	\section{CTC Loss} \label{sec:ctc}
 	To train a neural network, we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing a value of the loss function is a main goal of the training.
 	
-	Loss function used in DS2 is \textbf{Connectionist Temporal Classification} (CTC) \cite{DS3}. To define this loss, let us introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". Only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".
+	Loss function used in DS2 is \textbf{Connectionist Temporal Classification} (CTC) \cite{DS3}. To define this loss, let us introduce an encoding of a text. Encoding of a given text \textit{S} is done by replacing every character \textit{c} in \textit{S} by any number of characters \textit{c} and blanks "-". The only restriction is that if there are two adjacent identical letters in \textit{S}, they must be separated by a blank "-".
 	
 	For instance, possible encodings of \textit{"to"} are \textit{"-tttooo"} and \textit{"-tttoo-o"}, but only the latter could be an encoding of the word \textit{"too"}.
 	
 	Now we say that the probability of an actual transcription is the sum of probabilities of all possible encodings of the actual transcription, that have the same length as the output of the model. The loss function here is simply the negative logarithm of this probability. Having this we can count derivatives of this loss function with respect to model output and then apply \textit{backpropagation through time} algorithm to train the network, which is just a standard backpropagation algorithm modified for recurrent neural networks.
 	
 	\section{Training} \label{sec:trainig}
-	During the training, datasets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated through the network, and then weights on the layers are updated. The speed in which changes are applied to the model depends on some chosen parameter -- \textbf{learning rate}. All batches make up for an epoch of training and training lasts for many epochs -- until loss does not decrease anymore or decreases very slightly.
-	Accuracy of the model is measured by \textbf{Word Error Rate} (WER). It is a common metric of the performance of speech recognition systems. Many commercial ASR systems are beeing compared using WER \cite{DS8}. To measure Word Error Rate, we compare the recognized word sequence with a reference word sequence by transforming the latter to the former and find:
+	During training, datasets are divided into batches of some certain size. Batches are fed one by one into the model and after each one CTC loss is computed and backpropagated through the network, and then weights on the layers are updated. The speed in which changes are applied to the model depends on some chosen parameter -- \textbf{learning rate}. All batches make up for an epoch of training and training lasts for many epochs -- until loss does not decrease anymore or decreases very slightly.
+	Accuracy of the model is measured by \textbf{Word Error Rate} (WER) \cite{DS1}. It is a common metric of the performance of speech recognition systems. Many commercial ASR systems are beeing compared using WER \cite{DS8}. To measure Word Error Rate, we compare the recognized word sequence with a reference word sequence by transforming the latter to the former and find:
 	
 	\begin{itemize}
 		\item $S$ -- the number of substitutions,
@@ -250,7 +250,7 @@
 	\end{itemize}
 	
 	\section{Summary}
-	To sum up, workflow in DS2 is standard as for neural network. We prepare some data in the form described in the section \ref{sec:input}. Next we forward propagate the data through the layers described in section \ref{sec:layers}. After that we count CTC Loss (section \ref{sec:ctc}) and update model weights with specific learning rate (section \ref{sec:trainig}). To evaluate the model we generate transcription from predictions given by the output layer using Beam search algorithm (section \ref{sec:transcription}) and count Word Error Rate metrics (section \ref{sec:trainig}).
+	To sum up, workflow in DS2 is typical for neural networks. We prepare some data in the form described in the section \ref{sec:input}. Next we forward propagate the data through the layers described in section \ref{sec:layers}. After that we count CTC Loss (section \ref{sec:ctc}) and update model weights with specific learning rate (section \ref{sec:trainig}). To evaluate the model we generate transcription from predictions given by the output layer using beam search algorithm (section \ref{sec:transcription}) and count Word Error Rate metrics (section \ref{sec:trainig}).
 	
 	
 	\chapter{Experiments on architecture and hyperparameters}\label{r:experiments}
@@ -258,19 +258,17 @@
 	\section{Mixed precision training}
 	In order to speed up training, we decided to try to reduce precision of floating-point calculations, where full precision is not really needed to achieve comparable accuracy.
 	
-	Standard deep learning frameworks, such as PyTorch, use 32 bit floating points variables (FP32) to keep model parameters, and perform all operation. Massively parallel architecture of modern GPUs allows to, perform in the same time much more arithmetic operations on 16 bit floating-point variables (FP16) than on 32 bit variables.
+	Standard deep learning frameworks, such as PyTorch, use 32 bit floating points variables (FP32) to keep model parameters, and perform all operations. Massively parallel architecture of modern GPUs allows to perform in the same time much more arithmetic operations on 16 bit floating-point variables (FP16) than on 32 bit variables.
 	Specifically, performance can be boosted by using Tensor Cores: hardware units prepared to accelerate matrix multiplications, introduced by Nvidia in Volta GPU architecture \cite{MPT}.
 	So reducing precision could not only reduce memory consumption but also measurably improve time needed for model convergence.
 	
-	Common technique, used to improve speed, but not to break performance, is to keep model weights in two copies -- one in FP32 and one in FP16. In each iteration we would use FP16 one to perform forward, backward propagation, and then to calculate gradients of every weight. Then we would use these gradients to update weights of original, FP32 model weights. Finally, we would make a new instance of FP16 model weight by cutting off precision of updated FP32 model \cite{APEX}.
+	A common technique, used to improve speed, but not to break performance, is to keep model weights in two copies -- one in FP32 and one in FP16. In each iteration we would use FP16 one to perform forward, backward propagation, and then to calculate gradients of every weight. Then we would use these gradients to update weights of original, FP32 model weights. Finally, we would make a new instance of FP16 model weight by cutting off precision of updated FP32 model \cite{APEX}.
 	
-	Another heuristic is to split operations on tensors into two groups. In the first groups we would place for instance transitions through fully connected and convolutional layers. In general computational heavy and precision safe operations. In the second group we would place all the other operations: for instance softmax and batchnorm. Now we would port to FP16 operations from the first group and keep in FP32 operations from the second group. This way we would be safe from precision issues and still achieve pretty good speedup (in comparison to the model, that performs all computations in FP16) \cite{APEX}.
+	Another heuristic is to split operations on tensors into two groups. In the first groups we would place, for instance, transitions through fully connected and convolutional layers, in general, computational heavy and precision safe operations. In the second group we would place all the other operations: for instance softmax and batchnorm. Now we would port to FP16 operations from the first group and keep in FP32 operations from the second group. This way we would be safe from precision issues and still achieve pretty good speedup (in comparison to the model, that performs all computations in FP16) \cite{APEX}.
 	
-	There is one more thing, we need to care about, while reducing precision. FP16 uses only 5 bits for exponent, and its representable range is quite narrow, so that in some cases gradients are small enough to be eventually rounded to 0. To prevent that, one may multiply loss by a power of two, then perform backward propagation algorithm, and then scale back obtained gradients. This solution works pretty well in practice. However now we have to deal with another problem. Gradients calculated in the process may overflow. And even one overflow unables us to calculate gradients for parameters depended on that particular weight. So the scaling factor, rather than being one fixed power of two, need to be adjusted during training: decreased after detection of overflow and increased if too many gradients are zeroed as a result of rounding \cite{LOSS_SCALING}.
+	There is one more thing, we need to care about, while reducing precision. FP16 uses only 5 bits for exponent, and its representable range is quite narrow, so that in some cases gradients are small enough to be eventually rounded to 0. To prevent that, one may multiply loss by a power of two, then perform backward propagation algorithm, and then scale back obtained gradients. This solution works well in practice. However now we have to deal with another problem. Gradients calculated in the process may overflow. And even one overflow unables us to calculate gradients for parameters depended on that particular weight. So the scaling factor, rather than being one fixed power of two, need to be adjusted during training: decreased after detection of overflow and increased if too many gradients are zeroed as a result of rounding \cite{LOSS_SCALING}.
 	
-	Speaking from more practical side, we used Apex AMP, which is a PyTorch extension developed to ease mixed precision training. It supports automatic dynamic loss scaling, and both described above ways of performing mixed precision training.
-	
-	Further description of this tool can be found in \cite{APEX_DOCS}.
+	Speaking from more practical side, we used Apex AMP, which is a PyTorch extension developed to ease mixed precision training. It supports automatic dynamic loss scaling, and both described above ways of performing mixed precision training. Further description of this tool can be found in \cite{APEX_DOCS}.
 	
 	\pgfplotstableread[row sep=\\,col sep=&]{
 		epochs & training & validation \\ 
@@ -448,7 +446,7 @@
 	
 	Function $g$ mentioned before depends on specific recurrent unit type. For vanilla RNN it is just
 	$$\overrightarrow{h^l_t} = f\big(W^l h^{l-1}_t + \overrightarrow{U^l} \overrightarrow{h^l_{t - 1}} + b^l\big)$$
-	and analogically for the backward recurrent layer. Here $W^l$ and $\overrightarrow{U^l}$ are just weight matrices, $b^l$ is a bias vector and $f$ is an activation function (e.g. ReLU or tanh). For LSTM and GRU function $g$ is much more complex to simulate some kind of \textit{memory}.
+	and analogically for the backward recurrent layer. Here $W^l$ and $\overrightarrow{U^l}$ are just weight matrices, $b^l$ is a bias vector and $f$ is an activation function (e.g. ReLU or tanh). For LSTM and GRU function $g$ is much more complex.
 	
 	\noindent%
 	\begin{minipage}{\linewidth}% to keep image and caption on one page
@@ -640,7 +638,7 @@
 
 	
 	\section{Performance and multi GPU scaling}
-	For training, we used machine with Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz, (which has 20 physical cores), and 256 GB of RAM. It was equipped with four Nvidia Tesla V100 GPGPUs (32 GB of global memory each), connected by NVlink.
+	For training, we used machine with Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz, (which has 20 physical cores), and 256 GB of RAM. It was equipped with four Nvidia Tesla V100 GPUs (32 GB of global memory each), connected by NVlink.
 	
 	Table \ref{tab:multi} describes performance and scaling we achieved by utilizing more than one GPUs. Performance is measured by time in seconds it took for train for one epoch on full dataset of 960 hours.
 	
@@ -746,13 +744,13 @@
 	
 	\chapter{Conclusions}\label{r:concls}
 	
-	To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also provide already trained models as well as the results of our experiments justifying using specific architecture solutions.
+	To sum up, we present PyTorch scripts for training DeepSpeech2 model for ASR. We also provide already trained models as well as the results of our experiments justifying using specific architecture solutions.
 	
 	The best model we managed to train achieved $11.57$\% WER after training for 9 hours. One should notice that original Deep Speech 2 model trained on 1200h dataset achieved $13.8$\% WER \cite{DS2}, but it used dataset with conversations as well as monologues (and we used monologues only) -- that probably explains our better performance. Nevertheless, we can state that we managed to implement and train state of the art model for ASR.
 	
 	We also managed to speed-up training using potential of GPUs -- we trained our model in mixed precision and used multiple GPUs for it. We also showed how exactly that optimizations speed-up training process.
 	
-	In the future we plan to use prepared model for recognizing other languages. The main problem is finding appropriate datasets -- we want ones that are free and have sufficiently short utterances. If we don't find such dataset we can try generating it on our own (e.g. splitting audio-books into shorter parts). We assume that probably we will have to change some hyperparameters but the core architecture should stay the same.
+	In the future we plan to use prepared model for recognizing other languages. The main problem is finding appropriate datasets -- we want ones that are free and have sufficiently short utterances. If we cannot find such dataset we can try generating it on our own (e.g. splitting audio-books into shorter parts). We assume that probably we will have to change some hyperparameters but the core architecture should stay the same.
 	
 	\begin{thebibliography}{99}
 		\addcontentsline{toc}{chapter}{Bibliography}
@@ -771,8 +769,8 @@
 		
 		\bibitem{DS9} \href{https://web.stanford.edu/~jurafsky/slp3/3.pdf}{https://web.stanford.edu/~jurafsky/slp3/3.pdf}
 		
-		\bibitem{MPT} \href{https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/}
-		{https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/}
+		\bibitem{MPT}  P. Micikevicius, S. Narang, J. Alben, G. Diamos, E. Eelsen, B. Ginsburg, M. Houston, O. Kuchaiev, G. Venkatesh, H. Wu. (2017) \textit{Mixed Precision Training}
+		\href{https://arxiv.org/abs/1710.03740}{https://arxiv.org/abs/1710.03740}
 		
 		\bibitem{APEX} \href{https://devblogs.nvidia.com/apex-pytorch-easy-mixed-precision-training/}{https://devblogs.nvidia.com/apex-pytorch-easy-mixed-precision-training/}
 		
@@ -802,9 +800,11 @@
 		
 		\bibitem{DATA} LibriSpeech ASR corpus \href{http://www.openslr.org/12/}{http://www.openslr.org/12/}
 		
-		\bibitem{LIBRI-EX} Jayadev Billa, \textit{Improving LSTM-CTC based ASR performance in
-			domains with limited training data}
+		\bibitem{LIBRI-EX} Jayadev Billa, \textit{Improving LSTM-CTC based ASR performance in domains with limited training data}
 		\href{https://arxiv.org/pdf/1707.00722.pdf}{https://arxiv.org/pdf/1707.00722.pdf}
+		
+		\bibitem{LIBRI} Vassil Panayotov, Guoguo Chen, Daniel Povey and Sanjeev Khudanpur (2015) \textit{LibriSpeech: an ASR corpus based on public domain audio books} 
+		\href{http://www.openslr.org/12/}{http://www.openslr.org/12/}
 		
 	\end{thebibliography}
 	All the files were downloaded on \bibDownloadDate
