@@ -166,7 +166,7 @@
 	
 	The structure of our thesis is as follows. In Chapter \ref{r:desc} we introduce architecture of Deep Speech 2 model in terms of, among others, used layers, data flow and functions. After that, in Chapter \ref{r:experiments}, we present applied optimizations which increased network performance together with experiments results. Finally, in Chapter \ref{r:concls}, we summarize all our results and achieved goals.
 	
-	We worked agile and, therefore our work was divided between everyone. However, each person in our team had their main responsibilities. Jan Tabaszewski mainly took care of audio encoding and transcription decoding. Łukasz Kondraciuk was responsible for dataset preparation and porting model to mixed precision. Piotr Ambroszczyk took care if implementing neural network features and researching for the best model hyperparameters. Wojciech Przybyszewski was responsible for implementing basic model and overall coordination of our work.
+	We worked agile and, therefore our work was divided between everyone. However, each person in our team had their main responsibilities. Jan Tabaszewski mainly took care of audio encoding and transcription decoding. Łukasz Kondraciuk was responsible for dataset preparation and porting model to mixed precision. Piotr Ambroszczyk took care of implementing neural network features and researching for the best model hyperparameters. Wojciech Przybyszewski was responsible for implementing basic model and overall coordination of our work.
 	
 	\chapter{Model description}\label{r:desc}
 	
@@ -195,7 +195,7 @@
 		\centering
 		\includegraphics[width=\textwidth]{net_model.png}
 		\captionsetup{justification=centering}
-		\caption{Model of the network. F - number of frequency bins, T - number of time frames, C~-~size of the alphabet}
+		\caption{Model of the network. F -- number of frequency bins, F'~--~number of frequency bins after linear map,  T~--~number of time frames, C~--~size of the alphabet}
 	\end{figure}
 	
 	Softmax function $f : \mathbb{R}^k \rightarrow \mathbb{R}^k$ is defined by the formula:
@@ -206,7 +206,7 @@
 	$$
 	f(v) = \big(f_1(v), f_2(v), \ldots, f_k(v) \big).
 	$$
-	We apply exponential function to each outputted value, and then normalize these values to make sure that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the previous section).
+	We apply exponential function to each outputted value, and then normalize these values to make sure that probabilities sum up to 1. In our case $k=29$, hence there is 29 possible output characters to distribute probability on (26 letters and 3 special symbols, as described in the section \ref{sec:input}).
 	
 	\section{CTC Loss} \label{sec:ctc}
 	To train a neural network, we typically need a function that would tell us how good current network's output is. The lesser value this function has, the better results our model achieves. This kind of function is called a \textbf{loss function}. Usually, minimizing a value of the loss function is a main goal of the training.
@@ -337,7 +337,7 @@
 	\end{figure}
 	
 	Figure \ref{fig:amp} presents comparison of training process with and without AMP, denoted as MP (standing for Mixed Precision) and FP32 respectively. We used the same architecture and the same hyperparameters in both cases. One epoch in FP32 lasted for around $135$ minutes, while in mixed precision only $75$ minutes. Therefore, we got $1.8$ speedup. When it comes to the performance, one can see from the figure \ref{fig:amp} that the training loss was falling more or less in the same way. To measure models performance we calculated the validation loss - loss function on all examples from the validation dataset. The reason for this is that computing the validation loss is less computationally expensive then WER. We found that validation loss was always a bit lower for FP32 training. Figure \ref{fig:wer} shows that FP32 model was a bit better also in WER as final WER for FP32 was $13.1$\% and for MP it was $13.84$\%. Looking at validation loss, we can conclude, that we can use it as a convenient metric to know when we should stop trainig and we can calculate loss function only after training is finished. What's more, we decided to run rest of experiments only with AMP as it gives us comparable results as usual FP32 training and is much faster.
-	\textbf{Z uwagi na nasz błąd te liczby na wykresie 2.2 będą jeszcze raz policzone i nieznacznie się zmienią.}
+
 	
 	\pgfplotstableread[row sep=\\,col sep=&]{
 		epochs & amp & noamp \\ 
@@ -353,8 +353,8 @@
 		\begin{center}
 			\begin{tikzpicture}
 			\begin{axis}[
-			ymin = 0, ymax = 1,
-			xmin = 0, xmax = 12,
+			ymin = 0, ymax = 0.4,
+			xmin = 2, xmax = 12,
 			minor y tick num = 4,
 			minor x tick num = 1,
 			ymajorgrids = true,
@@ -734,7 +734,60 @@
 	
 	We report our results on model trained on 460 hours of ''clean'' speech and 960 hours of combined 460 hours of ''clean'' speech and 500 hours of ''other'' speech:
 	
-	\todoplot{TODO}
+	\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\ 
+   1 & 1.78 & 0.87 \\
+   2 & 0.70 & 0.56 \\
+   3 & 0.48 & 0.47 \\
+   4 & 0.36 & 0.41 \\
+   5 & 0.29 & 0.39 \\
+   6 & 0.24 & 0.33 \\
+   7 & 0.21 & 0.31 \\
+   8 & 0.18 & 0.34 \\
+   9 & 0.15 & 0.34 \\
+   10 & 0.13 & 0.31 \\
+   11 & 0.12 & 0.34 \\
+   12 & 0.10 & 0.32 \\
+   13 & 0.09 & 0.34 \\
+   14 & 0.08 & 0.36 \\
+   15 & 0.07 & 0.37 \\
+   16 & 0.07 & 0.37 \\
+   17 & 0.06 & 0.40 \\
+   18 & 0.06 & 0.34 \\
+   19 & 0.05 & 0.40 \\
+}\clean
+
+	\noindent%
+	\begin{minipage}{\linewidth}% to keep image and caption on one page
+		\makebox[\linewidth]{%        to center the image
+			\begin{tikzpicture}
+			\begin{axis}[
+			ymin = 0, ymax = 2,
+			xmin = 0, xmax = 13,
+			minor y tick num = 4,
+			minor x tick num = 1,
+			ymajorgrids = true,
+			grid style = dashed,
+			scaled x ticks = false,
+			xlabel = Epochs,
+			ylabel = CTC Loss,
+			legend pos=outer north east,
+			no markers
+			]
+			\addplot[dashed, color=red] table[x=epochs,y=training]{\clean};
+			\addlegendentry{training with clean dataset}		  
+			\addplot[color=red] table[x=epochs,y=validation]{\clean};
+			\addlegendentry{validation with clean dataset}
+			\addplot[dashed, color=blue] table[x=epochs,y=training]{\amp};
+			\addlegendentry{training with mixed dataset}		  
+			\addplot[color=blue] table[x=epochs,y=validation]{\amp};
+			\addlegendentry{validation with mixed dataset}
+			
+			\end{axis}
+			\end{tikzpicture}
+		}\captionof{figure}{Dataset type plot}
+		\label{fig:xavier}		     
+	\end{minipage}\\
 	
 	WER of model trained on 460 hours dataset is $23.35$\% and WER of the one trained on 960 hours $13.84$\%.
 	
