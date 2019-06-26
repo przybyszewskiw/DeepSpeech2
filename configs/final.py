@@ -1,11 +1,12 @@
 from lrpolicy import LrPolicy as LrP
 from torch.nn.init import xavier_normal_
+import torch.nn as nn
 
 base_params = {
     # ----- Convolutions -----
     'conv_layers': [
         {'kernel': (41, 11), 'stride': (2, 2), 'num_chan': 32},
-        {'kernel': (21, 11), 'stride': (2, 1), 'num_chan': 32},
+        {'kernel': (21, 11), 'stride': (2, 1), 'num_chan': 64},
         {'kernel': (21, 11), 'stride': (2, 1), 'num_chan': 92},
     ],
 
@@ -22,11 +23,11 @@ base_params = {
     # ----- Others -----
     'lr_policy': LrP.POLY_DECAY,
     'lr_policy_params': {
-        'lr': 0.0002,
+        'lr': 0.0005,
         'decay_steps': 1000,
         'power': 0.5,
         'min_lr': 0,
-        'max_iter': int(281215 * 70 / 32)  # TODO add correct numbers of iterations
+        'max_iter': int(8788 * 50)  # TODO add correct numbers of iterations
         # right now {~number of iterations on all-train} * {epochs} / {batch_size}
     },
 
@@ -34,26 +35,26 @@ base_params = {
 
     'batch_norm': True,
 
-    'dropout': 0.5,
+    'dropout': 0,
 
-    'epochs': 70,
+    'epochs': 50,
 
     'shuffle_dataset': True,
 
-    'model_saving_epoch': 3,
+    'model_saving_epoch': 1,
 
     # starting epoch will be sorted regardless of shuffle_dataset value
     'sorta_grad': True,
 
-    'weights_initializer': 'xavier_normal',
 
     'l2_regularization_scale': 0,
 
+    'weights_initializer': 'xavier_normal',
     'mixed_precision_opt_level': None
 }
 
 non_json_params = {
-    'xavier_normal': xavier_normal_
+    'xavier_normal': xavier_normal_,
 }
 
 adv_params = {
@@ -66,8 +67,8 @@ adv_params = {
 
     'starting_epoch': 0,
 
-    'workers': 0,
-    
+    'workers': 20,
+
     'beam_width': 200,
     'alpha': 0.1,
     'beta': 0.0

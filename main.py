@@ -19,6 +19,7 @@ def main():
     parser.add_argument('--local_rank', type=int, required=False)  # needed for launch of distributed training
     parser.add_argument('--models-dir', type=str, default='./models')
     parser.add_argument('--lm_file', type=str, required=False)
+    parser.add_argument('--trie_file', type=str, required=False)
 
     args = parser.parse_args()
 
@@ -52,7 +53,7 @@ def main():
             raise Exception('Provide language model for evaluation!')
 
         if args.dataset is not None:
-            run.eval_on_dataset(LibriSpeech().get_dataset(args.dataset), args.lm_file)
+            run.eval_on_dataset(LibriSpeech().get_dataset(args.dataset), args.lm_file, args.trie_file)
         elif args.track is not None:
             run.eval_on_tracks(args.track_dir)
         else:

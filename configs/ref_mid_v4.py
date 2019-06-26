@@ -67,4 +67,8 @@ adv_params = {
     'starting_epoch': 0,
 
     'workers': 20,
+
+    'beam_width': 200,
+    'alpha': 0.1,
+    'beta': 0.0
 }

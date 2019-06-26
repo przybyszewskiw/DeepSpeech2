@@ -252,32 +252,32 @@ class Runner:
                 else:
                     torch.save(self.net.state_dict(), file_path)
 
-    def eval_on_dataset(self, dataset, lm_file):
+    def eval_on_dataset(self, dataset, lm_file, trie_file):
         self.net.eval()
         libri_dataset = self._get_libri_dataset(dataset)
-        beam_width = 200  # TODO tabasz weź coś z tym zrób
+        beam_width = self.adv_params["beam_width"]
+        alpha = self.adv_params["alpha"]
+        beta = self.adv_params["beta"]
 
-        eval_model(self.net, dataset, libri_dataset, beam_width, lm_file)
+        eval_model(self.net, dataset, libri_dataset, beam_width, alpha, beta, lm_file, trie_file)
 
-    def eval_on_tracks(self, dir, lm_file):
+    def eval_on_tracks(self, dir, lm_file, trie_file):
         self.net.eval()
         tracks = glob.glob(os.path.join(dir, '*.flac'))
         print('Evaluating {}'.format(tracks))
         dataset = self._get_tracks_dataset(tracks)
-        eval_tracks(self.net, tracks, dataset, lm_file)
+
+        beam_width = self.adv_params["beam_width"]
+        alpha = self.adv_params["alpha"]
+        beta = self.adv_params["beta"]
+
+        eval_tracks(self.net, tracks, dataset, beam_width, alpha, beta, lm_file, trie_file)
 
     def _get_tracks_dataset(self, tracks):
         dataset = [(tr, "") for tr in tracks]
         return dl.AudioDataset(dataset, num_audio_features=self.adv_params["sound_features_size"],
                                time_overlap=self.adv_params["sound_time_overlap"],
                                time_length=self.adv_params["sound_time_length"])
-
-    def eval_on_tracks(self, dir):
-        self.net.eval()
-        tracks = glob.glob(os.path.join(dir, '*.flac'))
-        print('Evaluating {}'.format(tracks))
-        dataset = self._get_tracks_dataset(tracks)
-        eval_tracks(self.net, tracks, dataset)
 
     def _get_tracks_dataset(self, tracks):
         dataset = [(tr, "") for tr in tracks]

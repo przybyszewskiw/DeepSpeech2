@@ -5,7 +5,7 @@ import ctcbeam
 import random
 
 
-def eval_model(model, dataset, libri_dataset, beam_width, lm_file):
+def eval_model(model, dataset, libri_dataset, beam_width, alpha, beta, lm_file, trie_file):
     if len(dataset) != len(libri_dataset):
         raise RuntimeError(
             "Datasets sizes not equal len(dataset):{}, len(libri_dataset):{}".format(len(dataset),
@@ -31,10 +31,10 @@ def eval_model(model, dataset, libri_dataset, beam_width, lm_file):
 
             answer = ctcbeam.ctcbeam(probs.tolist(),
                                      lm_file,
-                                     "../librispeech-vocab-probs.txt",
+                                     trie_file,
                                      beam_width,
-                                     0.1,
-                                     0.0)
+                                     alpha,
+                                     beta)
 
             word_error_rate = wer(transcript, answer)
             sum_wer += word_error_rate
@@ -49,7 +49,7 @@ def eval_model(model, dataset, libri_dataset, beam_width, lm_file):
     print("Word Error Rate after evaluation: {}.".format(sum_error / sum_length))
 
 
-def eval_tracks(model, tracks, dataset, lm_file):
+def eval_tracks(model, tracks, dataset, beam_width, alpha, beta, lm_file, trie_file):
     with torch.no_grad():
         model.eval()
         for track, (track_ten, _) in zip(tracks, dataset):
@@ -59,14 +59,13 @@ def eval_tracks(model, tracks, dataset, lm_file):
             probs = probs.squeeze()
             list_aux = torch.split(probs, [1, 28], 1)
             probs = torch.cat((list_aux[1], list_aux[0]), 1)
-            beamWidth = 200
 
             answer = ctcbeam.ctcbeam(probs.tolist(),
                                      lm_file,
-                                     "../librispeech-vocab-probs.txt",
+                                     trie_file,
                                      beamWidth,
-                                     0.05,
-                                     0.05)
+                                     alpha,
+                                     beta)
 
             print('evaluated answer = "{}"'.format(answer))
             sys.stdout.flush()
