@@ -76,13 +76,8 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    /* Add a built-in module, before Py_Initialize */
     PyImport_AppendInittab("ctcbeam", PyInit_ctcbeam);
-
-    /* Pass argv[0] to the Python interpreter */
     Py_SetProgramName(program);
-
-    /* Initialize the Python interpreter.  Required. */
     Py_Initialize();
 
     PyMem_RawFree(program);
