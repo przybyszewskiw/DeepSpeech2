@@ -184,7 +184,7 @@
 	
 	%tu idzie streszczenie na strone poczatkowa
 	\begin{abstract}
-		The authors of this thesis focus on implementing Deep Speech 2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper \cite{DS2} using PyTorch framework and techniques for speeding up computations on GPUs -- training in mixed precision and multi-GPU scaling. We provide fully trained models for English language together with statistics about how changing hyperparameters and architecture impacts performance and accuracy of the model.
+		The authors of this thesis focus on implementing Deep Speech 2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper \cite{DS2} using PyTorch framework and techniques for speeding up computations on GPUs -- training in mixed precision and multi-GPU scaling. We provide fully trained models for English language together with statistics showing how changing hyperparameters and architecture impacts performance and accuracy of the model.
 	\end{abstract}
 	
 	\tableofcontents
@@ -824,9 +824,11 @@
 	
 	The best model we managed to train in normal precision (FP32) achieved $10.37$\% WER after training for 24 hours. The best model trained in mixed precision achieved $11.57$\% WER after training for only $11.5$ hours. One should notice that the original Deep Speech 2 model trained on 1200 h dataset achieved $13.8$\% WER \cite{DS2}, but it used dataset with conversations as well as monologues (and we used monologues only) -- that probably explains our better performance. Nevertheless, we can state that we managed to implement and train state of the art model for ASR.
 	
-	We also managed to speed-up training using potential of GPUs -- we trained our model in mixed precision and used multiple GPUs for it. We also showed how exactly that optimizations speed-up training process.
+	We also managed to speed-up training using potential of GPUs -- we trained our model in mixed precision and used multiple GPUs for it. We also showed how exactly these optimizations speed-up training process.
 	
 	In the future we plan to use prepared model for recognizing other languages. The main problem is finding appropriate datasets -- we want ones that are free and have sufficiently short utterances. If we cannot find such dataset we can try generating it on our own (e.g. splitting audio-books into shorter parts). We assume that probably we will have to change some hyperparameters but the core architecture should stay the same.
+	
+	NVIDIA plans to publish our network as a deep speech learning example which shows how multi-GPU and mixed precision training can speed-up computations. Moreover, trained network is going to be published on NVIDIA GPU CLOUD for educational and research purposes. Corporation expressed a desire to continue project development in order to publish it on their official GitHub and on torch.hub.
 	
 	\begin{appendices}
 		
