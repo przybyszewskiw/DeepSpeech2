@@ -103,5 +103,3 @@ class AudioDataset(Dataset):
         track_ten = torch.from_numpy(track[np.newaxis, :]).float()
 
         return track_ten, trans_ten
-
-
