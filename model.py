@@ -21,12 +21,12 @@ class Convolutions(nn.Module):
     def __init__(self, conv_layers, frequencies=160, initial_channels=1, batch_norm=False):
         super(Convolutions, self).__init__()
         self.layers = nn.ModuleList()
-        new_c = initial_channels
-        new_f = frequencies
+        self.newC = initial_channels
+        self.newF = frequencies
 
         for layer in conv_layers:
             new_layer = nn.Sequential(
-                Conv2dSame(in_channels=new_c, out_channels=layer["num_chan"],
+                Conv2dSame(in_channels=self.newC, out_channels=layer["num_chan"],
                            kernel_size=layer["kernel"], stride=layer["stride"]),
                 nn.Hardtanh(min_val=0, max_val=20, inplace=True)
             )
@@ -36,8 +36,8 @@ class Convolutions(nn.Module):
                                           nn.BatchNorm2d(layer["num_chan"], momentum=0.95,
                                                          eps=1e-4))
 
-            new_c = layer["num_chan"]
-            new_f = math.ceil(float(new_f) / float(layer["stride"][0]))
+            self.newC = layer["num_chan"]
+            self.newF = math.ceil(float(self.newF) / float(layer["stride"][0]))
             self.layers.append(new_layer)
 
     def forward(self, x):

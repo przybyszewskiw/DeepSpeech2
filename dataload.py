@@ -26,26 +26,25 @@ def ctc_collate_fn(tracks):
     return audio_tensor, transs_tensor, lengths_tensor
 
 
-def get_dataloader(dataset, batch_size=1, shuffle=False, num_workers=0, **kwargs):
-    return DataLoader(dataset, batch_size, shuffle, num_workers=num_workers,
-                      collate_fn=ctc_collate_fn, **kwargs)
+def get_dataloader(*args, **kwargs):
+    return DataLoader(*args, **kwargs, collate_fn=ctc_collate_fn)
 
 
 # Dataset takes list of pairs (transcription, path) representing tracks
 class AudioDataset(Dataset):
-    def __init__(self, ls_dataset, num_audio_features, time_length, time_overlap, eps=0.0001):
+    def __init__(self, dataset, net_params, eps=0.0001):
         super(Dataset, self)
-        self.time_length = time_length
-        self.time_overlap = time_overlap
-        self.num_audio_features = num_audio_features
+        self.time_length = net_params['time_length']
+        self.time_overlap = net_params['time_overlap']
+        self.num_audio_features = net_params['num_audio_features']
         self.eps = eps
-        self.ls_dataset = ls_dataset
+        self.dataset = dataset
 
     def __len__(self):
-        return len(self.ls_dataset)
+        return len(self.dataset)
 
     def __getitem__(self, idx):
-        return self._load_tensors(*self.ls_dataset[idx])
+        return self._load_tensors(*self.dataset[idx])
 
     def _normalize_signal(self, signal):
         return signal / (np.max(np.abs(signal)) + 1e-5)

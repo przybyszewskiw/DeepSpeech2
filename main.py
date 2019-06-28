@@ -1,29 +1,21 @@
 #!/usr/bin/env python3
 import argparse
+import runpy
 import torch.cuda
-from runner import Runner
-from scripts.librispeech import LibriSpeech
+from trainer import Trainer
 
 
 def main():
     torch.set_printoptions(edgeitems=5)
 
-    parser = argparse.ArgumentParser(description='DeepSpeech2!')
-    parser.add_argument('task', action='store', choices=['train', 'eval'])
-    parser.add_argument('--dataset', type=str, required=False)
+    parser = argparse.ArgumentParser(description='DeepSpeech2 training')
     parser.add_argument('--config', type=str, default='./configs/default.py')
-    parser.add_argument('--test-dataset', type=str, default='test-clean')
-    parser.add_argument('--track-dir', type=str, required=False)
-    parser.add_argument('--model', type=str, required=False)
-    parser.add_argument('--device', type=str, required=False, default='cpu', choices=['gpu', 'cpu'])
+    parser.add_argument('--cuda', action='store_true')
     parser.add_argument('--local_rank', type=int, required=False)  # needed for launch of distributed training
-    parser.add_argument('--models-dir', type=str, default='./models')
-    parser.add_argument('--lm_file', type=str, required=False)
-    parser.add_argument('--trie_file', type=str, required=False)
 
     args = parser.parse_args()
 
-    if args.device == 'gpu':
+    if args.cuda:
         if not torch.cuda.is_available():
             raise Exception("CUDA (GPU) is not available!")
 
@@ -33,31 +25,15 @@ def main():
                                              init_method='env://')
     else:
         args.local_rank = 0
-    run = Runner(config_path=args.config,
-                 pretrained_model_path=args.model,
-                 device=args.device,
-                 my_rank=args.local_rank)
 
-    if args.task == 'train':
-        if args.dataset is None:
-            raise Exception("Specify dataset to train on!")
-        ls = LibriSpeech()
-        run.train(dataset=ls.get_dataset(args.dataset),
-                  testing_dataset=ls.get_dataset(args.test_dataset),
-                  model_save_pth=args.models_dir)
+    config_module = runpy.run_path(args.config)
 
-    elif args.task == 'eval':
-        if args.model is None:
-            raise Exception('Specify model to evaluate!')
-        if args.lm_file is None:
-            raise Exception('Provide language model for evaluation!')
+    run = Trainer(net_params=config_module.get('net_params'),
+                  train_params=config_module.get('train_params'),
+                  device='cuda' if args.cuda else 'cpu',
+                  my_rank=args.local_rank)
 
-        if args.dataset is not None:
-            run.eval_on_dataset(LibriSpeech().get_dataset(args.dataset), args.lm_file, args.trie_file)
-        elif args.track is not None:
-            run.eval_on_tracks(args.track_dir)
-        else:
-            raise Exception('Nothing to evaluate on!')
+    run.train()
 
 
 if __name__ == '__main__':
