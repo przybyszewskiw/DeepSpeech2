@@ -45,7 +45,7 @@ class Trainer:
         self.net = self.net.to(self.device)
 
         self.optimizer = optim.Adam(self.net.parameters(),
-                                    lr=train_params['lr'],
+                                    lr=train_params['lr_policy_params']['lr'],
                                     weight_decay=train_params['l2_regularization_scale'])
         self.optimizer_steps = 0
 
@@ -103,7 +103,7 @@ class Trainer:
 
             total_loss += loss.item()
 
-            if self.train_params['mixed_precision_opt_level'] is not None:
+            if self.train_params['amp_opt_level'] is not None:
                 with amp.scale_loss(loss, self.optimizer) as scaled_loss:
                     scaled_loss.backward()
             else:
@@ -151,8 +151,8 @@ class Trainer:
         sorta_grad = self.train_params['sorta_grad']
         workers = self.train_params["workers"]
         models_dir = self.train_params["models_dir"]
-        train_dataset = dl.AudioDataset(self.train_params('train_dataset'), self.net_params)
-        test_dataset = dl.AudioDataset(self.train_params('test_dataset'), self.net_params)
+        train_dataset = dl.AudioDataset(self.train_params['train_dataset'], self.net_params)
+        test_dataset = dl.AudioDataset(self.train_params['test_dataset'], self.net_params)
         self.train_params["lr_policy_params"]['max_iter'] = len(train_dataset) * epochs / batch_size
 
         self.net.train()

@@ -191,7 +191,8 @@ class DeepSpeech(nn.Module):
                  batch_norm=False,
                  fc_dropout=0,
                  initializer=None,
-                 flatten=False):
+                 flatten=False,
+                 **_):
         super(DeepSpeech, self).__init__()
         self.initializer = initializer
 

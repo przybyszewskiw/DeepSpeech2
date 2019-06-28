@@ -21,7 +21,7 @@ net_params = {
 
     'batch_norm': True,
 
-    'dropout': 0.5,
+    'fc_dropout': 0.5,
 
     # ----- Spectogram ------
     'sound_features_size': 160,
@@ -43,8 +43,6 @@ train_params = {
         'decay_steps': 1000,
         'power': 0.5,
         'min_lr': 0,
-        # 'max_iter': int(281216 * 50 / 32)  # TODO add correct numbers of iterations
-        # right now {~number of iterations on all-train} * {epochs} / {batch_size}
     },
 
     'l2_regularization_scale': 0,
@@ -68,7 +66,7 @@ train_params = {
 
     'workers': 20,
 
-    'train_dataset': LibriSpeech().get_dataset('all-train'),
+    'train_dataset': LibriSpeech().get_dataset('test-clean'),
 
     'test_dataset': LibriSpeech().get_dataset('test-clean'),
 

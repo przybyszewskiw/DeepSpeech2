@@ -34,9 +34,9 @@ def get_dataloader(*args, **kwargs):
 class AudioDataset(Dataset):
     def __init__(self, dataset, net_params, eps=0.0001):
         super(Dataset, self)
-        self.time_length = net_params['time_length']
-        self.time_overlap = net_params['time_overlap']
-        self.num_audio_features = net_params['num_audio_features']
+        self.time_length = net_params['sound_time_length']
+        self.time_overlap = net_params['sound_time_overlap']
+        self.num_audio_features = net_params['sound_features_size']
         self.eps = eps
         self.dataset = dataset
 
