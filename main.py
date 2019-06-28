@@ -9,7 +9,7 @@ def main():
     torch.set_printoptions(edgeitems=5)
 
     parser = argparse.ArgumentParser(description='DeepSpeech2 training')
-    parser.add_argument('--config', type=str, default='./configs/default.py')
+    parser.add_argument('--config', type=str, default='./configs/rnn_best.py')
     parser.add_argument('--cuda', action='store_true')
     parser.add_argument('--resume-training', type=str, required=False)
     parser.add_argument('--local_rank', type=int, required=False)  # needed for launch of distributed training
