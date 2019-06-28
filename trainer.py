@@ -23,7 +23,8 @@ class Trainer:
                  train_params,
                  net_params,
                  device='cpu',
-                 my_rank=0
+                 my_rank=0,
+                 checkpoint=None
                  ):
         self.my_rank = my_rank
         self.train_params = train_params
@@ -32,6 +33,10 @@ class Trainer:
         self.net = DeepSpeech(flatten=train_params['amp_opt_level'] is not None,
                               initializer=train_params['weights_initializer'],
                               **net_params)
+
+        if checkpoint is not None:
+            checkpoint_file = torch.load(checkpoint, map_location='cpu')
+            self.net.load_state_dict(checkpoint_file['state_dict'])
 
         if 'WORLD_SIZE' not in os.environ and train_params['amp_opt_level'] is not None:
             raise Exception('Use distributed parallelism to train in mixed precision!')
@@ -50,6 +55,12 @@ class Trainer:
                                     lr=train_params['lr_policy_params']['lr'],
                                     weight_decay=train_params['l2_regularization_scale'])
         self.optimizer_steps = 0
+        self.starting_epoch = 0
+
+        if checkpoint is not None:
+            self.starting_epoch = checkpoint_file['epoch']
+            self.optimizer_steps = checkpoint_file['optimizer_steps']
+            self.optimizer.load_state_dict(checkpoint_file['optimized_sd'])
 
         if train_params['amp_opt_level'] is not None:
             self.net, self.optimizer = amp.initialize(

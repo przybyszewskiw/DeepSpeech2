@@ -11,6 +11,7 @@ def main():
     parser = argparse.ArgumentParser(description='DeepSpeech2 training')
     parser.add_argument('--config', type=str, default='./configs/default.py')
     parser.add_argument('--cuda', action='store_true')
+    parser.add_argument('--resume-training', type=str, required=False)
     parser.add_argument('--local_rank', type=int, required=False)  # needed for launch of distributed training
 
     args = parser.parse_args()
@@ -31,7 +32,8 @@ def main():
     run = Trainer(net_params=config_module.get('net_params'),
                   train_params=config_module.get('train_params'),
                   device='cuda' if args.cuda else 'cpu',
-                  my_rank=args.local_rank)
+                  my_rank=args.local_rank,
+                  checkpoint=args.resume_training)
 
     run.train()
 
