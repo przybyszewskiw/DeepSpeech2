@@ -60,7 +60,7 @@ class Trainer:
         if checkpoint is not None:
             self.starting_epoch = checkpoint_file['epoch']
             self.optimizer_steps = checkpoint_file['optimizer_steps']
-            self.optimizer.load_state_dict(checkpoint_file['optimized_sd'])
+            self.optimizer.load_state_dict(checkpoint_file['optimizer_sd'])
 
         if train_params['amp_opt_level'] is not None:
             self.net, self.optimizer = amp.initialize(
@@ -169,7 +169,7 @@ class Trainer:
         self.train_params["lr_policy_params"]['max_iter'] = len(train_dataset) * epochs / batch_size
 
         self.net.train()
-        for epoch in range(epochs):
+        for epoch in range(self.starting_epoch, epochs):
             if not os.path.isdir(models_dir):
                 print("Creating a directory for saved models")
                 os.makedirs(models_dir)
