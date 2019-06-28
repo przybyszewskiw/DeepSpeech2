@@ -29,3 +29,7 @@ def main():
         eval_on_dataset(net, LibriSpeech().get_dataset(args.dataset), checkpoint['net_params'], args)
     if args.track is not None:
         eval_on_tracks(net, args.track_dir, checkpoint['net_params'], args)
+
+
+if __name__ == '__main__':
+    main()

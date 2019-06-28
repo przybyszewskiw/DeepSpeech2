@@ -190,11 +190,9 @@ class DeepSpeech(nn.Module):
                  characters=29,
                  batch_norm=False,
                  fc_dropout=0,
-                 initializer=None,
                  flatten=False,
                  **_):
         super(DeepSpeech, self).__init__()
-        self.initializer = initializer
 
         self.convs = Convolutions(frequencies=frequencies, conv_layers=conv_layers,
                                   batch_norm=batch_norm)
@@ -206,8 +204,6 @@ class DeepSpeech(nn.Module):
         self.fc = FullyConnected(layers_sizes=fc_layers_sizes,
                                  frequencies=self.convs.newF * self.convs.newC, dropout=fc_dropout)
         self.probs = Probabilities(characters=characters, frequencies=fc_layers_sizes[-1])
-        if initializer:
-            self.apply(self.weights_init)
 
         print("Net structure:", self.convs, self.rec, self.fc, self.probs)
 

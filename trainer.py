@@ -30,6 +30,7 @@ class Trainer:
         self.net_params = net_params
 
         self.net = DeepSpeech(flatten=train_params['amp_opt_level'] is not None, **net_params)
+        self.net.apply(train_params['weights_initializer'])
 
         if 'WORLD_SIZE' not in os.environ and train_params['amp_opt_level'] is not None:
             raise Exception('Use distributed parallelism to train in mixed precision!')
@@ -191,7 +192,7 @@ class Trainer:
                     )
 
             self.train_epoch(train_dl)
-            print('[{}] Training {}. epoch took {} seconds'.format(datetime.datetime.now(), epoch,
+            print('[{}] Training {}. epoch took {} seconds'.format(datetime.datetime.now(), epoch + 1,
                                                                    time.time() - start_time))
 
             if self.train_params['amp_opt_level'] is None:
