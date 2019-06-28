@@ -66,7 +66,7 @@ train_params = {
 
     'workers': 20,
 
-    'train_dataset': LibriSpeech().get_dataset('test-clean'),
+    'train_dataset': LibriSpeech().get_dataset('all-train'),
 
     'test_dataset': LibriSpeech().get_dataset('test-clean'),
 
