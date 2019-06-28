@@ -21,13 +21,13 @@ def main():
     parser.add_argument('--trie-file', type=str, default='./src/librispeech-probs.txt')
 
     args = parser.parse_args()
-    checkpoint = torch.load(args.checkoint, map_location='cpu')
+    checkpoint = torch.load(args.checkpoint, map_location='cpu')
     net = DeepSpeech(**(checkpoint['net_params']))
     net.load_state_dict(checkpoint['state_dict'])
 
     if args.dataset is not None:
         eval_on_dataset(net, LibriSpeech().get_dataset(args.dataset), checkpoint['net_params'], args)
-    if args.track is not None:
+    if args.track_dir is not None:
         eval_on_tracks(net, args.track_dir, checkpoint['net_params'], args)
 
 
