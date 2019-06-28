@@ -25,6 +25,9 @@ def main():
     net = DeepSpeech(**(checkpoint['net_params']))
     net.load_state_dict(checkpoint['state_dict'])
 
+    if args.cuda:
+        net = net.cuda()
+
     if args.dataset is not None:
         eval_on_dataset(net, LibriSpeech().get_dataset(args.dataset), checkpoint['net_params'], args)
     if args.track_dir is not None:

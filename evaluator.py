@@ -19,11 +19,11 @@ def eval_on_dataset(model, track_list, net_params, args):
 
     with torch.no_grad():
         index = 0
-        for (track_path, transcript), (track, _) in zip(track_list, dataset):
+        for (track_path, transcript), (tensor, _) in zip(track_list, dataset):
             index += 1
             print('evaluating "{}" at {}'.format(transcript, track_path))
 
-            answer = eval_track(model, track, args)
+            answer = eval_track(model, tensor, args)
             word_error_rate = wer(transcript, answer)
             sum_wer += word_error_rate
             length = len(transcript.split())
@@ -43,10 +43,17 @@ def eval_on_dataset(model, track_list, net_params, args):
 def eval_track(model, tensor, args):
     with torch.no_grad():
         model.eval()
+
+        if args.cuda:
+            tensor = tensor.cuda()
+
         _, probs = model(tensor)
         probs = probs.squeeze()
         list_aux = torch.split(probs, [1, 28], 1)
         probs = torch.cat((list_aux[1], list_aux[0]), 1)
+
+        if args.cuda:
+            probs = probs.cpu()
 
         answer = ctcbeam.ctcbeam(probs.tolist(),
                                  args.lm_file,
