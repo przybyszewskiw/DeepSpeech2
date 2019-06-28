@@ -70,17 +70,5 @@ train_params = {
 
     'test_dataset': LibriSpeech().get_dataset('test-clean'),
 
-    'models_dir': './models'
-}
-
-decoding_params = {
-    'beam_width': 200,
-
-    'alpha': 0.1,
-
-    'beta': 0.0,
-
-    'lm_file': None,
-
-    'trie_file': None,
+    'models_dir': './models_rnn'
 }

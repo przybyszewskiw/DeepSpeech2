@@ -68,5 +68,5 @@ train_params = {
 
     'test_dataset': LibriSpeech().get_dataset('test-clean'),
 
-    'models_dir': './models'
+    'models_dir': './models_lstm'
 }
