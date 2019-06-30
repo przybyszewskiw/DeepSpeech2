@@ -75,6 +75,7 @@ class Trainer:
                 self.is_data_paralel = True
             else:
                 self.net = DDP(self.net, delay_allreduce=True)
+                self.is_data_paralel = True
 
     def train_epoch(self, dataloader):
         self.net.train()
