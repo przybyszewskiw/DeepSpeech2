@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import torch
 import torch.nn as nn
 import math
@@ -20,16 +18,13 @@ class Convolutions(nn.Module):
             self.newC and self.newF respectively
     """
 
-    def __init__(self, conv_layers, frequencies=160, initial_channels=1, conv_list=None,
-                 batch_norm=False):
+    def __init__(self, conv_layers, frequencies=160, initial_channels=1, batch_norm=False):
         super(Convolutions, self).__init__()
-        self.frequencies = frequencies
-        self.conv_layers = conv_layers
         self.layers = nn.ModuleList()
         self.newC = initial_channels
         self.newF = frequencies
 
-        for layer in self.conv_layers:
+        for layer in conv_layers:
             new_layer = nn.Sequential(
                 Conv2dSame(in_channels=self.newC, out_channels=layer["num_chan"],
                            kernel_size=layer["kernel"], stride=layer["stride"]),
@@ -66,34 +61,30 @@ class Recurrent(nn.Module):
 
     def __init__(self, frequencies, rec_number=3, rec_type='rnn', rec_bidirectional=True, flatten=False):
         super(Recurrent, self).__init__()
-        self.frequencies = frequencies
         self.rec_number = rec_number
-        self.rec_type = rec_type
-        self.rec_bidirectional = rec_bidirectional
         self.flatten = flatten
-
-        # TODO Use Hardtanh(0, 20) from paper instead of tanh or simple ReLU
-        # which are default for torch.nn.RNN
         self.layers = nn.ModuleList()
+
         for _ in range(self.rec_number):
-            if self.rec_type == 'rnn':
-                new_layer = nn.RNN(input_size=self.frequencies,
-                                   hidden_size=self.frequencies,
+            if rec_type == 'rnn':
+                # One can try to use Hardtanh(0, 20) from paper instead of tanh or simple ReLU
+                new_layer = nn.RNN(input_size=frequencies,
+                                   hidden_size=frequencies,
                                    nonlinearity='relu',
-                                   bidirectional=self.rec_bidirectional,
+                                   bidirectional=rec_bidirectional,
                                    batch_first=True)
-            elif self.rec_type == 'lstm':
-                new_layer = nn.LSTM(input_size=self.frequencies,
-                                    hidden_size=self.frequencies,
-                                    bidirectional=self.rec_bidirectional,
+            elif rec_type == 'lstm':
+                new_layer = nn.LSTM(input_size=frequencies,
+                                    hidden_size=frequencies,
+                                    bidirectional=rec_bidirectional,
                                     batch_first=True)
-            elif self.rec_type == 'gru':
-                new_layer = nn.GRU(input_size=self.frequencies,
-                                   hidden_size=self.frequencies,
-                                   bidirectional=self.rec_bidirectional,
+            elif rec_type == 'gru':
+                new_layer = nn.GRU(input_size=frequencies,
+                                   hidden_size=frequencies,
+                                   bidirectional=rec_bidirectional,
                                    batch_first=True)
             else:
-                raise Exception("Cannot find recurrent layer type")
+                raise Exception("Unknown recurrent layer type")
             self.layers.append(new_layer)
 
     def forward(self, x):
@@ -122,10 +113,9 @@ class FullyConnected(nn.Module):
 
     def __init__(self, frequencies, layers_sizes=[2048], dropout=0):
         super(FullyConnected, self).__init__()
-        self.layers_sizes = list(zip([frequencies] + layers_sizes, layers_sizes))
-        self.frequencies = frequencies
+        layers_sizes = list(zip([frequencies] + layers_sizes, layers_sizes))
         self.layers = nn.ModuleList()
-        for inner, outer in self.layers_sizes:
+        for inner, outer in layers_sizes:
             new_layer = nn.Sequential(
                 nn.Linear(inner, outer),
                 nn.Hardtanh(min_val=0, max_val=20, inplace=True)
@@ -159,8 +149,6 @@ class Probabilities(nn.Module):
 
     def __init__(self, frequencies, characters=29):
         super(Probabilities, self).__init__()
-        self.characters = characters
-        self.frequencies = frequencies
         self.linear = nn.Linear(frequencies, characters)
         self.logsoft = nn.LogSoftmax(dim=2)
         self.soft = nn.Softmax(dim=2)
@@ -194,7 +182,7 @@ class DeepSpeech(nn.Module):
     """
 
     def __init__(self, conv_layers,
-                 conv_initial_channels=160,
+                 frequencies=160,
                  rec_number=3,
                  rec_type='rnn',
                  rec_bidirectional=True,
@@ -203,29 +191,21 @@ class DeepSpeech(nn.Module):
                  batch_norm=False,
                  fc_dropout=0,
                  initializer=None,
-                 flatten=False):
+                 flatten=False,
+                 **_):
         super(DeepSpeech, self).__init__()
-        self.characters = characters
-        # TODO discuss whether to keep layer parameters (such as full_number) as the instance attributes
-        self.full_layers = fc_layers_sizes
-        self.rec_number = rec_number
-        self.frequencies = conv_initial_channels
-        self.conv_layers = conv_layers
         self.initializer = initializer
-        self.flatten = flatten
-        self.rec_type = rec_type
-        self.rec_bidirectional = rec_bidirectional
 
-        self.convs = Convolutions(frequencies=self.frequencies, conv_layers=self.conv_layers,
+        self.convs = Convolutions(frequencies=frequencies, conv_layers=conv_layers,
                                   batch_norm=batch_norm)
-        self.rec = Recurrent(rec_number=self.rec_number,
+        self.rec = Recurrent(rec_number=rec_number,
                              frequencies=self.convs.newF * self.convs.newC,
-                             rec_type=self.rec_type,
-                             rec_bidirectional=self.rec_bidirectional,
-                             flatten=self.flatten)
-        self.fc = FullyConnected(layers_sizes=self.full_layers,
+                             rec_type=rec_type,
+                             rec_bidirectional=rec_bidirectional,
+                             flatten=flatten)
+        self.fc = FullyConnected(layers_sizes=fc_layers_sizes,
                                  frequencies=self.convs.newF * self.convs.newC, dropout=fc_dropout)
-        self.probs = Probabilities(characters=self.characters, frequencies=fc_layers_sizes[-1])
+        self.probs = Probabilities(characters=characters, frequencies=fc_layers_sizes[-1])
         if initializer:
             self.apply(self.weights_init)
 
@@ -259,7 +239,6 @@ class DeepSpeech(nn.Module):
         Output: loss tensor
     """
 
-    # TODO move to GPU (works only on CPU)
     @staticmethod
     def criterion(output, target, target_length=None):
         ctc_loss = nn.CTCLoss(reduction='mean')
@@ -272,26 +251,6 @@ class DeepSpeech(nn.Module):
             target_length = torch.full((target.shape[0],), target.shape[1])
 
         return ctc_loss(output, target, output_length, target_length)
-
-
-def test():
-    N = 1
-    F = 30
-    T = 5
-    C = 10
-    for _ in range(100):
-        x = torch.rand(N, F, T)
-
-        net = DeepSpeech(conv_initial_channels=F, context=1, conv_number=1, characters=C)
-        x, _ = net(x)
-
-        labels = torch.randint(1, C, (N, T))
-        loss = DeepSpeech.criterion(x, labels)
-
-        if loss.item() == float('inf'):
-            print("Bad:" + str(labels))
-        else:
-            print("Ok:" + str(labels))
 
 
 class Conv2dSame(nn.Module):
@@ -311,7 +270,3 @@ class Conv2dSame(nn.Module):
         x_pad = nn.ZeroPad2d((pc // 2, pc - pc // 2, pr // 2, pr - pr // 2))(x_in)
         x_out = self.layer(x_pad)
         return x_out
-
-
-if __name__ == "__main__":
-    test()
