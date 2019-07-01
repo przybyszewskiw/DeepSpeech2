@@ -1,148 +1,74 @@
-%
-% Niniejszy plik stanowi przykład formatowania pracy magisterskiej na
-% Wydziale MIM UW.  Szkielet użytych poleceń można wykorzystywać do
-% woli, np. formatujac wlasna prace.
-%
-% Zawartosc merytoryczna stanowi oryginalnosiagniecie
-% naukowosciowe Marcina Wolinskiego.  Wszelkie prawa zastrzeżone.
-%
-% Copyright (c) 2001 by Marcin Woliński <M.Wolinski@gust.org.pl>
-% Poprawki spowodowane zmianami przepisów - Marcin Szczuka, 1.10.2004
-% Poprawki spowodowane zmianami przepisow i ujednolicenie 
-% - Seweryn Karłowicz, 05.05.2006
-% Dodanie wielu autorów i tłumaczenia na angielski - Kuba Pochrybniak, 29.11.2016
-
-% dodaj opcję [licencjacka] dla pracy licencjackiej
-% dodaj opcję [en] dla wersji angielskiej (mogą być obie: [licencjacka,en])
-\documentclass[licencjacka,en]{pracamgr}
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
 \usepackage{hyperref}
-\newcommand{\bibDownloadDate}{\today}
+\usepackage{xcolor}
+\usepackage{enumitem}
 
+\usepackage{titling}
+%\renewcommand\maketitlehooka{\null\mbox{}\vfill}
+%\renewcommand\maketitlehookd{\vfill\null}
 
-% Dane magistrantów:
-\autor{Piotr Ambroszczyk}{385090}
-\autori{Łukasz Kondraciuk}{385775}
-\autorii{Wojciech Przybyszewski}{386044}
-\autoriii{Jan Tabaszewski}{386319}
+%\setlist[itemize]{noitemsep} 
+
 
 \title{NVIDIA Deep Speech}
-\titlepl{NVIDIA Deep Speech}
+\author{Piotr Ambroszczyk
+\and Łukasz Kondraciuk
+\and Wojciech Przybyszewski
+\and Jan Tabaszewski}
 
-%\tytulang{An implementation of a difference blabalizer based on the theory of $\sigma$ -- $\rho$ phetors}
-
-%kierunek: 
-% - matematyka, informacyka, ...
-% - Mathematics, Computer Science, ...
-\kierunek{Computer Science}
-
-% informatyka - nie okreslamy zakresu (opcja zakomentowana)
-% matematyka - zakres moze pozostac nieokreslony,
-% a jesli ma byc okreslony dla pracy mgr,
-% to przyjmuje jedna z wartosci:
-% {metod matematycznych w finansach}
-% {metod matematycznych w ubezpieczeniach}
-% {matematyki stosowanej}
-% {nauczania matematyki}
-% Dla pracy licencjackiej mamy natomiast
-% mozliwosc wpisania takiej wartosci zakresu:
-% {Jednoczesnych Studiow Ekonomiczno--Matematycznych}
-
-% \zakres{Tu wpisac, jesli trzeba, jedna z opcji podanych wyzej}
-
-% Praca wykonana pod kierunkiem:
-% (podać tytuł/stopień imię i nazwisko opiekuna
-% Instytut
-% ew. Wydział ew. Uczelnia (jeżeli nie MIM UW))
-\opiekun{dr Janina Mincer-Daszkiewicz \\
-  Instytut Informatyki\\
-}
-
-% miesiąc i~rok:
-\date{May 2019}
-
-%Podać dziedzinę wg klasyfikacji Socrates-Erasmus:
-\dziedzina{ 
-%11.0 Matematyka, Informatyka:\\ 
-%11.1 Matematyka\\ 
-%11.2 Statystyka\\ 
-11.3 Informatyka\\ 
-%11.4 Sztuczna inteligencja\\ 
-%11.5 Nauki aktuarialne\\
-%11.9 Inne nauki matematyczne i informatyczne
-}
-
-%Klasyfikacja tematyczna wedlug AMS (matematyka) lub ACM (informatyka)
-\klasyfikacja{D. Software\\
-  %D.127. Blabalgorithms\\
-  %D.127.6. Numerical blabalysis
-  }
-
-% Słowa kluczowe:
-\keywords{Deep Speech, ASR, Neural Networks, Machine Learning, Python, PyTorch, NVIDIA, RNN, multi-GPU, FP16}
-
-% Tu jest dobre miejsce na Twoje własne makra i~środowiska:
-\newtheorem{defi}{Definicja}[section]
-
-% koniec definicji
+\date{}
 
 \begin{document}
-\maketitle
 
-%tu idzie streszczenie na strone poczatkowa
-\begin{abstract}
-  The authors of this thesis focus on implementing scripts for training DeepSpeech2 model for Automatic Speech Recognition. We try to reproduce results obtained by Baidu Research in End-to-End Speech Recognition paper DODAC DOKUMENTACJE using \texttt{PyTorch} framework. We also experiment with obtaining dataset for Polish language and trying DeepSpeech2 model for it. Finally, we provide fully trained models for English and Polish together with statistics about how changing hyperparametrs and architecture impacts model's performance and accuracy.
-\end{abstract}
+\begin{titlingpage}
+\maketitle
+\end{titlingpage}
+
+\begin{center}
+Abstract
+\end{center}
+This thesis focuses on implementing scripts for training DeepSpeech2 model for Automatic Speech Recognition. We try to reproduce results obtained by authors in their paper using \texttt{PyTorch} framework. We also experiment with obtaining dataset for Polish language and trying DeepSpeech2 model for it. Finally, we provide fully trained models for English and Polish together with statistics about how changing hyperparametrs and architecture impacts model's performance and accuracy.
+\newpage
 
 \tableofcontents
-%\listoffigures
-%\listoftables
+\newpage
 
-\chapter*{Introduction}
-\addcontentsline{toc}{chapter}{Introduction}
-Our thesis is realized with the support of NVIDIA company, and its goal is to implement Automatic Speech Recognition (ASR) model DeepSpeech2 described in \cite{DS2}. Our model is going to use end-to-end deep learning method, as opposed to the complex algorithms (e.g. Hidden Marokv Models or acoustic models) which were used by many previous ASR systems. Since \texttt{PyTorch} framework is supported with CUDA, and is considered to be comfortable to work with, we plan to use this one. Moreover, the authors of DeepSpeech2 prepared it not only for recognizing English but also Mandarin. One of goals of our thesis is to experiment with applying it to Polish language as well.\\
+\section{Introduction}
 
-DeepSpeech2 model consists of three groups of layers i.e. convolutional, recurrent and fully-connected. Any specific choice of a concrete number and type for each group affects both the model performance and accuracy. To determine the best hyperparamters  we will have to run many experiments, collect their results, and finally analyze them. Of course, we are going to do it both for English and Polish as these languages differ (e.g. unlike English, there is a strict correspondence between letters and phones in Polish).\\
+Our thesis is realized with the support of NVIDIA company, and its goal is to implement Automatic Speech Recognition (ASR) model DeepSpeech2 described in \cite{DS2}. This model uses end-to-end deep learning method, as opposed to the complex algorithms (e.g. Hidden Marokv Models or acoustic models) which were used by many previous ASR systems. Since \texttt{PyTorch} framework is supported with CUDA, and is considered to be comfortable to work with, we decided to use this one. Moreover, the authors of DeepSpeech2 prepared it not only for recognizing English but also Mandarin. One of goals of our thesis is to experiment with applying it to Polish language as well.\\
 
-Accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset. Therefore we need to find appropriate one (paying attention to licenses and copyrights) and prepare it adequately. When it comes to English it looks easy -- one can find lots of free data. However, for spoken corpus of Polish it is going to be harder as we should find hundreds of hours of Polish speech collected for university programs and from audiobooks. In \cite{DS1} the authors present techniques for dataset augmentation by e.g. injecting noise. That's because working with specially prepared, clear vocal sounds does not indicate success with processing words and statements of lower quality, and best model's learning parameters can vary in different languages. We are going to use these techniques to improve our model robustness.\\
+DeepSpeech2 model consists of three groups of layers i.e. convolutional, recurrent and fully-connected. Any specific choice of a concrete number and type for each group affects both the model performance and accuracy. To determine the best hyperparamters  we needed to run many experiments, collect their results, and finally analyze them. Of course, we had to do it both for English and Polish as these languages differ (e.g. unlike English, there is a strict correspondence between letters and phones in Polish).\\
 
-The great size of dataset creates another problem -- we need our model to be able to train on that data in reasonable time and then work in the real time. To achieve this we will have to train our model on GPU, bearing in mind that \texttt{PyTorch} framework supports usage of CUDA devices. Moreover we plan to use open-source libraries prepared by NVIDIA which make it possible to train one neural network over multiple GPUs. Another optimization which speeds computations up is using half precision floating point numbers (also known as FP16) instead of single precision. \\
+Accuracy of the model depends not only on its implementation, but also on the size and diversity of used dataset. Therefore we needed to find appropriate one (paying attention to licenses and copyrights) and prepare it adequately. When it comes to English it was relatively easy - one can find lots of free data. However, for spoken corpus of Polish it was harder, but we managed to find hundreds of hours of Polish speech collected for university programs and from audiobooks. In \cite{DS1} the authors present techniques for dataset augmentation by e.g. injecting noise. That's because working with specially prepared, clear vocal sounds does not indicate success with processing words and statements of lower quality, and best model's learning parameters can vary in different languages. We used these techniques to improve our model robustness.\\
 
-
-\chapter{Basic model description}\label{r:desc}
-
-\chapter{Additional extensions}\label{r:extens}
-
-
-\chapter{Experiments on architecture and hyperparameters}\label{r:hypers}
-
-
-\chapter{Recognizing Polish language}\label{r:polish}
-
-\section{Preparing Polish dataset}
-\section{Model’s architecture description}
-\section{Comparison of model's performance on English and Polish}
-
-
-\chapter{Conclusions}
+The great size of dataset creates another problem - we need our model to be able to train on that data in reasonable time and then work in the real time. To achieve this we train our model on GPU, bearing in mind that \texttt{PyTorch} framework supports usage of CUDA devices. Moreover we used open-source libraries prepared by NVIDIA which made it possible to train one neural network over multiple GPUs. Another optimization which speeds computations up is using half precision floating point numbers (also known as FP16) instead of single precision. \\
 
 To sum up, we present \texttt{PyTorch} scripts for training DeepSpeech2 model for ASR. We also present already trained models for English and Polish as well as the results of our experiments justifying using specific hyperparameters and architecture solutions.\\
 
-\begin{thebibliography}{99}
-\addcontentsline{toc}{chapter}{Bibliography} 
+\newpage
+\section{Basic model description}
 
-\bibitem{DS1} Hannun et al. 
-\textit{Deep Speech: Scaling up end-to-end speech recognition}, Silicon Valley AI Lab 2014, \href{https://arxiv.org/abs/1412.5567}{https://arxiv.org/abs/1412.5567}
-  
-\bibitem{DS2} Baidu Research \textit{ Deep Speech 2: End-to-End Speech Recognition in English and Mandarin}, Silicon Valley AI Lab 2015, \href{https://arxiv.org/abs/1512.02595}{https://arxiv.org/abs/1512.02595}
-  
+\newpage
+\section{Additional extensions}
+
+\newpage
+\section{Experiments on architecture and hyperparameters}
+
+\newpage
+\section{Recognizing Polish language}
+\subsection{Preparing Polish dataset}
+\subsection{Model’s architecture description}
+\subsection{Comparison of model's performance on English and Polish}
+
+\newpage
+\section{Conclusions}
+
+\begin{thebibliography}{1}
+  \bibitem{DS1} Hannun et al. (2014) \href{https://arxiv.org/pdf/1412.5567.pdf}{\em Deep Speech: Scaling up end-to-end speech recognition} 
+  \bibitem{DS2} Hannun et al. (2015) \href{https://arxiv.org/abs/1512.02595}{\em Deep Speech 2: End-to-End Speech Recognition in English and Mandarin} 
 \end{thebibliography}
-All the files were downloaded on \bibDownloadDate
-
+  
 \end{document}
-
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: t
-%%% coding: latin-2
-%%% End:
