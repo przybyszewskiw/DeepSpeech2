@@ -1,0 +1,124 @@
+
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training \\
+1   &  4.79 \\
+30   &  2.91 \\
+60   &  2.90 \\
+90   &  2.87 \\
+120  &  2.87 \\
+150  &  2.87 \\
+180  &  2.87 \\
+210  &  2.86 \\
+240  &  2.35 \\
+270 &  1.95 \\
+300 &  1.84 \\
+330 &  1.77 \\
+360 &  1.72 \\
+390 &  1.69 \\
+420 &  1.66 \\
+450 &  1.65 \\
+480 &  1.62 \\
+510 &  1.61 \\
+540 &  1.59 \\
+570 &  1.64 \\
+600 &  1.60 \\
+    }\first
+    
+\pgfplotstableread[row sep=\\,col sep=&]{
+    epochs & training & validation \\
+1  & 2.17 & 1.22 \\
+2  & 1.24 & 1.02 \\
+3  & 1.12 & 0.94 \\
+4  & 1.06 & 0.89 \\ 
+5  & 1.02 & 0.86 \\
+6  & 1.00 & 0.84 \\ 
+7  & 0.98 & 0.83 \\ 
+8  & 0.96 & 0.81 \\
+9  & 0.95 & 0.81 \\
+10 & 0.94 & 0.79 \\
+11 & 0.93 & 0.78 \\
+12 & 0.92 & 0.78 \\
+13 & 0.91 & 0.77 \\
+14 & 0.91 & 0.77 \\
+15 & 0.9  & 0.76 \\
+16 & 0.9  & 0.76 \\
+17 & 0.89 & 0.75 \\
+18 & 0.88 & 0.74 \\
+19 & 0.88 & 0.74 \\
+    }\best
+   
+    
+  
+\begin{document}
+
+\begin{figure}[!hbt]
+		% Center the figure.
+		\begin{center}
+		% Include the eps file, scale it such that it's width equals the column width. You can also put width=8cm for example...
+		%\includegraphics[width=\columnwidth]{plot_tf}
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 0, ymax = 2.5,
+            xmin = 0, xmax = 19,
+            minor y tick num = 4,
+            minor x tick num = 1,
+            ymajorgrids = true,
+            grid style = dashed,
+            %area style,
+            scaled x ticks = false,
+            xlabel = Epochs,
+            ylabel = CTC Loss,
+            legend pos=outer north east,
+            no markers            
+          ]
+		  \addplot table[x=epochs,y=training]{\best};
+		  \addlegendentry{Training}
+		  \addplot table[x=epochs,y=validation]{\best};
+          \addlegendentry{Validation}	
+          	  
+		\end{axis}
+		\end{tikzpicture}
+		\caption{Best model performance in CTC Loss function with respect to training time in epochs.}
+		\label{diag:time}
+		\end{center}
+	\end{figure}
+  
+
+\begin{figure}[!hbt]
+		% Center the figure.
+		\begin{center}
+		% Include the eps file, scale it such that it's width equals the column width. You can also put width=8cm for example...
+		%\includegraphics[width=\columnwidth]{plot_tf}
+		\begin{tikzpicture}
+		\begin{axis}[
+            ymin = 0, ymax = 5,
+            xmin = 0, xmax = 600,
+            minor y tick num = 4,
+            minor x tick num = 1,
+            ymajorgrids = true,
+            grid style = dashed,
+            %area style,
+            scaled x ticks = false,
+            xlabel = Epochs,
+            ylabel = CTC Loss,
+            legend pos=outer north east,
+            no markers            
+          ]
+		  \addplot table[x=epochs,y=training]{\first};
+		  \addlegendentry{Training}
+	
+          	  
+		\end{axis}
+		\end{tikzpicture}
+		\caption{First model training performance, blanks are favored.}
+		\label{diag:time}
+		\end{center}
+	\end{figure}
+\end{document}

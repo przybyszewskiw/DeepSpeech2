@@ -1,0 +1,5 @@
+CTC Beam Search with language model
+
+uses kenlm and librispeech language model
+
+built by scripts/ctcbeam.sh
