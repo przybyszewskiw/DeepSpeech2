@@ -2,9 +2,7 @@ import os
 from os.path import join as pjoin, abspath
 import shutil
 import subprocess
-import tempfile
 import soundfile as sf
-import urllib.request
 
 DATASETS = {
     'test-clean': 'http://www.openslr.org/resources/12/test-clean.tar.gz',
