@@ -1,6 +1,6 @@
 from lrpolicy import LrPolicy as LrP
 from torch.nn.init import xavier_normal_
-from scripts.librispeech import LibriSpeech
+from librispeech.librispeech import LibriSpeech
 
 
 net_params = {

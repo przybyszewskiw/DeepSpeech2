@@ -36,12 +36,6 @@ class LibriSpeech:
         with_lenght = sorted(with_lenght)
         return [(path, trans) for _, path, trans in with_lenght]
 
-    def _decompress_dataset(self, fname):
-        if not os.path.isdir("./datasets"):
-            print("Creating a directory for datasets")
-            os.makedirs("./datasets")
-        subprocess.check_call(['tar', 'zxvf', fname, '-C', './datasets/'])
-
     def _parse_librispeech_root(self, root):
         res = []
         for root, _, files in os.walk(abspath(root)):
@@ -50,14 +44,14 @@ class LibriSpeech:
                     res += self._parse_librispeech_file(pjoin(root, file))
         return res
 
-    def _download_dataset(self, dataset_url):
-        print('Dataset not found! Downloading {} in progress...'.format(dataset_url))
-        tmpdir = tempfile.mkdtemp()
-        path = pjoin(tmpdir, 'dataset.tar.gz')
-        urllib.request.urlretrieve(dataset_url, pjoin(tmpdir, path))
-        self._decompress_dataset(path)
-        shutil.rmtree(tmpdir)
-        print('Done!')
+    def _download_dataset(self, name, dataset_url):
+        print('Dataset not found! Downloading {}'.format(name))
+        shutil.rmtree(pjoin('./datasets', name + 'tar.gz'))
+        subprocess.check_call(['wget', '-P', './datasets/', dataset_url])
+        if not os.path.isdir("./datasets"):
+            print("Creating a directory for datasets")
+            os.makedirs("./datasets")
+        subprocess.check_call(['tar', 'zxvf', pjoin('./datasets', name + '.tar.gz'), '-C', './datasets/'])
 
     def _get_dataset(self, name):
         if name == 'all-train':
@@ -67,7 +61,7 @@ class LibriSpeech:
 
         dataset_root = abspath(pjoin('./datasets/LibriSpeech', name))
         if not os.path.isdir(dataset_root):
-            self._download_dataset(DATASETS[name])
+            self._download_dataset(name, DATASETS[name])
         dataset = self._parse_librispeech_root(dataset_root)
         return dataset
 
@@ -92,6 +86,3 @@ class LibriSpeech:
     def get_clean_datasets(self):
         return self._get_datasets([name for name in DATASETS.keys() if 'clean' in name])
 
-
-if __name__ == '__main__':
-    print(LibriSpeech().get_dataset('test-clean'))

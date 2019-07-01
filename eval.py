@@ -3,7 +3,7 @@ import torch
 import argparse
 from evaluator import eval_on_dataset, eval_on_tracks
 from model import DeepSpeech
-from scripts.librispeech import LibriSpeech
+from librispeech.librispeech import LibriSpeech
 
 
 def main():
