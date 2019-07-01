@@ -2,4 +2,4 @@ CTC Beam Search with language model
 
 uses kenlm and librispeech language model
 
-built by scripts/ctcbeam.sh
+to install it simply run ./setup_ctcbeam_and_lm.sh

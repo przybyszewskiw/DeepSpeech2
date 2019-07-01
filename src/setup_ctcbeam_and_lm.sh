@@ -1,5 +1,5 @@
 #!/bin/bash
-#run from DeepSpeech2/src
+
 #download and install kenlm 
 wget -O - https://kheafield.com/code/kenlm.tar.gz |tar xz
 echo "\$CXX ../probs.cpp \$objects -o ../probs \$CXXFLAGS \$LDFLAGS" | cat >> kenlm/compile_query_only.sh
