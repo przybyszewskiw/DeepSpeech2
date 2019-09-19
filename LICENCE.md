@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) [2019] [Piotr Ambroszczyk, Łukasz Kondraciuk, Wojciech Przybyszewski, Jan Tabaszewski]
+Copyright (c) 2019 - Piotr Ambroszczyk, Łukasz Kondraciuk, Wojciech Przybyszewski, Jan Tabaszewski
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
