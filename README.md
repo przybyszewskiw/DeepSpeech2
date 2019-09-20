@@ -56,7 +56,7 @@ We managed to achieve 10.37 WER while training in FP32 and 11.57 WER while train
 
 ## Authors
 
-* **Piotr Ambroszczyk** - [ambro](https://github.com/ambro)
+* **Piotr Ambroszczyk** - [ambroszczyk](https://github.com/ambroszczyk)
 * **Łukasz Kondraciuk** - [xman1024](https://github.com/xman1024)
 * **Wojciech Przybyszewski** - [przybyszewskiw](https://github.com/przybyszewskiw)
 * **Jan Tabaszewski** - [tabasz](https://github.com/tabasz)
