@@ -1,6 +1,6 @@
 # Bachelor's thesis project team
 
-* **Piotr Ambroszczyk** - [ambro](https://github.com/ambro)
+* **Piotr Ambroszczyk** - [ambroszczyk](https://github.com/ambroszczyk)
 * **Łukasz Kondraciuk** - [xman1024](https://github.com/xman1024)
 * **Wojciech Przybyszewski** - [przybyszewskiw](https://github.com/przybyszewskiw)
 * **Jan Tabaszewski** - [tabasz](https://github.com/tabasz)
